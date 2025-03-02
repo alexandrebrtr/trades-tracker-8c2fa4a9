@@ -1,341 +1,534 @@
 
+import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { 
-  Bell, 
-  CreditCard, 
-  Download, 
+  Brush, 
+  Code, 
   Key, 
-  LogOut, 
-  Mail, 
-  PenBox, 
-  Share2, 
-  Shield, 
-  User 
+  Lock, 
+  Save, 
+  Bell, 
+  LayoutGrid, 
+  Copy,
+  Check,
+  PanelLeft,
+  Palette,
 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { usePremium } from '@/context/PremiumContext';
 
 export default function Settings() {
+  const { toast } = useToast();
+  const { isPremium } = usePremium();
+  const [copied, setCopied] = useState(false);
+  const [theme, setTheme] = useState({
+    primary: '#9b87f5',
+    background: '#ffffff',
+    text: '#000000',
+    sidebar: '#f9fafb'
+  });
+  const [apiKeys, setApiKeys] = useState({
+    alphavantage: '',
+    finnhub: '',
+    tradingview: ''
+  });
+  const [notifications, setNotifications] = useState({
+    email: true,
+    push: false,
+    tradeAlerts: true,
+    marketNews: false
+  });
+  const [layout, setLayout] = useState({
+    compactSidebar: false,
+    gridLayout: false,
+    showWelcome: true
+  });
+
+  const handleSaveTheme = () => {
+    // In a real app, this would update the theme in the database/localStorage
+    toast({
+      title: "Thème enregistré",
+      description: "Votre nouveau thème a été appliqué avec succès.",
+    });
+  };
+
+  const handleSaveApiKeys = () => {
+    // In a real app, this would securely store API keys
+    toast({
+      title: "Clés API enregistrées",
+      description: "Vos clés API ont été sauvegardées en toute sécurité.",
+    });
+  };
+
+  const handleSaveNotifications = () => {
+    toast({
+      title: "Paramètres de notifications enregistrés",
+      description: "Vos préférences de notifications ont été mises à jour.",
+    });
+  };
+
+  const handleSaveLayout = () => {
+    toast({
+      title: "Mise en page enregistrée",
+      description: "Vos préférences de mise en page ont été appliquées.",
+    });
+  };
+
+  const handleCopyTheme = () => {
+    navigator.clipboard.writeText(JSON.stringify(theme, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast({
+      title: "Copié !",
+      description: "Configuration du thème copiée dans le presse-papier.",
+    });
+  };
+
   return (
     <AppLayout>
-      <div className="page-transition space-y-6">
-        <div>
+      <div className="page-transition space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
-          <p className="text-muted-foreground">
-            Gérez votre profil, vos préférences et les paramètres de sécurité.
-          </p>
         </div>
-        
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="bg-muted p-1 grid grid-cols-2 md:grid-cols-4 lg:flex">
-            <TabsTrigger value="profile" className="flex gap-2 items-center">
-              <User className="w-4 h-4" /> 
-              <span className="sm:inline">Profil</span>
+
+        <Tabs defaultValue="appearance" className="space-y-6">
+          <TabsList className="mb-6">
+            <TabsTrigger value="appearance" className="flex gap-2 items-center">
+              <Brush className="w-4 h-4" />
+              <span>Apparence</span>
             </TabsTrigger>
-            <TabsTrigger value="account" className="flex gap-2 items-center">
-              <PenBox className="w-4 h-4" /> 
-              <span className="sm:inline">Compte</span>
+            <TabsTrigger value="api" className="flex gap-2 items-center">
+              <Key className="w-4 h-4" />
+              <span>API</span>
             </TabsTrigger>
             <TabsTrigger value="notifications" className="flex gap-2 items-center">
-              <Bell className="w-4 h-4" /> 
-              <span className="sm:inline">Notifications</span>
+              <Bell className="w-4 h-4" />
+              <span>Notifications</span>
             </TabsTrigger>
-            <TabsTrigger value="security" className="flex gap-2 items-center">
-              <Shield className="w-4 h-4" /> 
-              <span className="sm:inline">Sécurité</span>
+            <TabsTrigger value="layout" className="flex gap-2 items-center">
+              <LayoutGrid className="w-4 h-4" />
+              <span>Mise en page</span>
             </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="profile" className="space-y-6">
+
+          <TabsContent value="appearance" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Profil</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="w-5 h-5" />
+                  <span>Personnalisation du thème</span>
+                  {!isPremium && (
+                    <Badge variant="outline" className="ml-2">Premium</Badge>
+                  )}
+                </CardTitle>
                 <CardDescription>
-                  Gérez vos informations personnelles et votre profil public.
+                  Personnalisez les couleurs et l'apparence de l'application
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex flex-col sm:flex-row gap-6">
-                  <div className="space-y-1">
-                    <div className="relative mx-auto w-32 h-32 rounded-full border-2 border-border bg-muted flex items-center justify-center overflow-hidden">
-                      <span className="text-4xl font-semibold text-muted-foreground">T</span>
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity">
-                        <Button variant="secondary" size="sm">Modifier</Button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex-1 space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Nom complet</Label>
-                        <Input id="name" placeholder="Votre nom" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="username">Nom d'utilisateur</Label>
-                        <Input id="username" placeholder="@username" />
-                      </div>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="email@example.com" />
+                      <Label htmlFor="primary-color">Couleur principale</Label>
+                      <div className="flex gap-3">
+                        <div 
+                          className="w-10 h-10 rounded-md border" 
+                          style={{ backgroundColor: theme.primary }}
+                        />
+                        <Input 
+                          id="primary-color" 
+                          type="text" 
+                          value={theme.primary}
+                          onChange={(e) => setTheme({...theme, primary: e.target.value})}
+                          className="flex-1"
+                          disabled={!isPremium}
+                        />
+                      </div>
                     </div>
+                    
                     <div className="space-y-2">
-                      <Label htmlFor="bio">À propos de moi</Label>
-                      <Input id="bio" placeholder="Trader depuis 2020, spécialisé en swing trading" />
+                      <Label htmlFor="background-color">Couleur d'arrière-plan</Label>
+                      <div className="flex gap-3">
+                        <div 
+                          className="w-10 h-10 rounded-md border" 
+                          style={{ backgroundColor: theme.background }}
+                        />
+                        <Input 
+                          id="background-color" 
+                          type="text" 
+                          value={theme.background}
+                          onChange={(e) => setTheme({...theme, background: e.target.value})}
+                          className="flex-1"
+                          disabled={!isPremium}
+                        />
+                      </div>
                     </div>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-medium mb-2">Profil public</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Ces informations seront affichées publiquement dans la communauté.
-                    </p>
                   </div>
                   
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="public-stats">Statistiques de trading</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Partager vos performances avec la communauté
-                        </p>
+                    <div className="space-y-2">
+                      <Label htmlFor="text-color">Couleur du texte</Label>
+                      <div className="flex gap-3">
+                        <div 
+                          className="w-10 h-10 rounded-md border" 
+                          style={{ backgroundColor: theme.text }}
+                        />
+                        <Input 
+                          id="text-color" 
+                          type="text" 
+                          value={theme.text}
+                          onChange={(e) => setTheme({...theme, text: e.target.value})}
+                          className="flex-1"
+                          disabled={!isPremium}
+                        />
                       </div>
-                      <Switch id="public-stats" />
                     </div>
                     
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="public-trades">Trades récents</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Montrer vos 5 derniers trades dans votre profil
-                        </p>
-                      </div>
-                      <Switch id="public-trades" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex justify-end">
-                  <Button>Enregistrer les modifications</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="account" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Paramètres du compte</CardTitle>
-                <CardDescription>
-                  Gérez vos préférences d'affichage et les paramètres généraux.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="language">Langue</Label>
-                      <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
-                        <option value="fr">Français</option>
-                        <option value="en">English</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="timezone">Fuseau horaire</Label>
-                      <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
-                        <option value="Europe/Paris">Europe/Paris (GMT+1)</option>
-                        <option value="America/New_York">America/New York (GMT-5)</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="font-medium">Exportation des données</h3>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Button variant="outline" className="flex gap-2">
-                      <Download className="w-4 h-4" />
-                      Exporter en CSV
-                    </Button>
-                    <Button variant="outline" className="flex gap-2">
-                      <Download className="w-4 h-4" />
-                      Exporter en PDF
-                    </Button>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <h3 className="font-medium text-destructive">Actions dangereuses</h3>
-                  <Button variant="destructive">Supprimer le compte</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="notifications" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Notifications</CardTitle>
-                <CardDescription>
-                  Configurez les notifications que vous souhaitez recevoir.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-medium mb-2">Notifications par email</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label>Résumé hebdomadaire</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Recevez un résumé de vos performances chaque semaine
-                          </p>
-                        </div>
-                        <Switch />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label>Alertes de prix</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Notifications quand un actif atteint un prix cible
-                          </p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label>Objectifs atteints</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Notifications quand vous atteignez vos objectifs
-                          </p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div>
-                    <h3 className="font-medium mb-2">Notifications dans l'application</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label>Rappels de trading</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Rappels pour suivre votre plan de trading
-                          </p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label>Commentaires sur vos trades</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Notifications quand la communauté commente vos trades
-                          </p>
-                        </div>
-                        <Switch />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label>Actualités marché</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Notifications sur les événements importants du marché
-                          </p>
-                        </div>
-                        <Switch />
+                      <Label htmlFor="sidebar-color">Couleur de la barre latérale</Label>
+                      <div className="flex gap-3">
+                        <div 
+                          className="w-10 h-10 rounded-md border" 
+                          style={{ backgroundColor: theme.sidebar }}
+                        />
+                        <Input 
+                          id="sidebar-color" 
+                          type="text" 
+                          value={theme.sidebar}
+                          onChange={(e) => setTheme({...theme, sidebar: e.target.value})}
+                          className="flex-1"
+                          disabled={!isPremium}
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex justify-end">
-                  <Button>Enregistrer les préférences</Button>
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <Button 
+                    onClick={handleSaveTheme} 
+                    disabled={!isPremium}
+                    className="flex gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Enregistrer le thème</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleCopyTheme}
+                    disabled={!isPremium}
+                    className="flex gap-2"
+                  >
+                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    <span>{copied ? "Copié !" : "Copier la configuration"}</span>
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="security" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Sécurité</CardTitle>
-                <CardDescription>
-                  Gérez la sécurité de votre compte et vos informations de connexion.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-medium mb-2">Changement de mot de passe</h3>
-                    <div className="space-y-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="current-password">Mot de passe actuel</Label>
-                        <Input id="current-password" type="password" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="new-password">Nouveau mot de passe</Label>
-                        <Input id="new-password" type="password" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-                        <Input id="confirm-password" type="password" />
-                      </div>
-                      <Button className="mt-2">Mettre à jour le mot de passe</Button>
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div>
-                    <h3 className="font-medium mb-2">Authentification à deux facteurs</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Ajoutez une couche de sécurité supplémentaire à votre compte.
+                
+                {!isPremium && (
+                  <div className="bg-muted/50 rounded-lg p-4 text-center">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      La personnalisation du thème est une fonctionnalité premium
                     </p>
-                    <Button variant="outline" className="flex gap-2">
-                      <Shield className="w-4 h-4" />
-                      Activer l'authentification à deux facteurs
+                    <Button size="sm" asChild>
+                      <a href="/premium">Passer à Premium</a>
                     </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <PanelLeft className="w-5 h-5" />
+                  <span>Options de la barre latérale</span>
+                </CardTitle>
+                <CardDescription>
+                  Personnalisez le comportement de la barre latérale
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="sidebar-collapse" className="flex flex-col gap-1">
+                    <span>Réduire automatiquement</span>
+                    <span className="font-normal text-sm text-muted-foreground">
+                      Réduire automatiquement la barre latérale sur les petits écrans
+                    </span>
+                  </Label>
+                  <Switch id="sidebar-collapse" />
+                </div>
+                
+                <Separator />
+                
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="sidebar-hover" className="flex flex-col gap-1">
+                    <span>Élargir au survol</span>
+                    <span className="font-normal text-sm text-muted-foreground">
+                      Élargir la barre latérale lorsque la souris passe dessus
+                    </span>
+                  </Label>
+                  <Switch id="sidebar-hover" />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="api" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Code className="w-5 h-5" />
+                  <span>Intégrations d'API</span>
+                  {!isPremium && (
+                    <Badge variant="outline" className="ml-2">Premium</Badge>
+                  )}
+                </CardTitle>
+                <CardDescription>
+                  Configurez vos clés API pour intégrer des services externes
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="alphavantage-api" className="flex items-center gap-2">
+                      Alpha Vantage API
+                      <Lock className="w-4 h-4 text-muted-foreground" />
+                    </Label>
+                    <Input 
+                      id="alphavantage-api" 
+                      type="password" 
+                      placeholder="Entrez votre clé API Alpha Vantage" 
+                      value={apiKeys.alphavantage}
+                      onChange={(e) => setApiKeys({...apiKeys, alphavantage: e.target.value})}
+                      disabled={!isPremium}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Utilisé pour récupérer les données historiques des actions
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="finnhub-api" className="flex items-center gap-2">
+                      Finnhub API
+                      <Lock className="w-4 h-4 text-muted-foreground" />
+                    </Label>
+                    <Input 
+                      id="finnhub-api" 
+                      type="password" 
+                      placeholder="Entrez votre clé API Finnhub" 
+                      value={apiKeys.finnhub}
+                      onChange={(e) => setApiKeys({...apiKeys, finnhub: e.target.value})}
+                      disabled={!isPremium}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Utilisé pour les actualités financières et les données fondamentales
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="tradingview-api" className="flex items-center gap-2">
+                      TradingView API
+                      <Lock className="w-4 h-4 text-muted-foreground" />
+                    </Label>
+                    <Input 
+                      id="tradingview-api" 
+                      type="password" 
+                      placeholder="Entrez votre clé API TradingView" 
+                      value={apiKeys.tradingview}
+                      onChange={(e) => setApiKeys({...apiKeys, tradingview: e.target.value})}
+                      disabled={!isPremium}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Utilisé pour les graphiques et les analyses techniques
+                    </p>
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={handleSaveApiKeys} 
+                  disabled={!isPremium}
+                  className="flex gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Enregistrer les clés API</span>
+                </Button>
+                
+                {!isPremium && (
+                  <div className="bg-muted/50 rounded-lg p-4 text-center">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Les intégrations API sont des fonctionnalités premium
+                    </p>
+                    <Button size="sm" asChild>
+                      <a href="/premium">Passer à Premium</a>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="w-5 h-5" />
+                  <span>Préférences de notifications</span>
+                </CardTitle>
+                <CardDescription>
+                  Configurez quand et comment vous souhaitez être notifié
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="email-notifs" className="flex flex-col gap-1">
+                      <span>Notifications par email</span>
+                      <span className="font-normal text-sm text-muted-foreground">
+                        Recevoir des mises à jour par email
+                      </span>
+                    </Label>
+                    <Switch 
+                      id="email-notifs"
+                      checked={notifications.email}
+                      onCheckedChange={(checked) => setNotifications({...notifications, email: checked})}
+                    />
                   </div>
                   
                   <Separator />
                   
-                  <div>
-                    <h3 className="font-medium mb-2">Sessions actives</h3>
-                    <div className="space-y-2 rounded-md border p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Ce navigateur</p>
-                          <p className="text-sm text-muted-foreground">Chrome sur Windows • Paris, France</p>
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          <LogOut className="w-4 h-4 mr-2" />
-                          Déconnecter
-                        </Button>
-                      </div>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="push-notifs" className="flex flex-col gap-1">
+                      <span>Notifications push</span>
+                      <span className="font-normal text-sm text-muted-foreground">
+                        Recevoir des notifications dans le navigateur
+                      </span>
+                    </Label>
+                    <Switch 
+                      id="push-notifs"
+                      checked={notifications.push}
+                      onCheckedChange={(checked) => setNotifications({...notifications, push: checked})}
+                    />
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="trade-alerts" className="flex flex-col gap-1">
+                      <span>Alertes de trading</span>
+                      <span className="font-normal text-sm text-muted-foreground">
+                        Alertes pour les entrées/sorties planifiées
+                      </span>
+                    </Label>
+                    <Switch 
+                      id="trade-alerts"
+                      checked={notifications.tradeAlerts}
+                      onCheckedChange={(checked) => setNotifications({...notifications, tradeAlerts: checked})}
+                    />
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="market-news" className="flex flex-col gap-1">
+                      <span>Actualités du marché</span>
+                      <span className="font-normal text-sm text-muted-foreground">
+                        Notifications sur les nouvelles importantes du marché
+                      </span>
+                    </Label>
+                    <Switch 
+                      id="market-news"
+                      checked={notifications.marketNews}
+                      onCheckedChange={(checked) => setNotifications({...notifications, marketNews: checked})}
+                    />
                   </div>
                 </div>
+                
+                <Button 
+                  onClick={handleSaveNotifications} 
+                  className="flex gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Enregistrer les préférences</span>
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="layout" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LayoutGrid className="w-5 h-5" />
+                  <span>Mise en page</span>
+                </CardTitle>
+                <CardDescription>
+                  Personnalisez l'agencement et l'affichage de l'application
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="compact-sidebar" className="flex flex-col gap-1">
+                      <span>Barre latérale compacte</span>
+                      <span className="font-normal text-sm text-muted-foreground">
+                        Afficher la barre latérale en mode compact par défaut
+                      </span>
+                    </Label>
+                    <Switch 
+                      id="compact-sidebar"
+                      checked={layout.compactSidebar}
+                      onCheckedChange={(checked) => setLayout({...layout, compactSidebar: checked})}
+                    />
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="grid-layout" className="flex flex-col gap-1">
+                      <span>Disposition en grille</span>
+                      <span className="font-normal text-sm text-muted-foreground">
+                        Afficher les tableaux de bord en disposition grille
+                      </span>
+                    </Label>
+                    <Switch 
+                      id="grid-layout"
+                      checked={layout.gridLayout}
+                      onCheckedChange={(checked) => setLayout({...layout, gridLayout: checked})}
+                    />
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="show-welcome" className="flex flex-col gap-1">
+                      <span>Message de bienvenue</span>
+                      <span className="font-normal text-sm text-muted-foreground">
+                        Afficher le message de bienvenue à la connexion
+                      </span>
+                    </Label>
+                    <Switch 
+                      id="show-welcome"
+                      checked={layout.showWelcome}
+                      onCheckedChange={(checked) => setLayout({...layout, showWelcome: checked})}
+                    />
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={handleSaveLayout} 
+                  className="flex gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Enregistrer la mise en page</span>
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
