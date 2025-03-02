@@ -9,6 +9,9 @@ import Dashboard from "./pages/Dashboard";
 import Calendar from "./pages/Calendar";
 import TradeEntry from "./pages/TradeEntry";
 import Statistics from "./pages/Statistics";
+import Journal from "./pages/Journal";
+import Settings from "./pages/Settings";
+import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +28,9 @@ const App = () => (
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/trade-entry" element={<TradeEntry />} />
           <Route path="/statistics" element={<Statistics />} />
+          <Route path="/journal" element={<Journal />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
