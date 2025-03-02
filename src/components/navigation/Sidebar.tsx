@@ -11,9 +11,20 @@ import {
   Settings, 
   Users,
   Menu,
-  X
+  X,
+  User,
+  CreditCard,
+  LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavItem {
   name: string;
@@ -37,6 +48,31 @@ export function Sidebar() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Check localStorage for saved state on mount
+  useEffect(() => {
+    const storedState = localStorage.getItem('sidebarCollapsed');
+    if (storedState) {
+      setCollapsed(JSON.parse(storedState));
+    } else {
+      setCollapsed(window.innerWidth < 1024);
+    }
+  }, []);
+
+  // Toggle sidebar state and dispatch event for AppLayout
+  const toggleSidebar = () => {
+    const newState = !collapsed;
+    setCollapsed(newState);
+    
+    // Save to localStorage
+    localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
+    
+    // Dispatch custom event for AppLayout
+    const event = new CustomEvent('sidebar-toggle', { 
+      detail: { collapsed: newState } 
+    });
+    window.dispatchEvent(event);
+  };
 
   const navItems: NavItem[] = [
     {
@@ -94,7 +130,7 @@ export function Sidebar() {
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={toggleSidebar}
             className="ml-auto"
           >
             {collapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
@@ -126,22 +162,53 @@ export function Sidebar() {
           </ul>
         </nav>
 
-        {/* User section */}
+        {/* User section with dropdown */}
         <div className="border-t border-sidebar-border p-4">
-          <div className={cn(
-            "flex items-center",
-            collapsed ? "justify-center" : "space-x-3"
-          )}>
-            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium">
-              T
-            </div>
-            {!collapsed && (
-              <div className="flex-1">
-                <p className="text-sm font-medium">Trader</p>
-                <p className="text-xs text-sidebar-foreground/70">Compte gratuit</p>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className={cn(
+                "flex items-center cursor-pointer rounded-md p-2 hover:bg-sidebar-accent/50",
+                collapsed ? "justify-center" : "space-x-3"
+              )}>
+                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium">
+                  T
+                </div>
+                {!collapsed && (
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Trader</p>
+                    <p className="text-xs text-sidebar-foreground/70">Compte gratuit</p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/settings" className="flex items-center cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Paramètres</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/account" className="flex items-center cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profil</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/premium" className="flex items-center cursor-pointer">
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  <span>Abonnement Premium</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Se déconnecter</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </aside>

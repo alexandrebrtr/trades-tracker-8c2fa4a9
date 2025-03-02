@@ -12,14 +12,34 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 1024);
     };
     
+    // Check sidebar state from localStorage on mount
+    const storedState = localStorage.getItem('sidebarCollapsed');
+    if (storedState) {
+      setSidebarCollapsed(JSON.parse(storedState));
+    } else {
+      setSidebarCollapsed(window.innerWidth < 1024);
+    }
+    
+    // Listen for sidebar toggle events from Sidebar component
+    const handleSidebarToggle = (e: CustomEvent) => {
+      setSidebarCollapsed(e.detail.collapsed);
+      localStorage.setItem('sidebarCollapsed', JSON.stringify(e.detail.collapsed));
+    };
+    
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('sidebar-toggle', handleSidebarToggle as EventListener);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('sidebar-toggle', handleSidebarToggle as EventListener);
+    };
   }, []);
 
   return (
@@ -27,7 +47,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <Sidebar />
       <main className={cn(
         "transition-all duration-300",
-        isMobile ? "ml-20" : "ml-64"
+        sidebarCollapsed ? "ml-20" : "ml-64"
       )}>
         <Header />
         <div className="container py-6 max-w-7xl">

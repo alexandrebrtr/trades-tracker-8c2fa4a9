@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Sun, Moon, User } from 'lucide-react';
+import { Sun, Moon, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,22 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm transition-all">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
+          {/* Left side is now empty */}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full"
+            asChild
+          >
+            <Link to="/login" aria-label="Se connecter">
+              <LogIn className="h-4 w-4 mr-1" />
+              <span>Se connecter</span>
+            </Link>
+          </Button>
+          
           <Button 
             variant="ghost" 
             size="icon" 
@@ -21,9 +37,7 @@ export function Header() {
           >
             {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           </Button>
-        </div>
 
-        <div className="flex items-center">
           <Button
             variant="ghost"
             size="icon"
