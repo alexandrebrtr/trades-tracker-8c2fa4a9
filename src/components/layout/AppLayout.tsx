@@ -1,6 +1,7 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { Sidebar } from '@/components/navigation/Sidebar';
+import { Header } from '@/components/navigation/Header';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
@@ -28,6 +29,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         "transition-all duration-300",
         isMobile ? "ml-20" : "ml-64"
       )}>
+        <Header />
         <div className="container py-6 max-w-7xl">
           {children}
         </div>

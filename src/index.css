@@ -47,6 +47,45 @@
     --sidebar-ring: 217 91% 60%;
   }
 
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 100% 50%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+
+    --sidebar-background: 222 47% 14%;
+    --sidebar-foreground: 210 40% 90%;
+    --sidebar-primary: 210 40% 98%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 217.2 32.6% 20%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 22%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
   * {
     @apply border-border;
     font-family: 'Inter', sans-serif;
@@ -68,18 +107,18 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-neutral-200 rounded-full;
+    @apply bg-neutral-200 dark:bg-neutral-700 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-neutral-300;
+    @apply bg-neutral-300 dark:bg-neutral-600;
   }
 }
 
 /* Common utility classes */
 @layer components {
   .glass-panel {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg rounded-xl;
+    @apply bg-white/80 dark:bg-black/30 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg rounded-xl;
   }
 
   .glass-card {
@@ -115,7 +154,7 @@
   }
 
   .badge-neutral {
-    @apply bg-neutral-100 text-neutral-700 font-medium px-2 py-0.5 rounded-full text-xs;
+    @apply bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium px-2 py-0.5 rounded-full text-xs;
   }
 
   .page-transition {
