@@ -18,6 +18,8 @@ import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import AIChat from "./pages/AIChat";
+import Profile from "./pages/Profile";
+import Payment from "./pages/Payment";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +43,8 @@ const App = () => (
               <Route path="/premium" element={<Premium />} />
               <Route path="/login" element={<Login />} />
               <Route path="/ai-chat" element={<AIChat />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/payment" element={<Payment />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

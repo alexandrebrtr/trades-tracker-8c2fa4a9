@@ -14,20 +14,10 @@ export default function Premium() {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Mock function to simulate subscription process
+  // Redirect to payment page
   const handleSubscribe = () => {
-    // In a real app, this would connect to Stripe or another payment processor
-    toast({
-      title: "Abonnement activé",
-      description: "Votre abonnement premium est maintenant actif.",
-      variant: "default",
-    });
-    
-    // Store premium status in localStorage (in a real app, this would be handled by backend)
-    localStorage.setItem('premiumUser', 'true');
-    
-    // Redirect to community page
-    navigate('/community');
+    // Redirect to payment page
+    navigate('/payment');
   };
 
   return (

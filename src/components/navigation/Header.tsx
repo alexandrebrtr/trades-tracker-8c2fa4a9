@@ -11,15 +11,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm transition-all">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleTheme} 
-            className="rounded-full"
-            aria-label="Changer de thème"
-          >
-            {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-          </Button>
+          {/* Logo or brand could go here */}
         </div>
 
         <div className="flex items-center gap-2">
@@ -34,6 +26,16 @@ export function Header() {
               <span>Se connecter</span>
             </Link>
           </Button>
+
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleTheme} 
+            className="rounded-full"
+            aria-label="Changer de thème"
+          >
+            {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          </Button>
           
           <Button
             variant="ghost"
@@ -41,7 +43,7 @@ export function Header() {
             className="rounded-full"
             asChild
           >
-            <Link to="/settings" aria-label="Paramètres du profil">
+            <Link to="/profile" aria-label="Paramètres du profil">
               <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium">
                 T
               </div>
