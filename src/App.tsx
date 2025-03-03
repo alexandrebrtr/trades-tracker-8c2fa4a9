@@ -20,6 +20,7 @@ import Login from "./pages/Login";
 import AIChat from "./pages/AIChat";
 import Profile from "./pages/Profile";
 import Payment from "./pages/Payment";
+import Portfolio from "./pages/Portfolio";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
               <Route path="/ai-chat" element={<AIChat />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/payment" element={<Payment />} />
+              <Route path="/portfolio" element={<Portfolio />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

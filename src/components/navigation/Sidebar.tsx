@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -15,6 +14,7 @@ import {
   CreditCard,
   LogOut,
   Brain,
+  Wallet,
   Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -90,6 +90,11 @@ export function Sidebar() {
       name: 'Nouveau Trade',
       path: '/trade-entry',
       icon: <PlusCircle className="w-5 h-5" />
+    },
+    {
+      name: 'Portefeuille',
+      path: '/portfolio',
+      icon: <Wallet className="w-5 h-5" />
     },
     {
       name: 'Statistiques',
