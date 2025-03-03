@@ -8,13 +8,14 @@ import {
   PlusCircle, 
   BarChart3, 
   Book, 
-  Settings, 
   Users,
   Menu,
   X,
   User,
   CreditCard,
-  LogOut
+  LogOut,
+  Brain,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -106,9 +107,9 @@ export function Sidebar() {
       icon: <Users className="w-5 h-5" />
     },
     {
-      name: 'Paramètres',
-      path: '/settings',
-      icon: <Settings className="w-5 h-5" />
+      name: 'Assistant IA',
+      path: '/ai-chat',
+      icon: <Brain className="w-5 h-5" />
     }
   ];
 
@@ -203,9 +204,11 @@ export function Sidebar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Se déconnecter</span>
+              <DropdownMenuItem asChild>
+                <Link to="/login" className="flex items-center cursor-pointer text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Se déconnecter</span>
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

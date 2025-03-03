@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Sun, Moon, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/context/ThemeContext';
-import { cn } from '@/lib/utils';
 
 export function Header() {
   const { theme, toggleTheme } = useTheme();
@@ -12,7 +11,15 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm transition-all">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
-          {/* Left side is now empty */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleTheme} 
+            className="rounded-full"
+            aria-label="Changer de thème"
+          >
+            {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          </Button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -28,16 +35,6 @@ export function Header() {
             </Link>
           </Button>
           
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleTheme} 
-            className="rounded-full"
-            aria-label="Changer de thème"
-          >
-            {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-          </Button>
-
           <Button
             variant="ghost"
             size="icon"

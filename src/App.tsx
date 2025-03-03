@@ -16,6 +16,8 @@ import Settings from "./pages/Settings";
 import Community from "./pages/Community";
 import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import AIChat from "./pages/AIChat";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +39,8 @@ const App = () => (
               <Route path="/community" element={<Community />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/premium" element={<Premium />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/ai-chat" element={<AIChat />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
