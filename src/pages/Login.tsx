@@ -1,60 +1,49 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import { Header } from '@/components/navigation/Header';
 import { Sidebar } from '@/components/navigation/Sidebar';
+import { Loader2 } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Mock login functionality
-    if (email && password) {
-      toast({
-        title: "Connexion réussie",
-        description: "Vous êtes maintenant connecté.",
-      });
-      
-      // Redirect to dashboard
+  // Rediriger si déjà connecté
+  useEffect(() => {
+    if (user) {
       navigate('/dashboard');
-    } else {
-      toast({
-        title: "Erreur de connexion",
-        description: "Veuillez remplir tous les champs.",
-        variant: "destructive",
-      });
+    }
+  }, [user, navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      await signIn(email, password);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     
-    // Mock signup functionality
-    if (email && password && name) {
-      toast({
-        title: "Compte créé",
-        description: "Votre compte a été créé avec succès.",
-      });
-      
-      // Redirect to dashboard
-      navigate('/dashboard');
-    } else {
-      toast({
-        title: "Erreur d'inscription",
-        description: "Veuillez remplir tous les champs.",
-        variant: "destructive",
-      });
+    try {
+      await signUp(email, password, name);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,6 +76,7 @@ export default function Login() {
                           placeholder="exemple@email.com" 
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
+                          disabled={loading}
                         />
                       </div>
                       <div className="space-y-2">
@@ -102,9 +92,19 @@ export default function Login() {
                           placeholder="••••••••" 
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
+                          disabled={loading}
                         />
                       </div>
-                      <Button type="submit" className="w-full">Se connecter</Button>
+                      <Button type="submit" className="w-full" disabled={loading}>
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Connexion en cours...
+                          </>
+                        ) : (
+                          "Se connecter"
+                        )}
+                      </Button>
                     </form>
                   </TabsContent>
                   
@@ -118,6 +118,7 @@ export default function Login() {
                           placeholder="Votre nom" 
                           value={name}
                           onChange={(e) => setName(e.target.value)}
+                          disabled={loading}
                         />
                       </div>
                       <div className="space-y-2">
@@ -128,6 +129,7 @@ export default function Login() {
                           placeholder="exemple@email.com" 
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
+                          disabled={loading}
                         />
                       </div>
                       <div className="space-y-2">
@@ -138,9 +140,19 @@ export default function Login() {
                           placeholder="••••••••" 
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
+                          disabled={loading}
                         />
                       </div>
-                      <Button type="submit" className="w-full">Créer un compte</Button>
+                      <Button type="submit" className="w-full" disabled={loading}>
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Création du compte...
+                          </>
+                        ) : (
+                          "Créer un compte"
+                        )}
+                      </Button>
                     </form>
                   </TabsContent>
                 </CardContent>

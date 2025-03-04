@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
@@ -26,6 +27,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from '@/context/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface NavItem {
   name: string;
@@ -35,8 +38,10 @@ interface NavItem {
 
 export function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const { user, profile, signOut } = useAuth();
 
   // Handle screen resize
   useEffect(() => {
@@ -73,6 +78,11 @@ export function Sidebar() {
       detail: { collapsed: newState } 
     });
     window.dispatchEvent(event);
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
   };
 
   const navItems: NavItem[] = [
@@ -176,13 +186,20 @@ export function Sidebar() {
                 "flex items-center cursor-pointer rounded-md p-2 hover:bg-sidebar-accent/50",
                 collapsed ? "justify-center" : "space-x-3"
               )}>
-                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium">
-                  T
-                </div>
-                {!collapsed && (
+                <Avatar className="w-9 h-9">
+                  <AvatarImage src={profile?.avatar_url || ""} alt={profile?.username || (user?.email || "Trader")} />
+                  <AvatarFallback className="bg-primary text-primary-foreground font-medium">
+                    {profile?.username?.charAt(0).toUpperCase() || (user?.email?.charAt(0).toUpperCase() || "T")}
+                  </AvatarFallback>
+                </Avatar>
+                {!collapsed && user && (
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Trader</p>
-                    <p className="text-xs text-sidebar-foreground/70">Compte gratuit</p>
+                    <p className="text-sm font-medium">
+                      {profile?.username || user.email?.split('@')[0] || 'Trader'}
+                    </p>
+                    <p className="text-xs text-sidebar-foreground/70">
+                      {profile ? 'Solde: ' + (profile.balance || '0') + ' €' : 'Compte'}
+                    </p>
                   </div>
                 )}
               </div>
@@ -209,11 +226,9 @@ export function Sidebar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/login" className="flex items-center cursor-pointer text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Se déconnecter</span>
-                </Link>
+              <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Se déconnecter</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

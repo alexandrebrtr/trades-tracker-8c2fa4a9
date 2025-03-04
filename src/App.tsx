@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { PremiumProvider } from "@/context/PremiumContext";
+import { AuthProvider } from "@/context/AuthContext";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Calendar from "./pages/Calendar";
@@ -28,30 +29,32 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <PremiumProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/calendar" element={<Calendar />} />
-              <Route path="/trade-entry" element={<TradeEntry />} />
-              <Route path="/statistics" element={<Statistics />} />
-              <Route path="/journal" element={<Journal />} />
-              <Route path="/community" element={<Community />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/premium" element={<Premium />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/ai-chat" element={<AIChat />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/payment" element={<Payment />} />
-              <Route path="/portfolio" element={<Portfolio />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/trade-entry" element={<TradeEntry />} />
+                <Route path="/statistics" element={<Statistics />} />
+                <Route path="/journal" element={<Journal />} />
+                <Route path="/community" element={<Community />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/premium" element={<Premium />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/ai-chat" element={<AIChat />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/payment" element={<Payment />} />
+                <Route path="/portfolio" element={<Portfolio />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
       </PremiumProvider>
     </ThemeProvider>
   </QueryClientProvider>

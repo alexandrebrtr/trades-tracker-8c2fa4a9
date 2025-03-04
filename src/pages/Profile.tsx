@@ -1,31 +1,90 @@
+
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePremium } from '@/context/PremiumContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Phone, MapPin, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { User, Mail, Phone, MapPin, Star, Wallet } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Profile() {
   const { isPremium } = usePremium();
-  const [name, setName] = useState('Trader');
-  const [email, setEmail] = useState('trader@example.com');
+  const { user, profile, refreshProfile } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [balance, setBalance] = useState('0');
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSave = () => {
-    setIsEditing(false);
-    toast({
-      title: "Profil mis à jour",
-      description: "Vos informations ont été enregistrées avec succès.",
-    });
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    // Initialiser les champs avec les données du profil
+    if (profile) {
+      setName(profile.username || '');
+      setEmail(user.email || '');
+      setPhone(profile.phone || '');
+      setAddress(profile.address || '');
+      setBalance(profile.balance?.toString() || '0');
+    }
+  }, [user, profile, navigate]);
+
+  const handleSave = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          username: name,
+          phone,
+          address,
+          balance: parseFloat(balance) || 0,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Rafraîchir le profil
+      await refreshProfile();
+      
+      setIsEditing(false);
+      toast({
+        title: "Profil mis à jour",
+        description: "Vos informations ont été enregistrées avec succès.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue lors de la mise à jour du profil.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (!user || !profile) {
+    return null; // Ou un composant de chargement
+  }
 
   return (
     <AppLayout>
@@ -42,6 +101,7 @@ export default function Profile() {
             <Button 
               variant={isEditing ? "outline" : "default"} 
               onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+              disabled={loading}
             >
               {isEditing ? "Enregistrer" : "Modifier"}
             </Button>
@@ -59,13 +119,13 @@ export default function Profile() {
             <CardContent className="space-y-6">
               <div className="flex flex-col items-center justify-center space-y-3">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src="" alt={name} />
+                  <AvatarImage src={profile.avatar_url || ""} alt={name} />
                   <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                    {name.charAt(0).toUpperCase()}
+                    {name.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "T"}
                   </AvatarFallback>
                 </Avatar>
                 {!isEditing ? (
-                  <h2 className="text-xl font-semibold">{name}</h2>
+                  <h2 className="text-xl font-semibold">{name || user.email?.split('@')[0] || 'Trader'}</h2>
                 ) : (
                   <Button variant="outline" size="sm">
                     Changer l'avatar
@@ -77,7 +137,7 @@ export default function Profile() {
                 <div className="space-y-2">
                   <div className="flex items-center text-sm text-muted-foreground">
                     <User className="mr-2 h-4 w-4" />
-                    Nom complet
+                    Nom d'utilisateur
                   </div>
                   {isEditing ? (
                     <Input 
@@ -86,7 +146,7 @@ export default function Profile() {
                       placeholder="Votre nom" 
                     />
                   ) : (
-                    <p>{name}</p>
+                    <p>{name || 'Non renseigné'}</p>
                   )}
                 </div>
 
@@ -95,15 +155,7 @@ export default function Profile() {
                     <Mail className="mr-2 h-4 w-4" />
                     Email
                   </div>
-                  {isEditing ? (
-                    <Input 
-                      value={email} 
-                      onChange={(e) => setEmail(e.target.value)} 
-                      placeholder="votre@email.com" 
-                    />
-                  ) : (
-                    <p>{email}</p>
-                  )}
+                  <p>{email}</p>
                 </div>
 
                 <div className="space-y-2">
@@ -137,6 +189,23 @@ export default function Profile() {
                     <p>{address || "Non renseignée"}</p>
                   )}
                 </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Wallet className="mr-2 h-4 w-4" />
+                    Solde du portefeuille (€)
+                  </div>
+                  {isEditing ? (
+                    <Input 
+                      type="number"
+                      value={balance} 
+                      onChange={(e) => setBalance(e.target.value)} 
+                      placeholder="Solde en euros" 
+                    />
+                  ) : (
+                    <p>{parseFloat(balance).toLocaleString('fr-FR')} €</p>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -166,13 +235,13 @@ export default function Profile() {
 
                 <div>
                   <h3 className="text-sm font-medium">Date d'inscription</h3>
-                  <p className="mt-1">1 janvier 2023</p>
+                  <p className="mt-1">{new Date(profile.created_at).toLocaleDateString('fr-FR')}</p>
                 </div>
 
                 {isPremium && (
                   <div>
                     <h3 className="text-sm font-medium">Prochaine facturation</h3>
-                    <p className="mt-1">1 mai 2023</p>
+                    <p className="mt-1">Non disponible</p>
                   </div>
                 )}
 
