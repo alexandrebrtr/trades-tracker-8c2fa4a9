@@ -1,19 +1,13 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
-// Mock data
-const assetData = [
-  { name: 'Actions', value: 45 },
-  { name: 'Forex', value: 25 },
-  { name: 'Crypto', value: 20 },
-  { name: 'Matières premières', value: 10 },
+// Default data if no user data is provided
+const defaultAssetData = [
+  { name: 'Ajoutez vos actifs', value: 100 },
 ];
 
-const strategyData = [
-  { name: 'Day Trading', value: 40 },
-  { name: 'Swing', value: 30 },
-  { name: 'Scalping', value: 20 },
-  { name: 'Position', value: 10 },
+const defaultStrategyData = [
+  { name: 'Ajoutez vos trades', value: 100 },
 ];
 
 const ASSET_COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f97316'];
@@ -51,7 +45,16 @@ const renderCustomizedLegend = (props: any) => {
   );
 };
 
-export function PortfolioDistribution() {
+interface PortfolioDistributionProps {
+  assetData: Array<{ name: string, value: number }> | null;
+  strategyData: Array<{ name: string, value: number }> | null;
+}
+
+export function PortfolioDistribution({ assetData, strategyData }: PortfolioDistributionProps) {
+  // Utiliser les données par défaut si aucune donnée n'est fournie
+  const displayAssetData = assetData || defaultAssetData;
+  const displayStrategyData = strategyData || defaultStrategyData;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
       <div className="glass-card">
@@ -60,7 +63,7 @@ export function PortfolioDistribution() {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={assetData}
+                data={displayAssetData}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
@@ -68,7 +71,7 @@ export function PortfolioDistribution() {
                 paddingAngle={5}
                 dataKey="value"
               >
-                {assetData.map((entry, index) => (
+                {displayAssetData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={ASSET_COLORS[index % ASSET_COLORS.length]} />
                 ))}
               </Pie>
@@ -85,7 +88,7 @@ export function PortfolioDistribution() {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={strategyData}
+                data={displayStrategyData}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
@@ -93,7 +96,7 @@ export function PortfolioDistribution() {
                 paddingAngle={5}
                 dataKey="value"
               >
-                {strategyData.map((entry, index) => (
+                {displayStrategyData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={STRATEGY_COLORS[index % STRATEGY_COLORS.length]} />
                 ))}
               </Pie>

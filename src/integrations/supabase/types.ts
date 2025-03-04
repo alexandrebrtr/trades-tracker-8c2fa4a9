@@ -9,6 +9,68 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      asset_allocations: {
+        Row: {
+          allocation: number
+          created_at: string | null
+          id: string
+          name: string
+          portfolio_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          allocation: number
+          created_at?: string | null
+          id?: string
+          name: string
+          portfolio_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          allocation?: number
+          created_at?: string | null
+          id?: string
+          name?: string
+          portfolio_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_allocations_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolios: {
+        Row: {
+          balance: number | null
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -36,6 +98,57 @@ export type Database = {
           trades_count?: number | null
           updated_at?: string | null
           username?: string | null
+        }
+        Relationships: []
+      }
+      trades: {
+        Row: {
+          created_at: string | null
+          date: string | null
+          entry_price: number
+          exit_price: number
+          fees: number | null
+          id: string
+          notes: string | null
+          pnl: number | null
+          size: number
+          strategy: string | null
+          symbol: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string | null
+          entry_price: number
+          exit_price: number
+          fees?: number | null
+          id?: string
+          notes?: string | null
+          pnl?: number | null
+          size: number
+          strategy?: string | null
+          symbol: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string | null
+          entry_price?: number
+          exit_price?: number
+          fees?: number | null
+          id?: string
+          notes?: string | null
+          pnl?: number | null
+          size?: number
+          strategy?: string | null
+          symbol?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

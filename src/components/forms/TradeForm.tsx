@@ -1,11 +1,15 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, DollarSign, Clock, ArrowUp, ArrowDown, Info, UploadCloud } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 const strategies = [
   'Day Trading',
@@ -40,12 +44,31 @@ const orderTypes = [
 ];
 
 export function TradeForm() {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  const [entryDate, setEntryDate] = useState('');
+  const [exitDate, setExitDate] = useState('');
+  const [asset, setAsset] = useState('');
+  const [orderType, setOrderType] = useState('');
+  const [strategy, setStrategy] = useState('');
   const [entryPrice, setEntryPrice] = useState('');
   const [exitPrice, setExitPrice] = useState('');
   const [size, setSize] = useState('');
   const [fees, setFees] = useState('');
+  const [notes, setNotes] = useState('');
   const [result, setResult] = useState<number | null>(null);
   const [direction, setDirection] = useState<'long' | 'short'>('long');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Définir la date d'aujourd'hui comme valeur par défaut pour les champs de date
+  useEffect(() => {
+    const now = new Date();
+    const formattedDate = now.toISOString().slice(0, 16); // Format yyyy-MM-ddThh:mm
+    setEntryDate(formattedDate);
+    setExitDate(formattedDate);
+  }, []);
 
   // Calculate result when inputs change
   const calculateResult = () => {
@@ -63,16 +86,97 @@ export function TradeForm() {
       }
       
       setResult(parseFloat(calculatedResult.toFixed(2)));
+      return calculatedResult;
     } else {
       setResult(null);
+      return null;
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    calculateResult();
-    // Here you would normally save the trade to a database
-    console.log('Trade submitted');
+    
+    if (!user) {
+      toast({
+        title: "Erreur d'authentification",
+        description: "Vous devez être connecté pour enregistrer un trade.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!asset || !orderType || !strategy || !entryPrice || !exitPrice || !size || !entryDate || !exitDate) {
+      toast({
+        title: "Formulaire incomplet",
+        description: "Veuillez remplir tous les champs obligatoires.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const calculatedPnL = calculateResult();
+    if (calculatedPnL === null) {
+      toast({
+        title: "Erreur de calcul",
+        description: "Impossible de calculer le résultat du trade.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Créer l'objet du trade à insérer
+      const newTrade = {
+        user_id: user.id,
+        date: new Date(entryDate).toISOString(),
+        symbol: assets.find(a => a.value === asset)?.label || asset,
+        type: direction,
+        strategy,
+        entry_price: parseFloat(entryPrice),
+        exit_price: parseFloat(exitPrice),
+        size: parseFloat(size),
+        fees: fees ? parseFloat(fees) : 0,
+        pnl: calculatedPnL,
+        notes: notes
+      };
+      
+      // Insérer le trade dans Supabase
+      const { error } = await supabase
+        .from('trades')
+        .insert([newTrade]);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Trade enregistré",
+        description: "Votre trade a été enregistré avec succès.",
+      });
+      
+      // Réinitialiser le formulaire
+      setEntryPrice('');
+      setExitPrice('');
+      setSize('');
+      setFees('');
+      setNotes('');
+      setResult(null);
+      
+      // Rediriger vers la page de portfolio après un court délai
+      setTimeout(() => {
+        navigate('/portfolio');
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Erreur lors de l\'enregistrement du trade:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer le trade. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -120,6 +224,8 @@ export function TradeForm() {
               id="entryDate"
               type="datetime-local"
               className="mt-1"
+              value={entryDate}
+              onChange={(e) => setEntryDate(e.target.value)}
               required
             />
           </div>
@@ -133,6 +239,8 @@ export function TradeForm() {
               id="exitDate"
               type="datetime-local"
               className="mt-1"
+              value={exitDate}
+              onChange={(e) => setExitDate(e.target.value)}
               required
             />
           </div>
@@ -145,14 +253,14 @@ export function TradeForm() {
               <DollarSign className="w-4 h-4 text-muted-foreground" />
               Actif tradé
             </Label>
-            <Select required>
+            <Select value={asset} onValueChange={setAsset} required>
               <SelectTrigger id="asset" className="mt-1">
                 <SelectValue placeholder="Sélectionner un actif" />
               </SelectTrigger>
               <SelectContent>
-                {assets.map((asset) => (
-                  <SelectItem key={asset.value} value={asset.value}>
-                    {asset.label} ({asset.type})
+                {assets.map((assetItem) => (
+                  <SelectItem key={assetItem.value} value={assetItem.value}>
+                    {assetItem.label} ({assetItem.type})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -164,7 +272,7 @@ export function TradeForm() {
               <Info className="w-4 h-4 text-muted-foreground" />
               Type d'ordre
             </Label>
-            <Select required>
+            <Select value={orderType} onValueChange={setOrderType} required>
               <SelectTrigger id="orderType" className="mt-1">
                 <SelectValue placeholder="Sélectionner un type d'ordre" />
               </SelectTrigger>
@@ -260,14 +368,14 @@ export function TradeForm() {
               <Clock className="w-4 h-4 text-muted-foreground" />
               Stratégie utilisée
             </Label>
-            <Select required>
+            <Select value={strategy} onValueChange={setStrategy} required>
               <SelectTrigger id="strategy" className="mt-1">
                 <SelectValue placeholder="Sélectionner une stratégie" />
               </SelectTrigger>
               <SelectContent>
-                {strategies.map((strategy) => (
-                  <SelectItem key={strategy} value={strategy}>
-                    {strategy}
+                {strategies.map((strategyItem) => (
+                  <SelectItem key={strategyItem} value={strategyItem}>
+                    {strategyItem}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -297,6 +405,8 @@ export function TradeForm() {
             id="notes"
             placeholder="Réflexions, erreurs à éviter, détails de la stratégie..."
             className="mt-1 h-32"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
           />
         </div>
         
@@ -312,8 +422,12 @@ export function TradeForm() {
         
         {/* Submit button */}
         <div className="col-span-full mt-6">
-          <Button type="submit" className="w-full">
-            Enregistrer le trade
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Enregistrement...' : 'Enregistrer le trade'}
           </Button>
         </div>
       </div>
