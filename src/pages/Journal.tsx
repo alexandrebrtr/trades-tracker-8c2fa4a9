@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { 
@@ -8,93 +8,76 @@ import {
   ChevronRight, 
   Filter, 
   PlusCircle, 
-  Search 
+  Search,
+  X
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { TradeDetail, Trade } from '@/components/journal/TradeDetail';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 type EntryStatus = 'success' | 'failure' | 'mixed';
 
-interface JournalEntry {
-  id: string;
-  date: Date;
-  title: string;
-  symbol: string;
-  strategy: string;
-  entryPrice: number;
-  exitPrice: number;
-  status: EntryStatus;
-  pnl: number;
-  notes: string;
-  lessons: string[];
-  hasScreenshots: boolean;
-}
-
-// Mock data for demonstrations
-const mockEntries: JournalEntry[] = [
-  {
-    id: '1',
-    date: new Date(2023, 5, 10),
-    title: 'Swing Trade sur Bitcoin',
-    symbol: 'BTC/USD',
-    strategy: 'Swing Trading',
-    entryPrice: 42000,
-    exitPrice: 45000,
-    status: 'success',
-    pnl: 1450,
-    notes: "Entrée réussie sur un support majeur avec volume important.",
-    lessons: ["Attendre la confirmation du support", "Ne pas hésiter à prendre des profits partiels"],
-    hasScreenshots: true
-  },
-  {
-    id: '2',
-    date: new Date(2023, 5, 12),
-    title: 'Scalping sur EUR/USD',
-    symbol: 'EUR/USD',
-    strategy: 'Scalping',
-    entryPrice: 1.1245,
-    exitPrice: 1.1220,
-    status: 'failure',
-    pnl: -150,
-    notes: "Entrée précipitée sans attendre la confirmation du signal.",
-    lessons: ["Toujours attendre la confirmation", "Respecter strictement le plan de trading"],
-    hasScreenshots: true
-  },
-  {
-    id: '3',
-    date: new Date(2023, 5, 15),
-    title: 'Position Apple avant résultats',
-    symbol: 'AAPL',
-    strategy: 'Event Trading',
-    entryPrice: 180.25,
-    exitPrice: 192.50,
-    status: 'success',
-    pnl: 2450,
-    notes: "Bonne analyse des attentes du marché, entrée une semaine avant l'annonce.",
-    lessons: ["La préparation en amont paie", "Ne pas être trop gourmand sur l'objectif"],
-    hasScreenshots: false
-  },
-];
-
 export default function Journal() {
-  const [entries, setEntries] = useState<JournalEntry[]>(mockEntries);
+  const { user } = useAuth();
+  const [entries, setEntries] = useState<Trade[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Récupérer les trades de l'utilisateur
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchTrades = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('trades')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('date', { ascending: false });
+
+        if (error) throw error;
+        setEntries(data || []);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des trades:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTrades();
+  }, [user]);
 
   const filteredEntries = entries.filter(entry => {
     const matchesSearch = 
-      entry.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      entry.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      entry.strategy.toLowerCase().includes(searchTerm.toLowerCase());
+      (entry.symbol && entry.symbol.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (entry.strategy && entry.strategy.toLowerCase().includes(searchTerm.toLowerCase()));
     
     if (activeTab === 'all') return matchesSearch;
-    if (activeTab === 'success') return matchesSearch && entry.status === 'success';
-    if (activeTab === 'failure') return matchesSearch && entry.status === 'failure';
+    if (activeTab === 'success') return matchesSearch && (entry.pnl !== null && entry.pnl > 0);
+    if (activeTab === 'failure') return matchesSearch && (entry.pnl !== null && entry.pnl < 0);
     
     return matchesSearch;
   });
+
+  const handleOpenTradeDetail = (trade: Trade) => {
+    setSelectedTrade(trade);
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseTradeDetail = () => {
+    setIsDialogOpen(false);
+  };
 
   return (
     <AppLayout>
@@ -110,9 +93,11 @@ export default function Journal() {
               <Filter className="mr-2 h-4 w-4" />
               <span>Filtrer</span>
             </Button>
-            <Button size="sm">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              <span>Nouvelle entrée</span>
+            <Button size="sm" asChild>
+              <Link to="/trade-entry">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                <span>Nouvelle entrée</span>
+              </Link>
             </Button>
           </div>
         </div>
@@ -128,6 +113,14 @@ export default function Journal() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+              {searchTerm && (
+                <button 
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-2.5 top-2.5"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
+              )}
             </div>
             
             <Tabs defaultValue="all" className="w-full sm:w-auto" onValueChange={setActiveTab}>
@@ -140,16 +133,27 @@ export default function Journal() {
           </div>
           
           <div className="grid gap-6">
-            {filteredEntries.length > 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">Chargement des données...</span>
+              </div>
+            ) : filteredEntries.length > 0 ? (
               filteredEntries.map(entry => (
-                <JournalEntryCard key={entry.id} entry={entry} />
+                <JournalEntryCard 
+                  key={entry.id} 
+                  entry={entry} 
+                  onClick={() => handleOpenTradeDetail(entry)} 
+                />
               ))
             ) : (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">Aucune entrée trouvée.</p>
-                <Button className="mt-4" variant="outline">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Créer une entrée
+                <Button className="mt-4" variant="outline" asChild>
+                  <Link to="/trade-entry">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Créer une entrée
+                  </Link>
                 </Button>
               </div>
             )}
@@ -170,42 +174,83 @@ export default function Journal() {
           )}
         </div>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-3xl p-0">
+          {selectedTrade && (
+            <TradeDetail trade={selectedTrade} onClose={handleCloseTradeDetail} />
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
 
-function JournalEntryCard({ entry }: { entry: JournalEntry }) {
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('fr-FR', {
+interface JournalEntryCardProps {
+  entry: Trade;
+  onClick: () => void;
+}
+
+function JournalEntryCard({ entry, onClick }: JournalEntryCardProps) {
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('fr-FR', {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
     });
   };
 
+  // Extraire des leçons apprises des notes
+  const extractLessons = (notes: string | null): string[] => {
+    if (!notes) return [];
+    
+    // Chercher des lignes qui commencent par "-", "•", "*" ou "Leçon:"
+    const lessons: string[] = [];
+    const lines = notes.split('\n');
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      if (trimmedLine.startsWith('-') || 
+          trimmedLine.startsWith('•') || 
+          trimmedLine.startsWith('*') ||
+          trimmedLine.toLowerCase().startsWith('leçon')) {
+        lessons.push(trimmedLine.replace(/^[-•*]\s*/, ''));
+      }
+    }
+    
+    return lessons.slice(0, 3); // Limiter à 3 leçons
+  };
+
+  const lessons = extractLessons(entry.notes);
+
   return (
     <Card className={cn(
-      "border-l-4 transition-all hover:shadow-md",
-      entry.status === 'success' ? "border-l-profit" : 
-      entry.status === 'failure' ? "border-l-loss" : 
+      "border-l-4 transition-all hover:shadow-md cursor-pointer",
+      entry.pnl && entry.pnl > 0 ? "border-l-profit" : 
+      entry.pnl && entry.pnl < 0 ? "border-l-loss" : 
       "border-l-neutral"
-    )}>
+    )} onClick={onClick}>
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle>{entry.title}</CardTitle>
+            <CardTitle>{entry.symbol}</CardTitle>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm font-medium">{entry.symbol}</span>
+              <span className={cn(
+                "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+                entry.type === 'long' ? "bg-profit/10 text-profit" : "bg-loss/10 text-loss"
+              )}>
+                {entry.type === 'long' ? 'LONG' : 'SHORT'}
+              </span>
               <span className="text-sm text-muted-foreground">{entry.strategy}</span>
             </div>
           </div>
           <div className="text-right">
             <div className={cn(
               "text-lg font-semibold",
-              entry.status === 'success' ? "text-profit" : 
-              entry.status === 'failure' ? "text-loss" : ""
+              entry.pnl && entry.pnl > 0 ? "text-profit" : 
+              entry.pnl && entry.pnl < 0 ? "text-loss" : ""
             )}>
-              {entry.pnl > 0 ? '+' : ''}{entry.pnl} €
+              {entry.pnl !== null ? (entry.pnl > 0 ? '+' : '') + `${entry.pnl.toFixed(2)} €` : '--'}
             </div>
             <div className="text-sm text-muted-foreground">
               {formatDate(entry.date)}
@@ -215,34 +260,26 @@ function JournalEntryCard({ entry }: { entry: JournalEntry }) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Notes:</p>
-            <p className="text-sm">{entry.notes}</p>
-          </div>
+          {entry.notes && (
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Notes:</p>
+              <p className="text-sm line-clamp-2">{entry.notes}</p>
+            </div>
+          )}
           
-          {entry.lessons.length > 0 && (
+          {lessons.length > 0 && (
             <div>
               <p className="text-sm text-muted-foreground mb-1">Leçons apprises:</p>
               <ul className="text-sm list-disc list-inside space-y-1">
-                {entry.lessons.map((lesson, index) => (
-                  <li key={index}>{lesson}</li>
+                {lessons.map((lesson, index) => (
+                  <li key={index} className="line-clamp-1">{lesson}</li>
                 ))}
               </ul>
             </div>
           )}
           
           <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">Voir les détails</Button>
-              {entry.hasScreenshots && (
-                <Button variant="ghost" size="sm">Voir les captures</Button>
-              )}
-            </div>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <PlusCircle className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button variant="outline" size="sm">Voir les détails</Button>
           </div>
         </div>
       </CardContent>

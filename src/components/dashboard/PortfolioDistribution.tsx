@@ -11,8 +11,8 @@ const defaultStrategyData = [
   { name: 'Ajoutez vos trades', value: 100 },
 ];
 
-const ASSET_COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f97316'];
-const STRATEGY_COLORS = ['#2dd4bf', '#fbbf24', '#ef4444', '#a78bfa'];
+const ASSET_COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f97316', '#ec4899', '#fbbf24', '#f43f5e', '#06b6d4'];
+const STRATEGY_COLORS = ['#2dd4bf', '#fbbf24', '#ef4444', '#a78bfa', '#3b82f6', '#22c55e', '#f97316', '#d946ef'];
 
 // Custom tooltip component
 const CustomTooltip = ({ active, payload }: any) => {
@@ -53,8 +53,21 @@ interface PortfolioDistributionProps {
 
 export function PortfolioDistribution({ assetData, strategyData }: PortfolioDistributionProps) {
   // Utiliser useMemo pour éviter des recalculs inutiles
-  const displayAssetData = useMemo(() => assetData || defaultAssetData, [assetData]);
-  const displayStrategyData = useMemo(() => strategyData || defaultStrategyData, [strategyData]);
+  const displayAssetData = useMemo(() => {
+    // Vérifier si les données sont valides (doivent avoir des valeurs et des noms)
+    if (assetData && assetData.length > 0 && assetData.every(item => item.name && item.value !== undefined)) {
+      return assetData;
+    }
+    return defaultAssetData;
+  }, [assetData]);
+
+  const displayStrategyData = useMemo(() => {
+    // Vérifier si les données sont valides (doivent avoir des valeurs et des noms)
+    if (strategyData && strategyData.length > 0 && strategyData.every(item => item.name && item.value !== undefined)) {
+      return strategyData;
+    }
+    return defaultStrategyData;
+  }, [strategyData]);
 
   // Optimiser les cellules avec useMemo
   const assetCells = useMemo(() => 

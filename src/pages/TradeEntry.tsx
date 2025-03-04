@@ -3,7 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { TradeForm } from '@/components/forms/TradeForm';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Zap } from 'lucide-react';
+import { Zap, Book } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { usePremium } from '@/context/PremiumContext';
 
@@ -32,14 +32,22 @@ const TradeEntry = () => {
       <div className="page-transition">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Nouveau Trade</h1>
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2"
-            onClick={handleConnectAccount}
-          >
-            <Zap className="h-4 w-4" />
-            <span>Connecter un compte</span>
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/journal" className="flex items-center gap-2">
+                <Book className="h-4 w-4" />
+                <span>Voir le Journal</span>
+              </Link>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={handleConnectAccount}
+            >
+              <Zap className="h-4 w-4" />
+              <span>Connecter un compte</span>
+            </Button>
+          </div>
         </div>
         <TradeForm />
       </div>

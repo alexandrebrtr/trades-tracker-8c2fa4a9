@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,7 +61,6 @@ export function TradeForm() {
   const [direction, setDirection] = useState<'long' | 'short'>('long');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Définir la date d'aujourd'hui comme valeur par défaut pour les champs de date
   useEffect(() => {
     const now = new Date();
     const formattedDate = now.toISOString().slice(0, 16); // Format yyyy-MM-ddThh:mm
@@ -70,13 +68,12 @@ export function TradeForm() {
     setExitDate(formattedDate);
   }, []);
 
-  // Calculate result when inputs change
   const calculateResult = () => {
     if (entryPrice && exitPrice && size) {
-      const entry = parseFloat(entryPrice);
-      const exit = parseFloat(exitPrice);
-      const positionSize = parseFloat(size);
-      const feesAmount = fees ? parseFloat(fees) : 0;
+      const entry = parseFloat(entryPrice.replace(',', '.'));
+      const exit = parseFloat(exitPrice.replace(',', '.'));
+      const positionSize = parseFloat(size.replace(',', '.'));
+      const feesAmount = fees ? parseFloat(fees.replace(',', '.')) : 0;
       
       let calculatedResult;
       if (direction === 'long') {
@@ -85,7 +82,7 @@ export function TradeForm() {
         calculatedResult = (entry - exit) * positionSize - feesAmount;
       }
       
-      setResult(parseFloat(calculatedResult.toFixed(2)));
+      setResult(parseFloat(calculatedResult.toFixed(5)));
       return calculatedResult;
     } else {
       setResult(null);
@@ -127,22 +124,20 @@ export function TradeForm() {
     setIsSubmitting(true);
     
     try {
-      // Créer l'objet du trade à insérer
       const newTrade = {
         user_id: user.id,
         date: new Date(entryDate).toISOString(),
         symbol: assets.find(a => a.value === asset)?.label || asset,
         type: direction,
         strategy,
-        entry_price: parseFloat(entryPrice),
-        exit_price: parseFloat(exitPrice),
-        size: parseFloat(size),
-        fees: fees ? parseFloat(fees) : 0,
+        entry_price: parseFloat(entryPrice.replace(',', '.')),
+        exit_price: parseFloat(exitPrice.replace(',', '.')),
+        size: parseFloat(size.replace(',', '.')),
+        fees: fees ? parseFloat(fees.replace(',', '.')) : 0,
         pnl: calculatedPnL,
         notes: notes
       };
       
-      // Insérer le trade dans Supabase
       const { error } = await supabase
         .from('trades')
         .insert([newTrade]);
@@ -154,7 +149,6 @@ export function TradeForm() {
         description: "Votre trade a été enregistré avec succès.",
       });
       
-      // Réinitialiser le formulaire
       setEntryPrice('');
       setExitPrice('');
       setSize('');
@@ -162,9 +156,8 @@ export function TradeForm() {
       setNotes('');
       setResult(null);
       
-      // Rediriger vers la page de portfolio après un court délai
       setTimeout(() => {
-        navigate('/portfolio');
+        navigate('/journal');
       }, 1500);
       
     } catch (error) {
@@ -213,7 +206,6 @@ export function TradeForm() {
           </div>
         </div>
         
-        {/* Date & Time section */}
         <div className="space-y-4">
           <div>
             <Label htmlFor="entryDate" className="flex items-center gap-2">
@@ -246,7 +238,6 @@ export function TradeForm() {
           </div>
         </div>
         
-        {/* Asset & Order Type section */}
         <div className="space-y-4">
           <div>
             <Label htmlFor="asset" className="flex items-center gap-2">
@@ -287,7 +278,6 @@ export function TradeForm() {
           </div>
         </div>
         
-        {/* Price & Size section */}
         <div className="space-y-4">
           <div>
             <Label htmlFor="entryPrice" className="flex items-center gap-2">
@@ -296,10 +286,9 @@ export function TradeForm() {
             </Label>
             <Input
               id="entryPrice"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
+              type="text"
+              pattern="[0-9]*[.,]?[0-9]*"
+              placeholder="0.00000"
               className="mt-1"
               value={entryPrice}
               onChange={(e) => setEntryPrice(e.target.value)}
@@ -314,10 +303,9 @@ export function TradeForm() {
             </Label>
             <Input
               id="exitPrice"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
+              type="text"
+              pattern="[0-9]*[.,]?[0-9]*"
+              placeholder="0.00000"
               className="mt-1"
               value={exitPrice}
               onChange={(e) => setExitPrice(e.target.value)}
@@ -332,10 +320,9 @@ export function TradeForm() {
             </Label>
             <Input
               id="size"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
+              type="text"
+              pattern="[0-9]*[.,]?[0-9]*"
+              placeholder="0.00000"
               className="mt-1"
               value={size}
               onChange={(e) => setSize(e.target.value)}
@@ -344,7 +331,6 @@ export function TradeForm() {
           </div>
         </div>
         
-        {/* Fees & Strategy section */}
         <div className="space-y-4">
           <div>
             <Label htmlFor="fees" className="flex items-center gap-2">
@@ -353,10 +339,9 @@ export function TradeForm() {
             </Label>
             <Input
               id="fees"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
+              type="text"
+              pattern="[0-9]*[.,]?[0-9]*"
+              placeholder="0.00000"
               className="mt-1"
               value={fees}
               onChange={(e) => setFees(e.target.value)}
@@ -395,7 +380,6 @@ export function TradeForm() {
           </div>
         </div>
         
-        {/* Notes section */}
         <div className="col-span-full mt-2">
           <Label htmlFor="notes" className="flex items-center gap-2">
             <Info className="w-4 h-4 text-muted-foreground" />
@@ -410,17 +394,15 @@ export function TradeForm() {
           />
         </div>
         
-        {/* Result display */}
         {result !== null && (
           <div className="col-span-full mt-2 p-4 rounded-lg border border-border/50">
             <p className="text-sm font-medium text-muted-foreground mb-1">Résultat calculé:</p>
             <p className={`text-xl font-semibold ${result >= 0 ? 'text-profit' : 'text-loss'}`}>
-              {result >= 0 ? '+' : ''}{result.toFixed(2)} €
+              {result >= 0 ? '+' : ''}{result.toFixed(5)} €
             </p>
           </div>
         )}
         
-        {/* Submit button */}
         <div className="col-span-full mt-6">
           <Button 
             type="submit" 
