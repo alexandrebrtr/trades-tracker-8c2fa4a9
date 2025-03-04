@@ -27,7 +27,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-// Custom legend renderer
+// Custom legend renderer - optimisé avec useMemo
 const renderCustomizedLegend = (props: any) => {
   const { payload } = props;
   
@@ -56,6 +56,21 @@ export function PortfolioDistribution({ assetData, strategyData }: PortfolioDist
   const displayAssetData = useMemo(() => assetData || defaultAssetData, [assetData]);
   const displayStrategyData = useMemo(() => strategyData || defaultStrategyData, [strategyData]);
 
+  // Optimiser les cellules avec useMemo
+  const assetCells = useMemo(() => 
+    displayAssetData.map((entry, index) => (
+      <Cell key={`cell-${index}`} fill={ASSET_COLORS[index % ASSET_COLORS.length]} />
+    )), 
+    [displayAssetData]
+  );
+
+  const strategyCells = useMemo(() => 
+    displayStrategyData.map((entry, index) => (
+      <Cell key={`cell-${index}`} fill={STRATEGY_COLORS[index % STRATEGY_COLORS.length]} />
+    )), 
+    [displayStrategyData]
+  );
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
       <div className="glass-card">
@@ -72,9 +87,7 @@ export function PortfolioDistribution({ assetData, strategyData }: PortfolioDist
                 paddingAngle={5}
                 dataKey="value"
               >
-                {displayAssetData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={ASSET_COLORS[index % ASSET_COLORS.length]} />
-                ))}
+                {assetCells}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
               <Legend content={renderCustomizedLegend} />
@@ -97,9 +110,7 @@ export function PortfolioDistribution({ assetData, strategyData }: PortfolioDist
                 paddingAngle={5}
                 dataKey="value"
               >
-                {displayStrategyData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={STRATEGY_COLORS[index % STRATEGY_COLORS.length]} />
-                ))}
+                {strategyCells}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
               <Legend content={renderCustomizedLegend} />

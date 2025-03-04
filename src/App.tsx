@@ -3,15 +3,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { PremiumProvider } from "@/context/PremiumContext";
 import { AuthProvider } from "@/context/AuthContext";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 // Lazy loaded components
-const Index = lazy(() => import("./pages/Index"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const TradeEntry = lazy(() => import("./pages/TradeEntry"));
@@ -27,13 +26,17 @@ const Profile = lazy(() => import("./pages/Profile"));
 const Payment = lazy(() => import("./pages/Payment"));
 const Portfolio = lazy(() => import("./pages/Portfolio"));
 
-// LoadingFallback component
+// Précharger les routes principales
+const preloadRoutes = () => {
+  import("./pages/Dashboard").catch(console.error);
+  import("./pages/Profile").catch(console.error);
+  import("./pages/Portfolio").catch(console.error);
+};
+
+// LoadingFallback component - plus léger et plus rapide
 const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="flex flex-col items-center gap-2">
-      <Loader2 className="h-8 w-8 animate-spin" />
-      <p className="text-muted-foreground">Chargement...</p>
-    </div>
+  <div className="min-h-[50vh] flex items-center justify-center">
+    <Loader2 className="h-6 w-6 animate-spin" />
   </div>
 );
 
@@ -46,9 +49,26 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
       retry: 1,
       networkMode: 'offlineFirst',
+      // Configuration pour un rendu initial plus rapide
+      suspense: true,
     },
   },
 });
+
+// RouteTracker component to trigger preloading routes
+const RouteTracker = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    // Précharger les pages couramment utilisées lors de la navigation
+    preloadRoutes();
+  }, [location.pathname]);
+  
+  return null;
+};
+
+// Root redirect component (plus efficace)
+const Index = () => <Navigate to="/dashboard" replace />;
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -56,9 +76,8 @@ const App = () => (
       <PremiumProvider>
         <AuthProvider>
           <TooltipProvider>
-            <Toaster />
-            <Sonner />
             <BrowserRouter>
+              <RouteTracker />
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
@@ -79,6 +98,8 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
+              <Toaster />
+              <Sonner />
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>
