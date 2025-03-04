@@ -1,22 +1,9 @@
 
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 const Index = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Redirect to the dashboard
-    navigate('/dashboard');
-  }, [navigate]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center animate-pulse">
-        <h1 className="text-2xl font-semibold">Chargement...</h1>
-      </div>
-    </div>
-  );
+  // Redirection immédiate sans état intermédiaire
+  return <Navigate to="/dashboard" replace />;
 };
 
 export default Index;

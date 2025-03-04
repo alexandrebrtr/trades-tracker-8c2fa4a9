@@ -1,4 +1,5 @@
 
+import { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 // Default data if no user data is provided
@@ -51,9 +52,9 @@ interface PortfolioDistributionProps {
 }
 
 export function PortfolioDistribution({ assetData, strategyData }: PortfolioDistributionProps) {
-  // Utiliser les données par défaut si aucune donnée n'est fournie
-  const displayAssetData = assetData || defaultAssetData;
-  const displayStrategyData = strategyData || defaultStrategyData;
+  // Utiliser useMemo pour éviter des recalculs inutiles
+  const displayAssetData = useMemo(() => assetData || defaultAssetData, [assetData]);
+  const displayStrategyData = useMemo(() => strategyData || defaultStrategyData, [strategyData]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
