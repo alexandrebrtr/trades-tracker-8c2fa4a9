@@ -43,7 +43,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         // Only set the session if "stay logged in" is enabled or if this is a fresh login
-        if (stayLoggedIn || (session && Date.now() - new Date(session.created_at).getTime() < 60000)) {
+        // We can't use created_at directly, so we'll check if the session was created recently
+        // A fresh login would be less than 1 minute old
+        const isFreshLogin = session?.user?.last_sign_in_at 
+          ? new Date().getTime() - new Date(session.user.last_sign_in_at).getTime() < 60000 
+          : false;
+          
+        if (stayLoggedIn || (session && isFreshLogin)) {
           setSession(session);
           setUser(session?.user || null);
           
