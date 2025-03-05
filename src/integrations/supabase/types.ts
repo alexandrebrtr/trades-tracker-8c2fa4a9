@@ -73,28 +73,43 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
           balance: number | null
           created_at: string | null
           id: string
+          phone: string | null
+          premium: boolean | null
+          premium_expires: string | null
+          premium_since: string | null
           trades_count: number | null
           updated_at: string | null
           username: string | null
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
           balance?: number | null
           created_at?: string | null
           id: string
+          phone?: string | null
+          premium?: boolean | null
+          premium_expires?: string | null
+          premium_since?: string | null
           trades_count?: number | null
           updated_at?: string | null
           username?: string | null
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
           balance?: number | null
           created_at?: string | null
           id?: string
+          phone?: string | null
+          premium?: boolean | null
+          premium_expires?: string | null
+          premium_since?: string | null
           trades_count?: number | null
           updated_at?: string | null
           username?: string | null

@@ -2,10 +2,11 @@
 import { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 
 interface PremiumContextProps {
   isPremium: boolean;
-  setPremiumStatus: (status: boolean) => void;
+  setPremiumStatus: (status: boolean) => Promise<void>;
   premiumSince: string | null;
   premiumExpires: string | null;
   isLoading: boolean;
@@ -18,7 +19,8 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   const [premiumSince, setPremiumSince] = useState<string | null>(null);
   const [premiumExpires, setPremiumExpires] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check localStorage for premium status on mount
@@ -63,35 +65,80 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   };
 
   const setPremiumStatus = async (status: boolean) => {
-    setIsPremium(status);
-    localStorage.setItem('premiumUser', status.toString());
+    if (!user) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour modifier votre abonnement",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    // Update profile if user is logged in
-    if (user) {
+    setIsLoading(true);
+    
+    try {
       const now = new Date();
       const expiryDate = new Date();
-      expiryDate.setMonth(expiryDate.getMonth() + 1); // Default to 1 month expiry
+      expiryDate.setMonth(expiryDate.getMonth() + (status ? 1 : 0)); // 1 month expiry for premium
       
-      try {
-        const { error } = await supabase
+      // Update premium status and expiry in profiles table
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          premium: status,
+          premium_since: status ? now.toISOString() : null,
+          premium_expires: status ? expiryDate.toISOString() : null,
+          updated_at: now.toISOString()
+        })
+        .eq('id', user.id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // If setting to premium, reduce balance by the premium price
+      if (status && profile && profile.balance) {
+        const price = 9.99; // Default to monthly price
+        const newBalance = parseFloat(profile.balance) - price;
+        
+        const { error: balanceError } = await supabase
           .from('profiles')
           .update({
-            premium: status,
-            premium_since: status ? now.toISOString() : null,
-            premium_expires: status ? expiryDate.toISOString() : null,
-            updated_at: now.toISOString()
+            balance: newBalance >= 0 ? newBalance : 0
           })
           .eq('id', user.id);
-          
-        if (error) {
-          console.error('Error updating premium status:', error);
-        } else {
-          setPremiumSince(status ? now.toISOString() : null);
-          setPremiumExpires(status ? expiryDate.toISOString() : null);
+        
+        if (balanceError) {
+          console.error("Error updating balance:", balanceError);
         }
-      } catch (error) {
-        console.error('Error updating premium status:', error);
       }
+      
+      // Update local state
+      setIsPremium(status);
+      setPremiumSince(status ? now.toISOString() : null);
+      setPremiumExpires(status ? expiryDate.toISOString() : null);
+      
+      // Update localStorage
+      localStorage.setItem('premiumUser', status.toString());
+      
+      // Refresh profile data
+      await refreshProfile();
+      
+      toast({
+        title: status ? "Abonnement activé" : "Abonnement désactivé",
+        description: status 
+          ? "Vous avez maintenant accès aux fonctionnalités premium."
+          : "Votre abonnement premium a été désactivé.",
+      });
+    } catch (error: any) {
+      console.error("Error updating premium status:", error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors de la mise à jour de l'abonnement",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
