@@ -1,197 +1,205 @@
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, ArrowUp, ArrowDown, DollarSign, BarChart, Clock, Info } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
+import { ArrowDown, ArrowUp, Calendar, DollarSign, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export interface Trade {
   id: string;
+  user_id: string;
   date: string;
   symbol: string;
-  type: 'long' | 'short';
-  strategy: string | null;
+  type: "long" | "short";
+  strategy: string;
   entry_price: number;
   exit_price: number;
   size: number;
-  fees: number | null;
-  pnl: number | null;
+  fees: number;
+  pnl: number;
   notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 interface TradeDetailProps {
   trade: Trade;
   onClose: () => void;
+  onDelete?: (id: string) => void;
 }
 
-export function TradeDetail({ trade, onClose }: TradeDetailProps) {
-  const [activeTab, setActiveTab] = useState('summary');
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+export function TradeDetail({ trade, onClose, onDelete }: TradeDetailProps) {
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', { 
-      style: 'currency', 
-      currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 5
-    }).format(value);
+  const formatTimeAgo = (date: string) => {
+    try {
+      return formatDistanceToNow(new Date(date), {
+        addSuffix: true,
+        locale: fr,
+      });
+    } catch (error) {
+      return "Date inconnue";
+    }
   };
 
-  // Calculer le pourcentage de gain/perte
-  const calculatePercentage = () => {
-    if (!trade.pnl || !trade.entry_price || !trade.size) return 0;
-    const invested = trade.entry_price * trade.size;
-    return (trade.pnl / invested) * 100;
+  const calculatePercentageChange = () => {
+    if (trade.type === "long") {
+      return ((trade.exit_price - trade.entry_price) / trade.entry_price) * 100;
+    } else {
+      return ((trade.entry_price - trade.exit_price) / trade.entry_price) * 100;
+    }
   };
 
-  const percentChange = calculatePercentage();
+  const percentageChange = calculatePercentageChange();
 
   return (
-    <Card className="w-full max-w-3xl mx-auto shadow-lg animate-fade-in">
-      <CardHeader className={cn(
-        "flex flex-row items-center justify-between border-b border-l-4",
-        trade.pnl && trade.pnl > 0 ? "border-l-profit" : "border-l-loss"
-      )}>
-        <div>
-          <CardTitle className="text-xl">{trade.symbol}</CardTitle>
-          <div className="flex items-center gap-3 mt-1">
-            <span className={cn(
-              "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-              trade.type === 'long' ? "bg-profit/10 text-profit" : "bg-loss/10 text-loss"
-            )}>
-              {trade.type === 'long' ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
-              {trade.type === 'long' ? 'LONG' : 'SHORT'}
+    <div className="max-h-[80vh] overflow-y-auto">
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            {trade.symbol}
+            <span
+              className={cn(
+                "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+                trade.type === "long"
+                  ? "bg-profit/10 text-profit"
+                  : "bg-loss/10 text-loss"
+              )}
+            >
+              {trade.type === "long" ? "LONG" : "SHORT"}
             </span>
-            {trade.strategy && (
-              <span className="text-sm text-muted-foreground">{trade.strategy}</span>
+          </h2>
+          <div className="flex items-center gap-2">
+            {onDelete && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-loss hover:bg-loss/10"
+                onClick={() => onDelete(trade.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             )}
+            <Button variant="outline" size="sm" onClick={onClose}>
+              Fermer
+            </Button>
           </div>
         </div>
-        <div className="text-right">
-          <div className={cn(
-            "text-xl font-bold",
-            trade.pnl && trade.pnl > 0 ? "text-profit" : "text-loss"
-          )}>
-            {trade.pnl !== null ? (trade.pnl > 0 ? '+' : '') + formatCurrency(trade.pnl) : '--'}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold">Détails du trade</h3>
+                <div className="mt-2 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Date:</span>
+                    <span className="font-medium">{formatDate(trade.date)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Stratégie:</span>
+                    <span className="font-medium">{trade.strategy}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Taille:</span>
+                    <span className="font-medium">{trade.size}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Frais:</span>
+                    <span className="font-medium">{trade.fees} €</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold">Résultat</h3>
+                <div className="mt-2 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">P&L:</span>
+                    <span
+                      className={cn(
+                        "font-bold",
+                        trade.pnl >= 0 ? "text-profit" : "text-loss"
+                      )}
+                    >
+                      {trade.pnl >= 0 ? "+" : ""}
+                      {trade.pnl?.toFixed(5)} €
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      Variation en pourcentage:
+                    </span>
+                    <span
+                      className={cn(
+                        "font-bold",
+                        percentageChange >= 0 ? "text-profit" : "text-loss"
+                      )}
+                    >
+                      {percentageChange >= 0 ? "+" : ""}
+                      {percentageChange.toFixed(2)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          {percentChange !== 0 && (
-            <div className={cn(
-              "text-sm",
-              percentChange > 0 ? "text-profit" : "text-loss"
-            )}>
-              {percentChange > 0 ? '+' : ''}{percentChange.toFixed(2)}%
+
+          <div>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold">Prix</h3>
+                <div className="mt-2 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <ArrowUp className="h-4 w-4" />
+                      Prix d'entrée:
+                    </span>
+                    <span className="font-medium">{trade.entry_price}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <ArrowDown className="h-4 w-4" />
+                      Prix de sortie:
+                    </span>
+                    <span className="font-medium">{trade.exit_price}</span>
+                  </div>
+                </div>
+              </div>
+
+              {trade.notes && (
+                <div>
+                  <h3 className="text-lg font-semibold">Notes</h3>
+                  <div className="mt-2 p-3 bg-muted rounded-lg whitespace-pre-line">
+                    {trade.notes}
+                  </div>
+                </div>
+              )}
+
+              <div className="text-xs text-muted-foreground mt-4">
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  Créé {formatTimeAgo(trade.created_at)}
+                </div>
+                {trade.updated_at !== trade.created_at && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <Calendar className="h-3 w-3" />
+                    Modifié {formatTimeAgo(trade.updated_at)}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-      </CardHeader>
-      
-      <CardContent className="p-0">
-        <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="px-6 pt-4">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="summary">Résumé</TabsTrigger>
-              <TabsTrigger value="details">Détails</TabsTrigger>
-              <TabsTrigger value="notes">Notes</TabsTrigger>
-            </TabsList>
           </div>
-          
-          <TabsContent value="summary" className="px-6 py-4 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground flex items-center">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Date
-                </p>
-                <p className="font-medium">{formatDate(trade.date)}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground flex items-center">
-                  <BarChart className="w-4 h-4 mr-2" />
-                  Résultat
-                </p>
-                <p className={cn(
-                  "font-medium",
-                  trade.pnl && trade.pnl > 0 ? "text-profit" : "text-loss"
-                )}>
-                  {trade.pnl !== null ? formatCurrency(trade.pnl) : '--'}
-                </p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground flex items-center">
-                  <ArrowUp className="w-4 h-4 mr-2" />
-                  Prix d'entrée
-                </p>
-                <p className="font-medium">{formatCurrency(trade.entry_price)}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground flex items-center">
-                  <ArrowDown className="w-4 h-4 mr-2" />
-                  Prix de sortie
-                </p>
-                <p className="font-medium">{formatCurrency(trade.exit_price)}</p>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="details" className="px-6 py-4 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground flex items-center">
-                  <Info className="w-4 h-4 mr-2" />
-                  Taille de position
-                </p>
-                <p className="font-medium">{trade.size}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground flex items-center">
-                  <DollarSign className="w-4 h-4 mr-2" />
-                  Frais
-                </p>
-                <p className="font-medium">{trade.fees !== null ? formatCurrency(trade.fees) : '--'}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground flex items-center">
-                  <Clock className="w-4 h-4 mr-2" />
-                  Stratégie
-                </p>
-                <p className="font-medium">{trade.strategy || '--'}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground flex items-center">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Date et heure
-                </p>
-                <p className="font-medium">{formatDate(trade.date)}</p>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="notes" className="px-6 py-4">
-            {trade.notes ? (
-              <div className="p-4 bg-muted/20 rounded-md">
-                <p>{trade.notes}</p>
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-center py-6">Aucune note pour ce trade.</p>
-            )}
-          </TabsContent>
-        </Tabs>
-        
-        <div className="p-6 pt-2 border-t flex justify-end">
-          <Button variant="outline" onClick={onClose}>Fermer</Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

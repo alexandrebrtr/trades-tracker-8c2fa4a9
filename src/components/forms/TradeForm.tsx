@@ -1,14 +1,16 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, DollarSign, Clock, ArrowUp, ArrowDown, Info, UploadCloud } from 'lucide-react';
+import { Calendar, DollarSign, Clock, ArrowUp, ArrowDown, Info, UploadCloud, Calculator } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { Switch } from '@/components/ui/switch';
 
 const strategies = [
   'Day Trading',
@@ -60,6 +62,8 @@ export function TradeForm() {
   const [result, setResult] = useState<number | null>(null);
   const [direction, setDirection] = useState<'long' | 'short'>('long');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [manualPnL, setManualPnL] = useState('');
+  const [useManualPnL, setUseManualPnL] = useState(false);
 
   useEffect(() => {
     const now = new Date();
@@ -111,14 +115,21 @@ export function TradeForm() {
       return;
     }
     
-    const calculatedPnL = calculateResult();
-    if (calculatedPnL === null) {
-      toast({
-        title: "Erreur de calcul",
-        description: "Impossible de calculer le résultat du trade.",
-        variant: "destructive",
-      });
-      return;
+    let finalPnL;
+    
+    if (useManualPnL && manualPnL) {
+      finalPnL = parseFloat(manualPnL.replace(',', '.'));
+    } else {
+      const calculatedPnL = calculateResult();
+      if (calculatedPnL === null) {
+        toast({
+          title: "Erreur de calcul",
+          description: "Impossible de calculer le résultat du trade.",
+          variant: "destructive",
+        });
+        return;
+      }
+      finalPnL = calculatedPnL;
     }
     
     setIsSubmitting(true);
@@ -134,7 +145,7 @@ export function TradeForm() {
         exit_price: parseFloat(exitPrice.replace(',', '.')),
         size: parseFloat(size.replace(',', '.')),
         fees: fees ? parseFloat(fees.replace(',', '.')) : 0,
-        pnl: calculatedPnL,
+        pnl: finalPnL,
         notes: notes
       };
       
@@ -155,6 +166,8 @@ export function TradeForm() {
       setFees('');
       setNotes('');
       setResult(null);
+      setManualPnL('');
+      setUseManualPnL(false);
       
       setTimeout(() => {
         navigate('/journal');
@@ -368,15 +381,35 @@ export function TradeForm() {
           </div>
           
           <div>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full mt-1 border-dashed"
-              onClick={() => calculateResult()}
-            >
-              <UploadCloud className="w-4 h-4 mr-2" />
-              Ajouter une capture d'écran
-            </Button>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="manualPnL" className="flex items-center gap-2">
+                <Calculator className="w-4 h-4 text-muted-foreground" />
+                P&L Manuel
+              </Label>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="useManualPnL"
+                  checked={useManualPnL}
+                  onCheckedChange={setUseManualPnL}
+                />
+                <Label htmlFor="useManualPnL" className="text-xs text-muted-foreground">
+                  {useManualPnL ? 'Activé' : 'Désactivé'}
+                </Label>
+              </div>
+            </div>
+            <Input
+              id="manualPnL"
+              type="text"
+              pattern="[+-]?[0-9]*[.,]?[0-9]*"
+              placeholder="0.00000"
+              className={`mt-1 ${!useManualPnL ? 'opacity-50' : ''}`}
+              value={manualPnL}
+              onChange={(e) => setManualPnL(e.target.value)}
+              disabled={!useManualPnL}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Entrez manuellement le profit/perte si le calcul automatique ne correspond pas à vos résultats réels.
+            </p>
           </div>
         </div>
         
@@ -394,12 +427,26 @@ export function TradeForm() {
           />
         </div>
         
-        {result !== null && (
+        {!useManualPnL && result !== null && (
           <div className="col-span-full mt-2 p-4 rounded-lg border border-border/50">
             <p className="text-sm font-medium text-muted-foreground mb-1">Résultat calculé:</p>
             <p className={`text-xl font-semibold ${result >= 0 ? 'text-profit' : 'text-loss'}`}>
               {result >= 0 ? '+' : ''}{result.toFixed(5)} €
             </p>
+          </div>
+        )}
+        
+        {!useManualPnL && (
+          <div className="col-span-full flex justify-center">
+            <Button
+              type="button"
+              variant="outline"
+              className="px-6"
+              onClick={calculateResult}
+            >
+              <Calculator className="w-4 h-4 mr-2" />
+              Calculer le résultat
+            </Button>
           </div>
         )}
         

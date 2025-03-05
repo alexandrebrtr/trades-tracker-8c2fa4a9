@@ -9,7 +9,8 @@ import {
   Filter, 
   PlusCircle, 
   Search,
-  X
+  X,
+  Trash2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,42 +22,98 @@ import { useAuth } from '@/context/AuthContext';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
+import { useToast } from '@/components/ui/use-toast';
 
 type EntryStatus = 'success' | 'failure' | 'mixed';
 
 export default function Journal() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [entries, setEntries] = useState<Trade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [tradeToDelete, setTradeToDelete] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Récupérer les trades de l'utilisateur
   useEffect(() => {
     if (!user) return;
-
-    const fetchTrades = async () => {
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('trades')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('date', { ascending: false });
-
-        if (error) throw error;
-        setEntries(data || []);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des trades:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchTrades();
   }, [user]);
+
+  const fetchTrades = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('trades')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+      setEntries(data as Trade[] || []);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des trades:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteTrade = async () => {
+    if (!tradeToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('trades')
+        .delete()
+        .eq('id', tradeToDelete)
+        .eq('user_id', user?.id);
+        
+      if (error) throw error;
+      
+      // Mettre à jour la liste des trades
+      setEntries(entries.filter(entry => entry.id !== tradeToDelete));
+      
+      setIsDeleteDialogOpen(false);
+      toast({
+        title: "Trade supprimé",
+        description: "Le trade a été supprimé avec succès.",
+      });
+    } catch (error) {
+      console.error('Erreur lors de la suppression du trade:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression du trade.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setTradeToDelete(null);
+    }
+  };
+
+  const openDeleteDialog = (id: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setTradeToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
 
   const filteredEntries = entries.filter(entry => {
     const matchesSearch = 
@@ -143,7 +200,8 @@ export default function Journal() {
                 <JournalEntryCard 
                   key={entry.id} 
                   entry={entry} 
-                  onClick={() => handleOpenTradeDetail(entry)} 
+                  onClick={() => handleOpenTradeDetail(entry)}
+                  onDelete={(e) => openDeleteDialog(entry.id, e)}
                 />
               ))
             ) : (
@@ -178,10 +236,51 @@ export default function Journal() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-3xl p-0">
           {selectedTrade && (
-            <TradeDetail trade={selectedTrade} onClose={handleCloseTradeDetail} />
+            <TradeDetail 
+              trade={selectedTrade} 
+              onClose={handleCloseTradeDetail} 
+              onDelete={(id) => {
+                setIsDialogOpen(false);
+                setTimeout(() => {
+                  setTradeToDelete(id);
+                  setIsDeleteDialogOpen(true);
+                }, 100);
+              }} 
+            />
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer ce trade</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce trade ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setTradeToDelete(null)}>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteTrade} 
+              className="bg-loss hover:bg-loss/90"
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Suppression...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Supprimer
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
@@ -189,9 +288,10 @@ export default function Journal() {
 interface JournalEntryCardProps {
   entry: Trade;
   onClick: () => void;
+  onDelete: (event: React.MouseEvent) => void;
 }
 
-function JournalEntryCard({ entry, onClick }: JournalEntryCardProps) {
+function JournalEntryCard({ entry, onClick, onDelete }: JournalEntryCardProps) {
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('fr-FR', {
       day: 'numeric',
@@ -280,6 +380,14 @@ function JournalEntryCard({ entry, onClick }: JournalEntryCardProps) {
           
           <div className="flex items-center justify-between pt-2">
             <Button variant="outline" size="sm">Voir les détails</Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-loss hover:bg-loss/10"
+              onClick={onDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </CardContent>

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   BarChart, 
   Bar, 
@@ -13,39 +13,10 @@ import {
   Pie,
   Legend
 } from 'recharts';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, Loader2 } from 'lucide-react';
 import { DataCard } from '@/components/ui/data-card';
-
-// Mock data for profit/loss by day
-const dailyProfitData = [
-  { day: 'Lun', value: 450 },
-  { day: 'Mar', value: -150 },
-  { day: 'Mer', value: 320 },
-  { day: 'Jeu', value: 580 },
-  { day: 'Ven', value: -220 },
-  { day: 'Sam', value: 120 },
-  { day: 'Dim', value: 60 }
-];
-
-// Mock data for average holding time
-const timeData = [
-  { name: '<5m', value: 10 },
-  { name: '5-15m', value: 25 },
-  { name: '15-30m', value: 35 },
-  { name: '30m-1h', value: 20 },
-  { name: '1h-4h', value: 8 },
-  { name: '>4h', value: 2 }
-];
-
-// Mock data for trades by strategy
-const strategyData = [
-  { name: 'Day Trading', value: 40 },
-  { name: 'Swing', value: 30 },
-  { name: 'Scalping', value: 20 },
-  { name: 'Position', value: 10 },
-];
-
-const COLORS = ['#34d399', '#60a5fa', '#a78bfa', '#f97316', '#2dd4bf', '#fbbf24'];
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 // Custom tooltip component
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -75,8 +46,186 @@ const TimeTooltip = ({ active, payload }: any) => {
   return null;
 };
 
+const COLORS = ['#34d399', '#60a5fa', '#a78bfa', '#f97316', '#2dd4bf', '#fbbf24'];
+
 export function AnalyticsView() {
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [trades, setTrades] = useState<any[]>([]);
   const [timeframe, setTimeframe] = useState('1M');
+  
+  // Derived data
+  const [dailyProfitData, setDailyProfitData] = useState<any[]>([]);
+  const [timeData, setTimeData] = useState<any[]>([]);
+  const [strategyData, setStrategyData] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    winRate: 0,
+    profitFactor: 0,
+    maxDrawdown: 0,
+    riskRewardRatio: 0
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchUserTrades = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('trades')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('date', { ascending: false });
+          
+        if (error) throw error;
+        
+        if (data) {
+          setTrades(data);
+          processTradeData(data);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des trades:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserTrades();
+  }, [user]);
+  
+  const processTradeData = (tradesData: any[]) => {
+    if (!tradesData || tradesData.length === 0) {
+      return;
+    }
+    
+    // Calculer les statistiques
+    const winningTrades = tradesData.filter(trade => trade.pnl > 0);
+    const losingTrades = tradesData.filter(trade => trade.pnl < 0);
+    
+    const winRate = (winningTrades.length / tradesData.length) * 100;
+    
+    const totalGains = winningTrades.reduce((sum, trade) => sum + trade.pnl, 0);
+    const totalLosses = Math.abs(losingTrades.reduce((sum, trade) => sum + trade.pnl, 0));
+    
+    const profitFactor = totalLosses === 0 ? totalGains : totalGains / totalLosses;
+    
+    // Calcul simplifié du drawdown
+    const sortedByDate = [...tradesData].sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    
+    let maxBalance = 0;
+    let maxDrawdown = 0;
+    let currentBalance = 0;
+    
+    for (const trade of sortedByDate) {
+      currentBalance += trade.pnl;
+      if (currentBalance > maxBalance) {
+        maxBalance = currentBalance;
+      }
+      
+      const currentDrawdown = maxBalance > 0 ? (maxBalance - currentBalance) / maxBalance * 100 : 0;
+      if (currentDrawdown > maxDrawdown) {
+        maxDrawdown = currentDrawdown;
+      }
+    }
+    
+    // Calcul du ratio risque/récompense (moyenne des gains / moyenne des pertes)
+    const avgWin = winningTrades.length > 0 
+      ? winningTrades.reduce((sum, trade) => sum + trade.pnl, 0) / winningTrades.length 
+      : 0;
+    
+    const avgLoss = losingTrades.length > 0 
+      ? Math.abs(losingTrades.reduce((sum, trade) => sum + trade.pnl, 0) / losingTrades.length)
+      : 1;
+    
+    const riskRewardRatio = avgLoss === 0 ? 0 : avgWin / avgLoss;
+    
+    setStats({
+      winRate,
+      profitFactor,
+      maxDrawdown,
+      riskRewardRatio
+    });
+    
+    // Répartition par jour de la semaine
+    const daysOfWeek = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    const profitByDay: Record<string, number> = {};
+    
+    // Initialiser tous les jours à 0
+    daysOfWeek.forEach(day => {
+      profitByDay[day] = 0;
+    });
+    
+    // Calculer le profit par jour
+    tradesData.forEach(trade => {
+      const date = new Date(trade.date);
+      const day = daysOfWeek[date.getDay()];
+      profitByDay[day] += trade.pnl;
+    });
+    
+    const dailyData = Object.keys(profitByDay).map(day => ({
+      day,
+      value: Math.round(profitByDay[day] * 100) / 100 // Arrondir à 2 décimales
+    }));
+    
+    // Réorganiser les jours pour commencer par lundi
+    const orderedDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+    const orderedData = orderedDays.map(day => 
+      dailyData.find(d => d.day === day) || { day, value: 0 }
+    );
+    
+    setDailyProfitData(orderedData);
+    
+    // Répartition par stratégie
+    const strategies: Record<string, number> = {};
+    tradesData.forEach(trade => {
+      if (trade.strategy) {
+        if (!strategies[trade.strategy]) {
+          strategies[trade.strategy] = 0;
+        }
+        strategies[trade.strategy]++;
+      }
+    });
+    
+    const strategyDistribution = Object.entries(strategies).map(([name, count]) => ({
+      name,
+      value: Math.round((count / tradesData.length) * 100)
+    }));
+    
+    setStrategyData(strategyDistribution);
+    
+    // Simuler la répartition par durée de trade (cette donnée n'est pas directement disponible)
+    // Dans un cas réel, il faudrait calculer la différence entre date de sortie et date d'entrée
+    setTimeData([
+      { name: '<5m', value: 20 },
+      { name: '5-15m', value: 30 },
+      { name: '15-30m', value: 25 },
+      { name: '30m-1h', value: 15 },
+      { name: '1h-4h', value: 8 },
+      { name: '>4h', value: 2 }
+    ]);
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Chargement de vos statistiques...</p>
+      </div>
+    );
+  }
+  
+  if (trades.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <p className="text-lg mb-4">Aucune donnée disponible</p>
+        <p className="text-muted-foreground mb-8">
+          Enregistrez vos premiers trades pour voir apparaître des statistiques détaillées.
+        </p>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-8 animate-fade-in">
@@ -84,27 +233,27 @@ export function AnalyticsView() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <DataCard
           title="Win Rate"
-          value="68.5%"
-          trend={{ value: 3.2, isPositive: true }}
+          value={`${stats.winRate.toFixed(1)}%`}
+          trend={stats.winRate > 50 ? { value: stats.winRate - 50, isPositive: true } : undefined}
         />
         
         <DataCard
           title="Profit Factor"
-          value="2.14"
-          trend={{ value: 0.23, isPositive: true }}
+          value={stats.profitFactor.toFixed(2)}
+          trend={stats.profitFactor > 1 ? { value: stats.profitFactor - 1, isPositive: true } : undefined}
         />
         
         <DataCard
           title="Drawdown Maximum"
-          value="8.4%"
-          trend={{ value: 2.1, isPositive: false }}
+          value={`${stats.maxDrawdown.toFixed(1)}%`}
+          trend={{ value: stats.maxDrawdown, isPositive: false }}
           valueClassName="text-loss"
         />
         
         <DataCard
           title="Ratio Risque/Récompense"
-          value="1.8"
-          trend={{ value: 0.2, isPositive: true }}
+          value={stats.riskRewardRatio.toFixed(2)}
+          trend={stats.riskRewardRatio > 1 ? { value: stats.riskRewardRatio - 1, isPositive: true } : undefined}
         />
       </div>
       
