@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/context/AuthContext';
 import { Header } from '@/components/navigation/Header';
 import { Sidebar } from '@/components/navigation/Sidebar';
@@ -14,6 +15,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [stayLoggedIn, setStayLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -30,7 +32,7 @@ export default function Login() {
     setLoading(true);
     
     try {
-      await signIn(email, password);
+      await signIn(email, password, stayLoggedIn);
     } finally {
       setLoading(false);
     }
@@ -94,6 +96,19 @@ export default function Login() {
                           onChange={(e) => setPassword(e.target.value)}
                           disabled={loading}
                         />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="stayLoggedIn" 
+                          checked={stayLoggedIn}
+                          onCheckedChange={(checked) => setStayLoggedIn(checked === true)}
+                        />
+                        <label
+                          htmlFor="stayLoggedIn"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Rester connecté
+                        </label>
                       </div>
                       <Button type="submit" className="w-full" disabled={loading}>
                         {loading ? (

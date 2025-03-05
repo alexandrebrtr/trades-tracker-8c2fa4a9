@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -6,7 +5,7 @@ import { HeaderBalance } from "@/components/HeaderBalance";
 import { useAuth } from "@/context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { LogOut, Settings, User } from "lucide-react";
-import { MobileNav } from "./Sidebar";
+import { Sidebar } from "./Sidebar";
 
 export function Header() {
   const { user, profile, signOut } = useAuth();
@@ -19,7 +18,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-      <MobileNav />
+      <Sidebar />
       
       <div className="flex flex-1 items-center justify-end gap-4">
         <HeaderBalance />

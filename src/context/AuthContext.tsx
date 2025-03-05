@@ -10,12 +10,15 @@ type AuthContextType = {
   profile: any | null;
   isLoading: boolean;
   signUp: (email: string, password: string, name: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string, stayLoggedIn: boolean) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Local storage key for the stay logged in preference
+const STAY_LOGGED_IN_KEY = 'stayLoggedIn';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -25,9 +28,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Récupérer la session au chargement
+    // Check if the user has previously chosen to stay logged in
+    const stayLoggedIn = localStorage.getItem(STAY_LOGGED_IN_KEY) === 'true';
+    
+    // Récupérer la session au chargement seulement si l'utilisateur a choisi de rester connecté
     const getInitialSession = async () => {
       try {
+        // Get current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -35,11 +42,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
         
-        setSession(session);
-        setUser(session?.user || null);
-        
-        if (session?.user) {
-          await fetchProfile(session.user.id);
+        // Only set the session if "stay logged in" is enabled or if this is a fresh login
+        if (stayLoggedIn || (session && Date.now() - new Date(session.created_at).getTime() < 60000)) {
+          setSession(session);
+          setUser(session?.user || null);
+          
+          if (session?.user) {
+            await fetchProfile(session.user.id);
+          }
+        } else if (session) {
+          // If "stay logged in" is not enabled and this is not a fresh login, sign the user out
+          await supabase.auth.signOut();
+          setSession(null);
+          setUser(null);
+          setProfile(null);
         }
       } catch (error) {
         console.error("Erreur lors de la récupération de la session:", error);
@@ -53,13 +69,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Configurer le listener pour les changements d'état d'authentification
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
-      setSession(session);
-      setUser(session?.user || null);
       
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
+      if (event === 'SIGNED_IN') {
+        setSession(session);
+        setUser(session?.user || null);
+        
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setSession(null);
+        setUser(null);
         setProfile(null);
+        
+        // Clear the stay logged in preference when signing out
+        localStorage.removeItem(STAY_LOGGED_IN_KEY);
       }
       
       setIsLoading(false);
@@ -134,8 +158,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Connexion
-  const signIn = async (email: string, password: string) => {
+  // Connexion with stayLoggedIn parameter
+  const signIn = async (email: string, password: string, stayLoggedIn: boolean = false) => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -150,6 +174,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           variant: "destructive",
         });
         return;
+      }
+
+      // Save the stay logged in preference
+      if (stayLoggedIn) {
+        localStorage.setItem(STAY_LOGGED_IN_KEY, 'true');
+      } else {
+        localStorage.removeItem(STAY_LOGGED_IN_KEY);
       }
 
       toast({
@@ -181,6 +212,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         return;
       }
+      
+      // Clear the stay logged in preference
+      localStorage.removeItem(STAY_LOGGED_IN_KEY);
       
       toast({
         title: "Déconnexion réussie",
