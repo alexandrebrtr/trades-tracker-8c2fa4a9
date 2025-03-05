@@ -49,8 +49,6 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
       retry: 1,
       networkMode: 'offlineFirst',
-      // Configuration pour un rendu initial plus rapide
-      suspense: true,
     },
   },
 });

@@ -8,13 +8,13 @@ import { usePremium } from '@/context/PremiumContext';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Phone, MapPin, Star, Wallet } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Star, Wallet, Calendar } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function Profile() {
-  const { isPremium } = usePremium();
+  const { isPremium, premiumExpires } = usePremium();
   const { user, profile, refreshProfile } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -41,6 +41,12 @@ export default function Profile() {
       setBalance(profile.balance?.toString() || '0');
     }
   }, [user, profile, navigate]);
+
+  // Format the expiry date
+  const formatExpiryDate = (dateString: string | null) => {
+    if (!dateString) return "Non disponible";
+    return new Date(dateString).toLocaleDateString('fr-FR');
+  };
 
   const handleSave = async () => {
     if (!user) return;
@@ -201,9 +207,10 @@ export default function Profile() {
                       value={balance} 
                       onChange={(e) => setBalance(e.target.value)} 
                       placeholder="Solde en euros" 
+                      step="0.01"
                     />
                   ) : (
-                    <p>{parseFloat(balance).toLocaleString('fr-FR')} €</p>
+                    <p className="text-lg font-semibold">{parseFloat(balance).toLocaleString('fr-FR')} €</p>
                   )}
                 </div>
               </div>
@@ -239,9 +246,24 @@ export default function Profile() {
                 </div>
 
                 {isPremium && (
-                  <div>
-                    <h3 className="text-sm font-medium">Prochaine facturation</h3>
-                    <p className="mt-1">Non disponible</p>
+                  <div className="space-y-2">
+                    <div>
+                      <h3 className="text-sm font-medium">Abonnement depuis</h3>
+                      <p className="mt-1 flex items-center gap-1">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {profile?.premium_since ? 
+                          new Date(profile.premium_since).toLocaleDateString('fr-FR') : 
+                          "Non disponible"}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium">Prochaine facturation</h3>
+                      <p className="mt-1 flex items-center gap-1">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {formatExpiryDate(premiumExpires)}
+                      </p>
+                    </div>
                   </div>
                 )}
 
@@ -251,9 +273,15 @@ export default function Profile() {
                       <Link to="/premium">Passer à Premium</Link>
                     </Button>
                   ) : (
-                    <Button asChild variant="outline" className="w-full">
-                      <Link to="/settings">Gérer l'abonnement</Link>
-                    </Button>
+                    <div className="space-y-2">
+                      <Button asChild variant="outline" className="w-full">
+                        <Link to="/settings">Gérer l'abonnement</Link>
+                      </Button>
+                      
+                      <div className="text-xs text-muted-foreground text-center">
+                        Votre abonnement sera renouvelé automatiquement le {formatExpiryDate(premiumExpires)}
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>

@@ -1,6 +1,6 @@
 
 import { Link, useNavigate } from 'react-router-dom';
-import { Sun, Moon, LogIn, User, LogOut } from 'lucide-react';
+import { Sun, Moon, LogIn, User, LogOut, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
@@ -13,15 +13,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { usePremium } from '@/context/PremiumContext';
+import { Star } from 'lucide-react';
 
 export function Header() {
   const { theme, toggleTheme } = useTheme();
   const { user, profile, signOut } = useAuth();
+  const { isPremium } = usePremium();
   const navigate = useNavigate();
   
   const handleLogout = async () => {
     await signOut();
     navigate('/login');
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
   };
   
   return (
@@ -81,6 +88,22 @@ export function Header() {
                     <span>Profil</span>
                   </Link>
                 </DropdownMenuItem>
+                
+                <DropdownMenuItem className="flex items-center">
+                  <Wallet className="mr-2 h-4 w-4" />
+                  <span className="flex-1">Solde</span>
+                  <span className="font-medium">{formatCurrency(profile?.balance || 0)}</span>
+                </DropdownMenuItem>
+                
+                {!isPremium && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/premium" className="flex items-center text-primary">
+                      <Star className="mr-2 h-4 w-4" />
+                      <span>Obtenir Premium</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
