@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -58,7 +57,6 @@ const RouteTracker = () => {
   const location = useLocation();
   
   useEffect(() => {
-    // Précharger les pages couramment utilisées lors de la navigation
     preloadRoutes();
   }, [location.pathname]);
   
@@ -68,11 +66,12 @@ const RouteTracker = () => {
 // Root redirect component (plus efficace)
 const Index = () => <Navigate to="/dashboard" replace />;
 
+// Structure hiérarchique réorganisée pour s'assurer que AuthProvider englobe tous les composants nécessitant useAuth
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <PremiumProvider>
-        <AuthProvider>
+      <AuthProvider>
+        <PremiumProvider>
           <TooltipProvider>
             <BrowserRouter>
               <RouteTracker />
@@ -100,8 +99,8 @@ const App = () => (
               <Sonner />
             </BrowserRouter>
           </TooltipProvider>
-        </AuthProvider>
-      </PremiumProvider>
+        </PremiumProvider>
+      </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
