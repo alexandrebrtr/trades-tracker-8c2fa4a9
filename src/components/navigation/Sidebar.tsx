@@ -147,7 +147,7 @@ export function Sidebar() {
             variant="ghost" 
             size="icon" 
             onClick={toggleSidebar}
-            className="ml-auto"
+            className={collapsed ? "w-full" : "ml-auto"}
           >
             {collapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
           </Button>

@@ -1,51 +1,59 @@
 
-import { useState } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/use-toast';
+import { Badge } from '@/components/ui/badge';
 
-// Generate mock trades
-const generateMockTrades = () => {
-  const trades = [];
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-  
-  // Generate 20-40 trades spread across the month
-  const numberOfTrades = Math.floor(Math.random() * 20) + 20;
-  
-  for (let i = 0; i < numberOfTrades; i++) {
-    const day = Math.floor(Math.random() * 28) + 1;
-    const profit = Math.random() > 0.6; // 60% winning trades
-    const amount = profit 
-      ? Math.random() * 200 + 50 
-      : -(Math.random() * 150 + 30);
-    
-    const asset = ['BTC/USD', 'EUR/USD', 'AAPL', 'MSFT', 'TSLA', 'AMZN', 'GOLD'];
-    const randomAsset = asset[Math.floor(Math.random() * asset.length)];
-    
-    const hours = Math.floor(Math.random() * 8) + 9; // 9 AM to 5 PM
-    const minutes = Math.floor(Math.random() * 60);
-    const duration = Math.floor(Math.random() * 180) + 15; // 15min to 3h
-    
-    trades.push({
-      id: i,
-      date: new Date(year, month, day),
-      asset: randomAsset,
-      amount: Math.round(amount * 100) / 100,
-      openTime: `${hours}:${minutes < 10 ? '0' + minutes : minutes}`,
-      duration: `${Math.floor(duration / 60)}h ${duration % 60}m`,
-    });
-  }
-  
-  return trades;
-};
+interface Trade {
+  id: string;
+  date: Date;
+  symbol: string;
+  type: string;
+  entry_price: number;
+  exit_price: number;
+  pnl: number;
+  size: number;
+}
 
-const mockTrades = generateMockTrades();
+interface CalendarEvent {
+  id: string;
+  user_id: string;
+  title: string;
+  description?: string;
+  date: Date;
+  created_at?: Date;
+}
 
 export function TradeCalendar() {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showEventDialog, setShowEventDialog] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    title: '',
+    description: '',
+    date: new Date(),
+  });
   
   // Get current month info
   const year = currentMonth.getFullYear();
@@ -80,6 +88,73 @@ export function TradeCalendar() {
     nextMonthDays.push(i);
   }
   
+  // Fetch trades and events when month changes or user changes
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchTradesAndEvents = async () => {
+      setIsLoading(true);
+      
+      // Format date for start and end of month for query
+      const startDate = new Date(year, month, 1);
+      const endDate = new Date(year, month + 1, 0, 23, 59, 59);
+      
+      try {
+        // Fetch trades for this month
+        const { data: tradesData, error: tradesError } = await supabase
+          .from('trades')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('date', startDate.toISOString())
+          .lte('date', endDate.toISOString());
+        
+        if (tradesError) throw tradesError;
+        
+        // Transform trades data
+        const formattedTrades = tradesData.map(trade => ({
+          ...trade,
+          date: new Date(trade.date)
+        }));
+        
+        setTrades(formattedTrades);
+        
+        // Fetch calendar events for this month
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('calendar_events')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('date', startDate.toISOString())
+          .lte('date', endDate.toISOString());
+        
+        if (eventsError) {
+          // If the table doesn't exist yet, we'll create it later
+          console.log('Events table may not exist yet:', eventsError);
+          setEvents([]);
+        } else {
+          // Transform events data
+          const formattedEvents = eventsData.map(event => ({
+            ...event,
+            date: new Date(event.date),
+            created_at: new Date(event.created_at)
+          }));
+          
+          setEvents(formattedEvents);
+        }
+      } catch (error) {
+        console.error("Error fetching calendar data:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de récupérer les données du calendrier.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchTradesAndEvents();
+  }, [user, year, month, toast]);
+  
   // Navigate to previous/next month
   const prevMonth = () => {
     setCurrentMonth(new Date(year, month - 1, 1));
@@ -91,11 +166,21 @@ export function TradeCalendar() {
   
   // Get trades for a specific day
   const getTradesForDay = (day: number) => {
-    return mockTrades.filter(trade => {
+    return trades.filter(trade => {
       const tradeDate = trade.date;
       return tradeDate.getDate() === day && 
              tradeDate.getMonth() === month && 
              tradeDate.getFullYear() === year;
+    });
+  };
+  
+  // Get events for a specific day
+  const getEventsForDay = (day: number) => {
+    return events.filter(event => {
+      const eventDate = event.date;
+      return eventDate.getDate() === day && 
+             eventDate.getMonth() === month && 
+             eventDate.getFullYear() === year;
     });
   };
   
@@ -104,11 +189,74 @@ export function TradeCalendar() {
     return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
   };
   
+  // Open event dialog for a specific day
+  const openEventDialog = (day: number) => {
+    const selectedDate = new Date(year, month, day);
+    setNewEvent({
+      title: '',
+      description: '',
+      date: selectedDate
+    });
+    setShowEventDialog(true);
+  };
+  
+  // Save new event
+  const saveEvent = async () => {
+    if (!user) return;
+    
+    if (!newEvent.title.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Le titre de l'événement est requis.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('calendar_events')
+        .insert({
+          title: newEvent.title,
+          description: newEvent.description,
+          date: newEvent.date.toISOString(),
+          user_id: user.id
+        })
+        .select('*')
+        .single();
+      
+      if (error) throw error;
+      
+      // Add new event to state
+      if (data) {
+        setEvents([...events, {
+          ...data,
+          date: new Date(data.date),
+          created_at: new Date(data.created_at)
+        }]);
+      }
+      
+      toast({
+        title: "Succès",
+        description: "Événement ajouté au calendrier."
+      });
+      
+      setShowEventDialog(false);
+    } catch (error) {
+      console.error("Error adding event:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter l'événement.",
+        variant: "destructive"
+      });
+    }
+  };
+  
   return (
     <div className="glass-card animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <Calendar className="w-5 h-5 mr-2 text-primary" />
+          <CalendarIcon className="w-5 h-5 mr-2 text-primary" />
           <h2 className="text-xl font-semibold capitalize">{formatMonthName(currentMonth)}</h2>
         </div>
         
@@ -119,9 +267,13 @@ export function TradeCalendar() {
           <Button variant="outline" size="sm" onClick={nextMonth}>
             <ChevronRight className="w-4 h-4" />
           </Button>
-          <Button className="ml-4" size="sm">
+          <Button 
+            className="ml-4" 
+            size="sm" 
+            onClick={() => openEventDialog(new Date().getDate())}
+          >
             <Plus className="w-4 h-4 mr-1" />
-            Nouveau Trade
+            Ajouter un événement
           </Button>
         </div>
       </div>
@@ -137,7 +289,7 @@ export function TradeCalendar() {
         </div>
         
         {/* Calendar grid */}
-        <div className="grid grid-cols-7 bg-white">
+        <div className="grid grid-cols-7 bg-card/70">
           {/* Previous month days */}
           {prevMonthDays.map((day) => (
             <div key={`prev-${day}`} className="border-t border-r h-24 p-1 text-muted-foreground/40">
@@ -148,6 +300,7 @@ export function TradeCalendar() {
           {/* Current month days */}
           {days.map((day) => {
             const dayTrades = getTradesForDay(day);
+            const dayEvents = getEventsForDay(day);
             const isToday = new Date().getDate() === day && 
                             new Date().getMonth() === month && 
                             new Date().getFullYear() === year;
@@ -159,33 +312,76 @@ export function TradeCalendar() {
                   "border-t border-r h-24 p-1 relative",
                   isToday ? "bg-primary/5" : ""
                 )}
-                onClick={() => setSelectedDay(new Date(year, month, day))}
+                onClick={() => openEventDialog(day)}
               >
-                <span className={cn(
-                  "inline-block w-6 h-6 rounded-full text-xs text-center leading-6",
-                  isToday ? "bg-primary text-white" : ""
-                )}>
-                  {day}
-                </span>
-                
-                {/* Trade indicators */}
-                <div className="mt-1 space-y-1 max-h-[80px] overflow-y-auto">
-                  {dayTrades.slice(0, 3).map((trade) => (
-                    <div 
-                      key={trade.id} 
-                      className={cn(
-                        "text-xs px-1.5 py-0.5 rounded truncate",
-                        trade.amount > 0 ? "bg-profit/10 text-profit" : "bg-loss/10 text-loss"
-                      )}
-                      title={`${trade.asset}: ${trade.amount > 0 ? '+' : ''}${trade.amount}€`}
-                    >
-                      {trade.asset}: {trade.amount > 0 ? '+' : ''}{trade.amount}€
-                    </div>
-                  ))}
+                <div className="flex justify-between items-start">
+                  <span className={cn(
+                    "inline-block w-6 h-6 rounded-full text-xs text-center leading-6",
+                    isToday ? "bg-primary text-primary-foreground" : ""
+                  )}>
+                    {day}
+                  </span>
                   
-                  {dayTrades.length > 3 && (
-                    <div className="text-xs text-center text-muted-foreground">
-                      +{dayTrades.length - 3} autres
+                  {/* Add button (visible on hover) */}
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="w-5 h-5 opacity-0 group-hover:opacity-100 hover:opacity-100 focus:opacity-100" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEventDialog(day);
+                    }}
+                  >
+                    <Plus className="w-3 h-3" />
+                  </Button>
+                </div>
+                
+                {/* Calendar content container */}
+                <div className="mt-1 space-y-1 max-h-[70px] overflow-y-auto">
+                  {/* Trade indicators */}
+                  {dayTrades.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {dayTrades.slice(0, 2).map((trade) => (
+                        <Badge 
+                          key={trade.id} 
+                          variant="outline"
+                          className={cn(
+                            "text-[10px] px-1 py-0.5 truncate",
+                            trade.pnl > 0 ? "bg-green-500/10 hover:bg-green-500/20 text-green-500" 
+                                           : "bg-red-500/10 hover:bg-red-500/20 text-red-500"
+                          )}
+                          title={`${trade.symbol}: ${trade.pnl > 0 ? '+' : ''}${trade.pnl.toFixed(2)}€`}
+                        >
+                          {trade.symbol}: {trade.pnl > 0 ? '+' : ''}{trade.pnl.toFixed(2)}€
+                        </Badge>
+                      ))}
+                      
+                      {dayTrades.length > 2 && (
+                        <Badge variant="outline" className="text-[10px]">
+                          +{dayTrades.length - 2}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Event indicators */}
+                  {dayEvents.length > 0 && (
+                    <div className="space-y-1">
+                      {dayEvents.slice(0, 2).map((event) => (
+                        <div 
+                          key={event.id} 
+                          className="text-xs bg-primary/10 px-1.5 py-0.5 rounded truncate"
+                          title={event.title}
+                        >
+                          {event.title}
+                        </div>
+                      ))}
+                      
+                      {dayEvents.length > 2 && (
+                        <div className="text-xs text-center text-muted-foreground">
+                          +{dayEvents.length - 2} autres
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -201,6 +397,45 @@ export function TradeCalendar() {
           ))}
         </div>
       </div>
+      
+      {/* Add Event Dialog */}
+      <Dialog open={showEventDialog} onOpenChange={setShowEventDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Ajouter un événement</DialogTitle>
+            <DialogDescription>
+              Créez un nouvel événement pour {newEvent.date.toLocaleDateString('fr-FR')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Titre</Label>
+              <Input 
+                id="title" 
+                value={newEvent.title}
+                onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                placeholder="Réunion, rappel, etc."
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description (optionnel)</Label>
+              <Textarea 
+                id="description" 
+                value={newEvent.description}
+                onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                placeholder="Détails supplémentaires..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEventDialog(false)}>
+              Annuler
+            </Button>
+            <Button onClick={saveEvent}>Enregistrer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
