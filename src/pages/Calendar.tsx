@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { TradeCalendar, CalendarEvent } from '@/components/calendar/TradeCalendar';
@@ -160,7 +161,7 @@ const Calendar = () => {
       title: `Trade: ${trade.symbol} (${trade.type})`,
       description: `PnL: ${trade.pnl > 0 ? '+' : ''}${trade.pnl} €`,
       date: new Date(trade.date),
-      type: 'trade',
+      type: 'trade' as const, // Use const assertion to get literal type instead of string
       trade: trade
     })),
     // Add user events
@@ -169,7 +170,7 @@ const Calendar = () => {
       title: event.title,
       description: event.description,
       date: new Date(event.date),
-      type: 'event',
+      type: 'event' as const, // Use const assertion to get literal type instead of string
       event: event
     }))
   ];
