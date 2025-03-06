@@ -30,7 +30,8 @@ export function HeaderBalance() {
             filter: `id=eq.${user.id}`
           },
           (payload) => {
-            if (payload.new && payload.new.balance !== undefined) {
+            // Add type checking to ensure payload.new has balance property
+            if (payload.new && typeof payload.new === 'object' && 'balance' in payload.new) {
               setBalance(Number(payload.new.balance));
             }
           }
