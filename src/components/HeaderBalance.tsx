@@ -9,12 +9,12 @@ import { supabase } from '@/integrations/supabase/client';
 export function HeaderBalance() {
   const { profile, user } = useAuth();
   const { isPremium } = usePremium();
-  const [balance, setBalance] = useState<number | undefined>(profile?.balance);
+  const [balance, setBalance] = useState<number | undefined>(profile?.balance !== undefined ? Number(profile.balance) : undefined);
   
   useEffect(() => {
     // Initialize balance from profile
     if (profile?.balance !== undefined) {
-      setBalance(profile.balance);
+      setBalance(Number(profile.balance));
     }
     
     // Subscribe to real-time changes on the profiles table
@@ -31,7 +31,7 @@ export function HeaderBalance() {
           },
           (payload) => {
             if (payload.new && payload.new.balance !== undefined) {
-              setBalance(payload.new.balance);
+              setBalance(Number(payload.new.balance));
             }
           }
         )

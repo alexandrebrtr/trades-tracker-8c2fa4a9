@@ -125,7 +125,7 @@ const Calendar = () => {
           user_id: user.id,
           title: eventForm.title,
           description: eventForm.description,
-          date: new Date(eventForm.date)
+          date: eventForm.date // This is already a string from the input
         });
         
       if (error) throw error;
