@@ -22,7 +22,7 @@ const AdminPanel = () => {
   const navigate = useNavigate();
   
   // Admin IDs - hardcoded for simplicity. In a real app, this should be in a database
-  const adminIds = ['your-admin-user-id']; // Replace with your actual admin user ID
+  const adminIds = ['9ce47b0c-0d0a-4834-ae81-e103dff2e386']; // Replace with your actual admin user ID
   
   useEffect(() => {
     if (!user) {
