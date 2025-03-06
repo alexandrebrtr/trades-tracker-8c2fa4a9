@@ -5,12 +5,15 @@ import App from './App.tsx'
 import './index.css'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { PremiumProvider } from './context/PremiumContext'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
       <AuthProvider>
-        <App />
+        <PremiumProvider>
+          <App />
+        </PremiumProvider>
       </AuthProvider>
     </ThemeProvider>
   </React.StrictMode>,

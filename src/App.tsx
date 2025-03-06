@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -50,11 +51,12 @@ function App() {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
           <Route path="/trade/:id" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
+          <Route path="/trade-entry" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
           <Route path="/portfolio" element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
           <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
           <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
-          <Route path="/chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
+          <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
           <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
           <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
