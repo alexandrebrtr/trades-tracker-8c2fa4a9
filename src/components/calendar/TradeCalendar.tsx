@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
+import { useState } from 'react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -20,34 +20,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
 
-interface Trade {
-  id: string;
-  date: Date;
-  symbol: string;
-  type: string;
-  entry_price: number;
-  exit_price: number;
-  pnl: number;
-  size: number;
+// Define the props interface for the TradeCalendar component
+interface TradeCalendarProps {
+  events: Array<{
+    id: string;
+    title: string;
+    description: string | null;
+    date: Date;
+    type: 'trade' | 'event';
+    trade?: any;
+    event?: any;
+  }>;
 }
 
-interface CalendarEvent {
-  id: string;
-  user_id: string;
-  title: string;
-  description?: string;
-  date: Date;
-  created_at?: Date;
-}
-
-export function TradeCalendar() {
+export function TradeCalendar({ events }: TradeCalendarProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -88,73 +77,6 @@ export function TradeCalendar() {
     nextMonthDays.push(i);
   }
   
-  // Fetch trades and events when month changes or user changes
-  useEffect(() => {
-    if (!user) return;
-    
-    const fetchTradesAndEvents = async () => {
-      setIsLoading(true);
-      
-      // Format date for start and end of month for query
-      const startDate = new Date(year, month, 1);
-      const endDate = new Date(year, month + 1, 0, 23, 59, 59);
-      
-      try {
-        // Fetch trades for this month
-        const { data: tradesData, error: tradesError } = await supabase
-          .from('trades')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('date', startDate.toISOString())
-          .lte('date', endDate.toISOString());
-        
-        if (tradesError) throw tradesError;
-        
-        // Transform trades data
-        const formattedTrades = tradesData.map(trade => ({
-          ...trade,
-          date: new Date(trade.date)
-        }));
-        
-        setTrades(formattedTrades);
-        
-        // Fetch calendar events for this month
-        const { data: eventsData, error: eventsError } = await supabase
-          .from('calendar_events')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('date', startDate.toISOString())
-          .lte('date', endDate.toISOString());
-        
-        if (eventsError) {
-          // If the table doesn't exist yet, we'll create it later
-          console.log('Events table may not exist yet:', eventsError);
-          setEvents([]);
-        } else {
-          // Transform events data
-          const formattedEvents = eventsData.map(event => ({
-            ...event,
-            date: new Date(event.date),
-            created_at: new Date(event.created_at)
-          }));
-          
-          setEvents(formattedEvents);
-        }
-      } catch (error) {
-        console.error("Error fetching calendar data:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de récupérer les données du calendrier.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchTradesAndEvents();
-  }, [user, year, month, toast]);
-  
   // Navigate to previous/next month
   const prevMonth = () => {
     setCurrentMonth(new Date(year, month - 1, 1));
@@ -162,16 +84,6 @@ export function TradeCalendar() {
   
   const nextMonth = () => {
     setCurrentMonth(new Date(year, month + 1, 1));
-  };
-  
-  // Get trades for a specific day
-  const getTradesForDay = (day: number) => {
-    return trades.filter(trade => {
-      const tradeDate = trade.date;
-      return tradeDate.getDate() === day && 
-             tradeDate.getMonth() === month && 
-             tradeDate.getFullYear() === year;
-    });
   };
   
   // Get events for a specific day
@@ -226,15 +138,6 @@ export function TradeCalendar() {
         .single();
       
       if (error) throw error;
-      
-      // Add new event to state
-      if (data) {
-        setEvents([...events, {
-          ...data,
-          date: new Date(data.date),
-          created_at: new Date(data.created_at)
-        }]);
-      }
       
       toast({
         title: "Succès",
@@ -299,7 +202,6 @@ export function TradeCalendar() {
           
           {/* Current month days */}
           {days.map((day) => {
-            const dayTrades = getTradesForDay(day);
             const dayEvents = getEventsForDay(day);
             const isToday = new Date().getDate() === day && 
                             new Date().getMonth() === month && 
@@ -338,48 +240,29 @@ export function TradeCalendar() {
                 
                 {/* Calendar content container */}
                 <div className="mt-1 space-y-1 max-h-[70px] overflow-y-auto">
-                  {/* Trade indicators */}
-                  {dayTrades.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-1">
-                      {dayTrades.slice(0, 2).map((trade) => (
-                        <Badge 
-                          key={trade.id} 
-                          variant="outline"
-                          className={cn(
-                            "text-[10px] px-1 py-0.5 truncate",
-                            trade.pnl > 0 ? "bg-green-500/10 hover:bg-green-500/20 text-green-500" 
-                                           : "bg-red-500/10 hover:bg-red-500/20 text-red-500"
-                          )}
-                          title={`${trade.symbol}: ${trade.pnl > 0 ? '+' : ''}${trade.pnl.toFixed(2)}€`}
-                        >
-                          {trade.symbol}: {trade.pnl > 0 ? '+' : ''}{trade.pnl.toFixed(2)}€
-                        </Badge>
-                      ))}
-                      
-                      {dayTrades.length > 2 && (
-                        <Badge variant="outline" className="text-[10px]">
-                          +{dayTrades.length - 2}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                  
                   {/* Event indicators */}
                   {dayEvents.length > 0 && (
                     <div className="space-y-1">
-                      {dayEvents.slice(0, 2).map((event) => (
+                      {dayEvents.slice(0, 3).map((event) => (
                         <div 
                           key={event.id} 
-                          className="text-xs bg-primary/10 px-1.5 py-0.5 rounded truncate"
+                          className={cn(
+                            "text-xs px-1.5 py-0.5 rounded truncate",
+                            event.type === 'trade' 
+                              ? ((event.trade?.pnl > 0) 
+                                ? "bg-green-500/10 text-green-500" 
+                                : "bg-red-500/10 text-red-500")
+                              : "bg-primary/10"
+                          )}
                           title={event.title}
                         >
                           {event.title}
                         </div>
                       ))}
                       
-                      {dayEvents.length > 2 && (
+                      {dayEvents.length > 3 && (
                         <div className="text-xs text-center text-muted-foreground">
-                          +{dayEvents.length - 2} autres
+                          +{dayEvents.length - 3} autres
                         </div>
                       )}
                     </div>
