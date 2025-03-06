@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { TradeCalendar } from '@/components/calendar/TradeCalendar';
+import { TradeCalendar, CalendarEvent } from '@/components/calendar/TradeCalendar';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,27 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-
-// Define types for calendar event data
-type TradeEvent = {
-  id: string;
-  title: string;
-  description: string;
-  date: Date;
-  type: 'trade';
-  trade: any;
-};
-
-type UserEvent = {
-  id: string;
-  title: string;
-  description: string | null;
-  date: Date;
-  type: 'event';
-  event: any;
-};
-
-type CalendarEventData = TradeEvent | UserEvent;
 
 const Calendar = () => {
   const { isLoading, user } = useAuth();
@@ -175,14 +153,14 @@ const Calendar = () => {
   };
   
   // Prepare calendar data from trades and events
-  const calendarData: CalendarEventData[] = [
+  const calendarData: CalendarEvent[] = [
     // Convert trades to calendar events
     ...trades.map(trade => ({
       id: trade.id,
       title: `Trade: ${trade.symbol} (${trade.type})`,
       description: `PnL: ${trade.pnl > 0 ? '+' : ''}${trade.pnl} €`,
       date: new Date(trade.date),
-      type: 'trade' as const,
+      type: 'trade',
       trade: trade
     })),
     // Add user events
@@ -191,7 +169,7 @@ const Calendar = () => {
       title: event.title,
       description: event.description,
       date: new Date(event.date),
-      type: 'event' as const,
+      type: 'event',
       event: event
     }))
   ];
@@ -216,7 +194,6 @@ const Calendar = () => {
         </div>
         
         <div className="glass-card p-6">
-          {/* Pass the events as a prop with the proper type */}
           <TradeCalendar events={calendarData} />
         </div>
         

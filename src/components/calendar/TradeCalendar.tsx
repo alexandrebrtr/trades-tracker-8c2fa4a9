@@ -20,17 +20,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
 
+// Define the event interface
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  description: string | null;
+  date: Date;
+  type: 'trade' | 'event';
+  trade?: any;
+  event?: any;
+}
+
 // Define the props interface for the TradeCalendar component
-interface TradeCalendarProps {
-  events: Array<{
-    id: string;
-    title: string;
-    description: string | null;
-    date: Date;
-    type: 'trade' | 'event';
-    trade?: any;
-    event?: any;
-  }>;
+export interface TradeCalendarProps {
+  events: CalendarEvent[];
 }
 
 export function TradeCalendar({ events }: TradeCalendarProps) {
