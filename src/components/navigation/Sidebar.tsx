@@ -16,7 +16,8 @@ import {
   LogOut,
   Brain,
   Wallet,
-  Settings
+  Settings,
+  Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,6 +43,10 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const { user, profile, signOut } = useAuth();
+  
+  // Admin IDs - hardcoded for simplicity. In a real app, this should be in a database
+  const adminIds = ['9ce47b0c-0d0a-4834-ae81-e103dff2e386']; // The admin user ID
+  const isAdmin = user && adminIds.includes(user.id);
 
   // Handle screen resize
   useEffect(() => {
@@ -127,6 +132,15 @@ export function Sidebar() {
       icon: <Brain className="w-5 h-5" />
     }
   ];
+
+  // Add admin item conditionally
+  if (isAdmin) {
+    navItems.push({
+      name: 'Administration',
+      path: '/admin',
+      icon: <Shield className="w-5 h-5" />
+    });
+  }
 
   return (
     <aside 
@@ -225,6 +239,14 @@ export function Sidebar() {
                   <span>Abonnement Premium</span>
                 </Link>
               </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem asChild>
+                  <Link to="/admin" className="flex items-center cursor-pointer">
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>Administration</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
