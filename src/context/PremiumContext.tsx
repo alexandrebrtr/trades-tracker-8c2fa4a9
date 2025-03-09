@@ -10,7 +10,49 @@ interface PremiumContextProps {
   premiumSince: string | null;
   premiumExpires: string | null;
   isLoading: boolean;
+  userSettings: UserSettings | null;
+  updateUserSettings: (settings: Partial<UserSettings>) => Promise<void>;
 }
+
+export interface UserSettings {
+  theme: {
+    primary: string;
+    background: string;
+    text: string;
+    sidebar: string;
+  };
+  layout: {
+    compactSidebar: boolean;
+    gridLayout: boolean;
+    showWelcome: boolean;
+  };
+  notifications: {
+    email: boolean;
+    push: boolean;
+    tradeAlerts: boolean;
+    marketNews: boolean;
+  };
+}
+
+const defaultSettings: UserSettings = {
+  theme: {
+    primary: '#9b87f5',
+    background: '#ffffff',
+    text: '#000000',
+    sidebar: '#f9fafb'
+  },
+  layout: {
+    compactSidebar: false,
+    gridLayout: false,
+    showWelcome: true
+  },
+  notifications: {
+    email: true,
+    push: false,
+    tradeAlerts: true,
+    marketNews: false
+  }
+};
 
 const PremiumContext = createContext<PremiumContextProps | undefined>(undefined);
 
@@ -19,6 +61,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   const [premiumSince, setPremiumSince] = useState<string | null>(null);
   const [premiumExpires, setPremiumExpires] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
 
@@ -27,6 +70,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     if (profile) {
       setIsLoading(true);
       checkPremiumStatus(profile);
+      loadUserSettings();
       setIsLoading(false);
     }
   }, [profile]);
@@ -83,6 +127,99 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       setPremiumSince(null);
       setPremiumExpires(null);
       localStorage.setItem('premiumUser', 'false');
+    }
+  };
+
+  const loadUserSettings = async () => {
+    if (!user) return;
+    
+    try {
+      // Essayer de charger depuis localStorage d'abord (pour des performances)
+      const savedSettings = localStorage.getItem(`userSettings_${user.id}`);
+      if (savedSettings) {
+        setUserSettings(JSON.parse(savedSettings));
+      }
+      
+      // Chercher les paramètres dans la base de données
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('settings')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) {
+        console.error('Erreur lors du chargement des paramètres:', error);
+        // Si pas de paramètres en base, utiliser les valeurs par défaut
+        if (!savedSettings) {
+          setUserSettings(defaultSettings);
+        }
+        return;
+      }
+      
+      if (data && data.settings) {
+        // Fusionner avec les paramètres par défaut pour s'assurer que toutes les propriétés existent
+        const mergedSettings = {
+          ...defaultSettings,
+          ...data.settings
+        };
+        
+        setUserSettings(mergedSettings);
+        // Mettre à jour le localStorage
+        localStorage.setItem(`userSettings_${user.id}`, JSON.stringify(mergedSettings));
+      } else if (!savedSettings) {
+        // Pas de paramètres en base ou en local, initialiser avec les valeurs par défaut
+        setUserSettings(defaultSettings);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des paramètres utilisateur:', error);
+      // En cas d'erreur, utiliser les paramètres par défaut si rien n'est chargé
+      if (!userSettings) {
+        setUserSettings(defaultSettings);
+      }
+    }
+  };
+
+  const updateUserSettings = async (newSettings: Partial<UserSettings>) => {
+    if (!user || !userSettings) return;
+    
+    try {
+      // Mettre à jour l'état local
+      const updatedSettings = {
+        ...userSettings,
+        ...newSettings
+      };
+      
+      setUserSettings(updatedSettings);
+      
+      // Mettre à jour le localStorage
+      localStorage.setItem(`userSettings_${user.id}`, JSON.stringify(updatedSettings));
+      
+      // Mettre à jour la base de données
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          settings: updatedSettings,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Paramètres enregistrés",
+        description: "Vos préférences ont été mises à jour avec succès.",
+      });
+      
+      return;
+    } catch (error: any) {
+      console.error("Erreur lors de la mise à jour des paramètres:", error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors de la mise à jour des paramètres",
+        variant: "destructive"
+      });
     }
   };
 
@@ -170,7 +307,9 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       setPremiumStatus, 
       premiumSince, 
       premiumExpires, 
-      isLoading 
+      isLoading,
+      userSettings,
+      updateUserSettings
     }}>
       {children}
     </PremiumContext.Provider>

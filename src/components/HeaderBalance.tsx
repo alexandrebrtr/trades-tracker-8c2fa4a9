@@ -53,7 +53,7 @@ export function HeaderBalance() {
   return (
     <div className="flex items-center gap-2">
       {isPremium && (
-        <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+        <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 animate-fadeIn">
           <Star className="h-3.5 w-3.5 mr-1 fill-yellow-500" />
           Premium
         </Badge>

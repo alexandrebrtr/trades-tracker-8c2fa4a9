@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,63 +23,67 @@ import {
   Palette,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { usePremium } from '@/context/PremiumContext';
+import { usePremium, UserSettings } from '@/context/PremiumContext';
+import { useState } from 'react';
 
 export default function Settings() {
   const { toast } = useToast();
-  const { isPremium } = usePremium();
+  const { isPremium, userSettings, updateUserSettings } = usePremium();
   const [copied, setCopied] = useState(false);
+  
+  // États locaux pour les paramètres de l'utilisateur
   const [theme, setTheme] = useState({
     primary: '#9b87f5',
     background: '#ffffff',
     text: '#000000',
     sidebar: '#f9fafb'
   });
+  
   const [apiKeys, setApiKeys] = useState({
     alphavantage: '',
     finnhub: '',
     tradingview: ''
   });
+  
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
     tradeAlerts: true,
     marketNews: false
   });
+  
   const [layout, setLayout] = useState({
     compactSidebar: false,
     gridLayout: false,
     showWelcome: true
   });
 
-  const handleSaveTheme = () => {
-    // In a real app, this would update the theme in the database/localStorage
-    toast({
-      title: "Thème enregistré",
-      description: "Votre nouveau thème a été appliqué avec succès.",
-    });
+  // Mettre à jour les états locaux lorsque les paramètres utilisateur sont chargés
+  useEffect(() => {
+    if (userSettings) {
+      setTheme(userSettings.theme);
+      setLayout(userSettings.layout);
+      setNotifications(userSettings.notifications);
+    }
+  }, [userSettings]);
+
+  const handleSaveTheme = async () => {
+    await updateUserSettings({ theme });
   };
 
   const handleSaveApiKeys = () => {
-    // In a real app, this would securely store API keys
     toast({
       title: "Clés API enregistrées",
       description: "Vos clés API ont été sauvegardées en toute sécurité.",
     });
   };
 
-  const handleSaveNotifications = () => {
-    toast({
-      title: "Paramètres de notifications enregistrés",
-      description: "Vos préférences de notifications ont été mises à jour.",
-    });
+  const handleSaveNotifications = async () => {
+    await updateUserSettings({ notifications });
   };
 
-  const handleSaveLayout = () => {
-    toast({
-      title: "Mise en page enregistrée",
-      description: "Vos préférences de mise en page ont été appliquées.",
-    });
+  const handleSaveLayout = async () => {
+    await updateUserSettings({ layout });
   };
 
   const handleCopyTheme = () => {
