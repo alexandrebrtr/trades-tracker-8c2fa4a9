@@ -23,12 +23,6 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check localStorage for premium status on mount
-    const storedStatus = localStorage.getItem('premiumUser');
-    if (storedStatus === 'true') {
-      setIsPremium(true);
-    }
-
     // Check premium status in profile when user is authenticated
     if (profile) {
       setIsLoading(true);
@@ -36,6 +30,34 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     }
   }, [profile]);
+
+  // Set up real-time updates for profile changes
+  useEffect(() => {
+    if (!user) return;
+
+    // Subscribe to real-time changes on the profiles table
+    const channel = supabase
+      .channel('profile-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`
+        },
+        (payload) => {
+          // When a profile update is detected, refresh the profile data
+          console.log('Profile update detected:', payload);
+          refreshProfile();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, refreshProfile]);
 
   const checkPremiumStatus = (profile: any) => {
     if (profile.premium) {

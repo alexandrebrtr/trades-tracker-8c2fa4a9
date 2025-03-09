@@ -126,15 +126,25 @@ export default function Payment() {
     
     try {
       // Simuler une attente de traitement
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Mettre à jour le statut premium
+      // Mettre à jour le statut premium - ceci mettra également à jour le solde
       await setPremiumStatus(true);
       
       // Rafraîchir le profil pour obtenir les nouvelles informations
       await refreshProfile();
       
+      // Collecter des données pour l'analytique (exemple)
+      console.log(`Premium plan purchased: ${selectedPlan}, price: ${prices[selectedPlan]}`);
+      
+      // Passer à l'étape de confirmation
       setStep('confirmation');
+      
+      // Notification supplémentaire pour confirmer l'activation des fonctionnalités premium
+      toast({
+        title: "Toutes les fonctionnalités premium sont activées",
+        description: "Vous avez maintenant accès à toutes les fonctionnalités premium!",
+      });
     } catch (error) {
       console.error("Erreur lors du traitement du paiement:", error);
       toast({

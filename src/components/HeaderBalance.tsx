@@ -20,7 +20,7 @@ export function HeaderBalance() {
     // Subscribe to real-time changes on the profiles table
     if (user) {
       const channel = supabase
-        .channel('profile-changes')
+        .channel('profile-balance-updates')
         .on(
           'postgres_changes',
           {
@@ -30,6 +30,7 @@ export function HeaderBalance() {
             filter: `id=eq.${user.id}`
           },
           (payload) => {
+            console.log('Profile update received in HeaderBalance:', payload);
             // Add type checking to ensure payload.new has balance property
             if (payload.new && typeof payload.new === 'object' && 'balance' in payload.new) {
               setBalance(Number(payload.new.balance));
@@ -43,6 +44,11 @@ export function HeaderBalance() {
       };
     }
   }, [user, profile]);
+
+  // Update when isPremium changes
+  useEffect(() => {
+    console.log('Premium status in HeaderBalance:', isPremium);
+  }, [isPremium]);
   
   return (
     <div className="flex items-center gap-2">

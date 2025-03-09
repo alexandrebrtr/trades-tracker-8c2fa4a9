@@ -16,6 +16,7 @@ const AdminPanel = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const { user, profile } = useAuth();
   const { toast } = useToast();
@@ -76,10 +77,15 @@ const AdminPanel = () => {
   
   const togglePremium = async (userId: string, currentStatus: boolean) => {
     try {
+      // Prevent multiple simultaneous operations
+      if (isProcessing) return;
+      setIsProcessing(userId);
+      
       const now = new Date();
       const oneYearFromNow = new Date();
       oneYearFromNow.setFullYear(now.getFullYear() + 1);
       
+      // Update premium status in the database
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -94,20 +100,37 @@ const AdminPanel = () => {
       
       // Update local state
       setUsers(users.map(user => 
-        user.id === userId ? { ...user, premium: !currentStatus, premium_since: !currentStatus ? now.toISOString() : null, premium_expires: !currentStatus ? oneYearFromNow.toISOString() : null } : user
+        user.id === userId ? { 
+          ...user, 
+          premium: !currentStatus, 
+          premium_since: !currentStatus ? now.toISOString() : null, 
+          premium_expires: !currentStatus ? oneYearFromNow.toISOString() : null 
+        } : user
       ));
       
+      // Success notification
       toast({
-        title: "Statut premium mis à jour",
-        description: `L'utilisateur a été ${!currentStatus ? 'promu' : 'rétrogradé'} avec succès.`,
+        title: !currentStatus ? "Abonnement premium activé" : "Abonnement premium désactivé",
+        description: `Le statut premium de l'utilisateur a été ${!currentStatus ? 'activé' : 'désactivé'} avec succès.`,
       });
-    } catch (error) {
+      
+      // Trigger a real-time update to notify clients
+      await supabase
+        .from('profiles')
+        .update({ 
+          updated_at: new Date().toISOString() // Force an update
+        })
+        .eq('id', userId);
+        
+    } catch (error: any) {
       console.error('Error updating premium status:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour du statut premium.",
+        description: error.message || "Une erreur est survenue lors de la mise à jour du statut premium.",
         variant: "destructive"
       });
+    } finally {
+      setIsProcessing(null);
     }
   };
   
@@ -210,10 +233,15 @@ const AdminPanel = () => {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end items-center gap-2">
-                              <Switch
-                                checked={!!user.premium}
-                                onCheckedChange={() => togglePremium(user.id, !!user.premium)}
-                              />
+                              {isProcessing === user.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : (
+                                <Switch
+                                  checked={!!user.premium}
+                                  onCheckedChange={() => togglePremium(user.id, !!user.premium)}
+                                  disabled={isProcessing !== null}
+                                />
+                              )}
                               <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                                 <Calendar className="h-4 w-4" />
                               </Button>
