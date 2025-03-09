@@ -143,7 +143,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       // Chercher les paramètres dans la base de données
       const { data, error } = await supabase
         .from('profiles')
-        .select('settings')
+        .select('*')
         .eq('id', user.id)
         .single();
       
@@ -204,6 +204,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
         .eq('id', user.id);
       
       if (error) {
+        console.error("Erreur lors de la mise à jour des paramètres:", error);
         throw error;
       }
       
