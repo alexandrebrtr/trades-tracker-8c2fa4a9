@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,8 +11,11 @@ import { usePremium } from '@/context/PremiumContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { Loader2, AlertTriangle, Lock, TrendingUp, TrendingDown, Info, Calendar, DollarSign, Activity, BarChart2, PieChart as PieChartIcon } from 'lucide-react';
 
-// Palette de couleurs pour les graphiques
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+const getBarColor = (data: any): string => {
+  return data.pnl >= 0 ? "#82ca9d" : "#ff8042";
+};
 
 export function AnalyticsView() {
   const { toast } = useToast();
@@ -47,7 +49,6 @@ export function AnalyticsView() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      // Récupérer les trades
       const { data: trades, error } = await supabase
         .from('trades')
         .select('*')
@@ -61,7 +62,6 @@ export function AnalyticsView() {
         return;
       }
 
-      // Générer les données de performance
       processTrades(trades);
     } catch (error: any) {
       console.error('Erreur lors du chargement des données:', error);
@@ -78,7 +78,6 @@ export function AnalyticsView() {
   const processTrades = (trades: any[]) => {
     if (!trades || trades.length === 0) return;
 
-    // Calcul des métriques
     const winningTrades = trades.filter(trade => (trade.pnl || 0) > 0);
     const losingTrades = trades.filter(trade => (trade.pnl || 0) < 0);
     
@@ -90,13 +89,11 @@ export function AnalyticsView() {
     const totalLoss = Math.abs(losingTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0));
     const profitFactor = totalLoss > 0 ? totalGain / totalLoss : totalGain;
 
-    // Simulations pour les métriques avancées (pour les utilisateurs premium)
     const sharpeRatio = (Math.random() * 2 + 0.5).toFixed(2);
     const volatility = (Math.random() * 10 + 5).toFixed(2);
     const correlation = (Math.random() * 0.8 - 0.4).toFixed(2);
     const riskAdjustedReturn = (Math.random() * 15 + 5).toFixed(2);
     
-    // Calculer le maximum drawdown
     let peak = 0;
     let maxDrawdown = 0;
     let cumulativeReturn = 0;
@@ -113,7 +110,6 @@ export function AnalyticsView() {
       }
     }
     
-    // Trading frequency (trades per month)
     const firstTradeDate = new Date(trades[0].date);
     const lastTradeDate = new Date(trades[trades.length - 1].date);
     const monthsDiff = (lastTradeDate.getFullYear() - firstTradeDate.getFullYear()) * 12 + 
@@ -134,7 +130,6 @@ export function AnalyticsView() {
       riskAdjustedReturn: parseFloat(riskAdjustedReturn)
     });
 
-    // Générer les données pour les graphiques
     generatePerformanceData(trades);
     generateMonthlyData(trades);
     generateStrategyData(trades);
@@ -295,7 +290,6 @@ export function AnalyticsView() {
     );
   }
 
-  // Formatage monétaire
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
   };
@@ -447,7 +441,7 @@ export function AnalyticsView() {
                       <Bar 
                         dataKey="pnl" 
                         name="P&L" 
-                        fill={(data) => data > 0 ? "#82ca9d" : "#ff8042"} 
+                        fill={getBarColor}
                       />
                     </BarChart>
                   </ResponsiveContainer>
