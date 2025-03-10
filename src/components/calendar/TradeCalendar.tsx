@@ -117,7 +117,14 @@ export function TradeCalendar({ events }: TradeCalendarProps) {
   
   // Save new event
   const saveEvent = async () => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour ajouter un événement.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     if (!newEvent.title.trim()) {
       toast({
@@ -214,7 +221,7 @@ export function TradeCalendar({ events }: TradeCalendarProps) {
               <div 
                 key={`current-${day}`} 
                 className={cn(
-                  "border-t border-r h-24 p-1 relative",
+                  "border-t border-r h-24 p-1 relative group",
                   isToday ? "bg-primary/5" : ""
                 )}
                 onClick={() => openEventDialog(day)}

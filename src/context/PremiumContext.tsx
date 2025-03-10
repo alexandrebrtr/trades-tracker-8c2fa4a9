@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,6 +49,8 @@ const PremiumContext = createContext<PremiumContextType>({
 
 export const usePremium = () => useContext(PremiumContext);
 
+export type { UserSettings }; // Export the UserSettings type
+
 interface PremiumProviderProps {
   children: ReactNode;
 }
@@ -63,12 +66,13 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('settings')
+        .select('*')
         .eq('id', userId)
         .single();
 
       if (error) throw error;
 
+      // Safe access to settings (may not exist in the database yet)
       return profile?.settings as UserSettings || {};
     } catch (error) {
       console.error('Error loading user settings:', error);

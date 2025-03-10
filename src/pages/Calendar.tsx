@@ -11,9 +11,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const Calendar = () => {
   const { isLoading, user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [trades, setTrades] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
@@ -24,6 +26,18 @@ const Calendar = () => {
     date: new Date().toISOString().split('T')[0]
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  useEffect(() => {
+    // Redirect users who aren't logged in
+    if (!isLoading && !user) {
+      toast({
+        title: "Authentification requise",
+        description: "Vous devez être connecté pour accéder à cette page",
+        variant: "destructive"
+      });
+      navigate('/login');
+    }
+  }, [user, isLoading, navigate, toast]);
   
   useEffect(() => {
     if (!user) return;
