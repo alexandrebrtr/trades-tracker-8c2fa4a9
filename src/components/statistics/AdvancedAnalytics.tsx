@@ -22,15 +22,41 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Trade } from "@/components/journal/types";
+
+// Define types for our data structures
+interface StrategyData {
+  returns: number[];
+  count: number;
+}
+
+interface HourlyPerfData {
+  total: number;
+  count: number;
+}
+
+interface DailyPerfData {
+  total: number;
+  count: number;
+}
+
+interface Metrics {
+  sortino: string;
+  calmar: string;
+  alpha: string;
+  bestTime: string;
+  bestDay: string;
+  gainLoss: string;
+}
 
 const AdvancedAnalytics = () => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
-  const [riskReturnData, setRiskReturnData] = useState([]);
-  const [efficiencyFrontierData, setEfficiencyFrontierData] = useState([]);
-  const [weekdayPerformanceData, setWeekdayPerformanceData] = useState([]);
-  const [hourlyPerformanceData, setHourlyPerformanceData] = useState([]);
-  const [metrics, setMetrics] = useState({
+  const [riskReturnData, setRiskReturnData] = useState<Array<{name: string; x: number; y: number; z: number;}>>([]);
+  const [efficiencyFrontierData, setEfficiencyFrontierData] = useState<Array<{risk: number; return: number;}>>([]);
+  const [weekdayPerformanceData, setWeekdayPerformanceData] = useState<Array<{day: string; return: number;}>>([]);
+  const [hourlyPerformanceData, setHourlyPerformanceData] = useState<Array<{hour: string; return: number;}>>([]);
+  const [metrics, setMetrics] = useState<Metrics>({
     sortino: "2.3",
     calmar: "1.7",
     alpha: "3.8%",
@@ -68,7 +94,7 @@ const AdvancedAnalytics = () => {
   }, [user]);
 
   // Fonction pour traiter les données des trades
-  const processTradeData = (trades) => {
+  const processTradeData = (trades: Trade[]) => {
     if (!trades || trades.length === 0) {
       useDefaultData();
       return;
@@ -85,14 +111,14 @@ const AdvancedAnalytics = () => {
   };
 
   // Calculer les métriques avancées basées sur les trades
-  const calculateMetrics = (trades) => {
+  const calculateMetrics = (trades: Trade[]) => {
     const winningTrades = trades.filter(trade => trade.pnl > 0);
     const losingTrades = trades.filter(trade => trade.pnl < 0);
     
     // Calculer le ratio de Sortino (simplification)
-    const averageReturn = trades.reduce((sum, trade) => sum + trade.pnl, 0) / trades.length;
+    const averageReturn = trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0) / trades.length;
     const downwardDeviation = Math.sqrt(
-      losingTrades.reduce((sum, trade) => sum + Math.pow(trade.pnl, 2), 0) / (losingTrades.length || 1)
+      losingTrades.reduce((sum, trade) => sum + Math.pow((trade.pnl || 0), 2), 0) / (losingTrades.length || 1)
     );
     const sortino = downwardDeviation !== 0 ? (averageReturn / downwardDeviation).toFixed(1) : "N/A";
     
@@ -109,9 +135,9 @@ const AdvancedAnalytics = () => {
     
     // Ratio de gain/perte
     const avgWin = winningTrades.length > 0 ? 
-      winningTrades.reduce((sum, t) => sum + t.pnl, 0) / winningTrades.length : 0;
+      winningTrades.reduce((sum, t) => sum + (t.pnl || 0), 0) / winningTrades.length : 0;
     const avgLoss = losingTrades.length > 0 ? 
-      Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0) / losingTrades.length) : 1;
+      Math.abs(losingTrades.reduce((sum, t) => sum + (t.pnl || 0), 0) / losingTrades.length) : 1;
     const gainLoss = avgLoss !== 0 ? (avgWin / avgLoss).toFixed(1) : "N/A";
     
     setMetrics({
@@ -125,13 +151,13 @@ const AdvancedAnalytics = () => {
   };
 
   // Calculer le drawdown maximum
-  const calculateMaxDrawdown = (trades) => {
+  const calculateMaxDrawdown = (trades: Trade[]) => {
     let peak = 0;
     let maxDrawdown = 0;
     let cumulativePnL = 0;
     
-    trades.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(trade => {
-      cumulativePnL += trade.pnl;
+    trades.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).forEach(trade => {
+      cumulativePnL += (trade.pnl || 0);
       if (cumulativePnL > peak) {
         peak = cumulativePnL;
       }
@@ -146,9 +172,9 @@ const AdvancedAnalytics = () => {
   };
 
   // Analyser les performances par heure et jour de la semaine
-  const analyzeTimePerformance = (trades) => {
-    const hourlyPerf = {};
-    const dailyPerf = {};
+  const analyzeTimePerformance = (trades: Trade[]) => {
+    const hourlyPerf: Record<string, HourlyPerfData> = {};
+    const dailyPerf: Record<string, DailyPerfData> = {};
     const dayNames = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
     
     trades.forEach(trade => {
@@ -160,12 +186,12 @@ const AdvancedAnalytics = () => {
       
       // Performance par heure
       hourlyPerf[hour] = hourlyPerf[hour] || { total: 0, count: 0 };
-      hourlyPerf[hour].total += trade.pnl;
+      hourlyPerf[hour].total += (trade.pnl || 0);
       hourlyPerf[hour].count += 1;
       
       // Performance par jour
       dailyPerf[day] = dailyPerf[day] || { total: 0, count: 0 };
-      dailyPerf[day].total += trade.pnl;
+      dailyPerf[day].total += (trade.pnl || 0);
       dailyPerf[day].count += 1;
     });
     
@@ -187,7 +213,7 @@ const AdvancedAnalytics = () => {
       const avg = data.total / data.count;
       if (avg > maxDailyAvg) {
         maxDailyAvg = avg;
-        bestDay = dayNames[day];
+        bestDay = dayNames[parseInt(day)];
       }
     });
     
@@ -195,9 +221,9 @@ const AdvancedAnalytics = () => {
   };
 
   // Préparer les données pour le graphique de risque-rendement
-  const prepareRiskReturnData = (trades) => {
+  const prepareRiskReturnData = (trades: Trade[]) => {
     // Grouper les trades par stratégie
-    const strategies = {};
+    const strategies: Record<string, StrategyData> = {};
     trades.forEach(trade => {
       if (!trade.strategy) return;
       
@@ -206,7 +232,7 @@ const AdvancedAnalytics = () => {
         count: 0
       };
       
-      strategies[trade.strategy].returns.push(trade.pnl);
+      strategies[trade.strategy].returns.push(trade.pnl || 0);
       strategies[trade.strategy].count += 1;
     });
     
@@ -230,7 +256,7 @@ const AdvancedAnalytics = () => {
   };
 
   // Préparer les données pour la frontière d'efficience
-  const prepareEfficiencyFrontierData = (trades) => {
+  const prepareEfficiencyFrontierData = (trades: Trade[]) => {
     if (trades.length < 10) {
       setEfficiencyFrontierData(getDefaultEfficiencyFrontierData());
       return;
@@ -247,11 +273,13 @@ const AdvancedAnalytics = () => {
   };
 
   // Préparer les données de performance par jour de la semaine
-  const prepareWeekdayPerformanceData = (trades) => {
-    const dayPerformance = {
+  const prepareWeekdayPerformanceData = (trades: Trade[]) => {
+    const dayPerformance: Record<string, number> = {
       "Lundi": 0, "Mardi": 0, "Mercredi": 0, "Jeudi": 0, "Vendredi": 0
     };
-    const dayCount = { "Lundi": 0, "Mardi": 0, "Mercredi": 0, "Jeudi": 0, "Vendredi": 0 };
+    const dayCount: Record<string, number> = { 
+      "Lundi": 0, "Mardi": 0, "Mercredi": 0, "Jeudi": 0, "Vendredi": 0 
+    };
     const dayMap = [null, "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", null];
     
     trades.forEach(trade => {
@@ -263,9 +291,11 @@ const AdvancedAnalytics = () => {
       // Ignorer le weekend
       if (day === 0 || day === 6) return;
       
-      const dayName = dayMap[day];
-      dayPerformance[dayName] = (dayPerformance[dayName] || 0) + trade.pnl;
-      dayCount[dayName] = (dayCount[dayName] || 0) + 1;
+      const dayName = dayMap[day] as string;
+      if (dayName) {
+        dayPerformance[dayName] = (dayPerformance[dayName] || 0) + (trade.pnl || 0);
+        dayCount[dayName] = (dayCount[dayName] || 0) + 1;
+      }
     });
     
     const data = Object.entries(dayPerformance).map(([day, total]) => ({
@@ -278,9 +308,9 @@ const AdvancedAnalytics = () => {
   };
 
   // Préparer les données de performance par heure
-  const prepareHourlyPerformanceData = (trades) => {
-    const hourlyPerformance = {};
-    const hourlyCount = {};
+  const prepareHourlyPerformanceData = (trades: Trade[]) => {
+    const hourlyPerformance: Record<string, number> = {};
+    const hourlyCount: Record<string, number> = {};
     
     trades.forEach(trade => {
       if (!trade.date) return;
@@ -292,7 +322,7 @@ const AdvancedAnalytics = () => {
       if (hour < 9 || hour > 17) return;
       
       const hourKey = `${hour}:00`;
-      hourlyPerformance[hourKey] = (hourlyPerformance[hourKey] || 0) + trade.pnl;
+      hourlyPerformance[hourKey] = (hourlyPerformance[hourKey] || 0) + (trade.pnl || 0);
       hourlyCount[hourKey] = (hourlyCount[hourKey] || 0) + 1;
     });
     
