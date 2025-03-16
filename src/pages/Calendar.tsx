@@ -167,6 +167,28 @@ const Calendar = () => {
     }
   };
   
+  // Refresh data
+  const handleEventsUpdated = () => {
+    if (!user) return;
+    
+    // Refresh user calendar events
+    const fetchEvents = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('calendar_events')
+          .select('*')
+          .eq('user_id', user.id);
+          
+        if (error) throw error;
+        setEvents(data || []);
+      } catch (error) {
+        console.error('Error fetching calendar events:', error);
+      }
+    };
+    
+    fetchEvents();
+  };
+  
   // Prepare calendar data from trades and events
   const calendarData: CalendarEvent[] = [
     // Convert trades to calendar events
@@ -209,7 +231,7 @@ const Calendar = () => {
         </div>
         
         <div className="glass-card p-6">
-          <TradeCalendar events={calendarData} />
+          <TradeCalendar events={calendarData} onEventsUpdated={handleEventsUpdated} />
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

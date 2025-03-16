@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { DayDetailView } from './DayDetailView';
 
 // Define the event interface
 export interface CalendarEvent {
@@ -34,13 +35,15 @@ export interface CalendarEvent {
 // Define the props interface for the TradeCalendar component
 export interface TradeCalendarProps {
   events: CalendarEvent[];
+  onEventsUpdated?: () => void;
 }
 
-export function TradeCalendar({ events }: TradeCalendarProps) {
+export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showEventDialog, setShowEventDialog] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [newEvent, setNewEvent] = useState({
     title: '',
     description: '',
@@ -103,6 +106,12 @@ export function TradeCalendar({ events }: TradeCalendarProps) {
   const formatMonthName = (date: Date) => {
     return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
   };
+
+  // View day detail
+  const viewDayDetail = (day: number) => {
+    const selectedDate = new Date(year, month, day);
+    setSelectedDay(selectedDate);
+  };
   
   // Open event dialog for a specific day
   const openEventDialog = (day: number) => {
@@ -155,6 +164,7 @@ export function TradeCalendar({ events }: TradeCalendarProps) {
       });
       
       setShowEventDialog(false);
+      if (onEventsUpdated) onEventsUpdated();
     } catch (error) {
       console.error("Error adding event:", error);
       toast({
@@ -163,6 +173,11 @@ export function TradeCalendar({ events }: TradeCalendarProps) {
         variant: "destructive"
       });
     }
+  };
+
+  // Handle event added in day detail view
+  const handleEventAdded = () => {
+    if (onEventsUpdated) onEventsUpdated();
   };
   
   return (
@@ -221,10 +236,10 @@ export function TradeCalendar({ events }: TradeCalendarProps) {
               <div 
                 key={`current-${day}`} 
                 className={cn(
-                  "border-t border-r h-24 p-1 relative group",
+                  "border-t border-r h-24 p-1 relative group transition-colors duration-150 hover:bg-accent/10 cursor-pointer",
                   isToday ? "bg-primary/5" : ""
                 )}
-                onClick={() => openEventDialog(day)}
+                onClick={() => viewDayDetail(day)}
               >
                 <div className="flex justify-between items-start">
                   <span className={cn(
@@ -329,6 +344,21 @@ export function TradeCalendar({ events }: TradeCalendarProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Day Detail View */}
+      {selectedDay && (
+        <DayDetailView 
+          date={selectedDay} 
+          events={events.filter(event => {
+            const eventDate = new Date(event.date);
+            return eventDate.getDate() === selectedDay.getDate() &&
+                   eventDate.getMonth() === selectedDay.getMonth() &&
+                   eventDate.getFullYear() === selectedDay.getFullYear();
+          })}
+          onClose={() => setSelectedDay(null)}
+          onEventAdded={handleEventAdded}
+        />
+      )}
     </div>
   );
 }

@@ -37,6 +37,8 @@ interface PremiumContextType {
   premiumExpires: string | null;
   loadingPremium: boolean;
   refreshPremiumStatus: () => Promise<void>;
+  userSettings: UserSettings;
+  updateUserSettings: (settings: UserSettings) => Promise<void>;
 }
 
 const PremiumContext = createContext<PremiumContextType>({
@@ -45,6 +47,8 @@ const PremiumContext = createContext<PremiumContextType>({
   premiumExpires: null,
   loadingPremium: true,
   refreshPremiumStatus: async () => {},
+  userSettings: {},
+  updateUserSettings: async () => {},
 });
 
 export const usePremium = () => useContext(PremiumContext);
@@ -61,6 +65,7 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
   const [premiumSince, setPremiumSince] = useState<string | null>(null);
   const [premiumExpires, setPremiumExpires] = useState<string | null>(null);
   const [loadingPremium, setLoadingPremium] = useState(true);
+  const [userSettings, setUserSettings] = useState<UserSettings>({});
 
   const loadUserSettings = async (userId: string) => {
     try {
@@ -72,11 +77,29 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
 
       if (error) throw error;
 
-      // Safe access to settings (may not exist in the database yet)
+      // Return stored settings or empty object if not found
       return profile?.settings as UserSettings || {};
     } catch (error) {
       console.error('Error loading user settings:', error);
       return {};
+    }
+  };
+
+  const updateUserSettings = async (newSettings: UserSettings) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ settings: newSettings })
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
+      setUserSettings(newSettings);
+    } catch (error) {
+      console.error('Error updating user settings:', error);
+      throw error;
     }
   };
 
@@ -93,7 +116,7 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('premium, premium_since, premium_expires')
+        .select('premium, premium_since, premium_expires, settings')
         .eq('id', user.id)
         .single();
 
@@ -107,6 +130,7 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
       setIsPremium(isActive);
       setPremiumSince(data.premium_since);
       setPremiumExpires(data.premium_expires);
+      setUserSettings(data.settings || {});
 
       console.log('Premium status loaded:', isActive);
     } catch (error) {
@@ -129,6 +153,8 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
         premiumExpires,
         loadingPremium,
         refreshPremiumStatus,
+        userSettings,
+        updateUserSettings,
       }}
     >
       {children}
