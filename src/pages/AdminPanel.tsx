@@ -36,8 +36,8 @@ const AdminPanel = () => {
       
       if (!isUserAdmin) {
         toast({
-          title: "Accès refusé",
-          description: "Vous n'avez pas les droits d'administrateur pour accéder à cette page.",
+          title: "Access denied",
+          description: "You don't have administrator permissions to access this page.",
           variant: "destructive"
         });
         navigate('/dashboard');
@@ -48,6 +48,7 @@ const AdminPanel = () => {
     
     // If user is admin, fetch all users
     if (adminIds.includes(user.id)) {
+      console.log('Admin user detected, fetching all users');
       fetchUsers();
       
       // Set up real-time subscription for profiles changes
@@ -56,6 +57,7 @@ const AdminPanel = () => {
         .on('postgres_changes', 
           { event: '*', schema: 'public', table: 'profiles' }, 
           () => {
+            console.log('Profiles change detected, refreshing user list');
             fetchUsers();
           }
         )
@@ -70,17 +72,20 @@ const AdminPanel = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
+      console.log('Fetching all users for admin panel');
       const { data, error } = await supabase
         .from('profiles')
         .select('*');
         
       if (error) throw error;
+      
+      console.log(`Retrieved ${data?.length || 0} user profiles`);
       setUsers(data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la récupération des utilisateurs.",
+        title: "Error",
+        description: "An error occurred while retrieving users.",
         variant: "destructive"
       });
     } finally {
@@ -109,22 +114,22 @@ const AdminPanel = () => {
       <div className="page-transition space-y-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">Panneau d'administration</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Admin Panel</h1>
             <div className="flex items-center text-xs bg-blue-500/10 text-blue-500 px-2 py-1 rounded-full border border-blue-500/20">
               <Users className="h-3 w-3 mr-1" />
-              {users.length} Utilisateurs
+              {users.length} Users
             </div>
           </div>
           <Button onClick={fetchUsers} variant="outline" size="sm">
-            Rafraîchir
+            Refresh
           </Button>
         </div>
         
         <Card>
           <CardHeader>
-            <CardTitle>Gestion des utilisateurs</CardTitle>
+            <CardTitle>User Management</CardTitle>
             <CardDescription>
-              Attribuez le statut premium gratuitement aux utilisateurs sélectionnés
+              Assign premium status to selected users for free
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -142,35 +147,35 @@ const AdminPanel = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Intégration d'une IA par API</CardTitle>
+            <CardTitle>AI Integration via API</CardTitle>
             <CardDescription>
-              Guide pour intégrer une IA à votre application
+              Guide to integrating AI into your application
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="space-y-2">
-                <h3 className="text-lg font-medium">1. Choisissez un fournisseur d'IA</h3>
+                <h3 className="text-lg font-medium">1. Choose an AI Provider</h3>
                 <p className="text-muted-foreground">
-                  Des services comme OpenAI (GPT), Google (Gemini), Anthropic (Claude) ou Perplexity offrent des API simples à intégrer.
+                  Services like OpenAI (GPT), Google (Gemini), Anthropic (Claude) or Perplexity offer simple APIs to integrate.
                 </p>
               </div>
               
               <div className="space-y-2">
-                <h3 className="text-lg font-medium">2. Utilisez des Edge Functions Supabase</h3>
+                <h3 className="text-lg font-medium">2. Use Supabase Edge Functions</h3>
                 <p className="text-muted-foreground">
-                  Le moyen le plus sécurisé d'intégrer une IA est d'utiliser les Edge Functions de Supabase pour protéger vos clés API.
+                  The most secure way to integrate AI is to use Supabase Edge Functions to protect your API keys.
                 </p>
               </div>
               
               <div className="space-y-2">
-                <h3 className="text-lg font-medium">3. Implémentation</h3>
+                <h3 className="text-lg font-medium">3. Implementation</h3>
                 <div className="bg-muted p-4 rounded-md">
                   <p className="font-mono text-sm">
-                    Pour implémenter une IA avec OpenAI, suivez ces étapes :<br />
-                    1. Créez une Edge Function dans Supabase<br />
-                    2. Ajoutez votre clé API OpenAI dans les secrets Supabase<br />
-                    3. Créez un composant React pour interagir avec l'IA
+                    To implement AI with OpenAI, follow these steps:<br />
+                    1. Create an Edge Function in Supabase<br />
+                    2. Add your OpenAI API key to Supabase secrets<br />
+                    3. Create a React component to interact with the AI
                   </p>
                 </div>
               </div>
@@ -178,7 +183,7 @@ const AdminPanel = () => {
               <div className="flex justify-end">
                 <Button>
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  Voir l'exemple complet
+                  See complete example
                 </Button>
               </div>
             </div>

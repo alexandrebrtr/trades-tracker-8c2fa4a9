@@ -9,9 +9,11 @@ import { supabase } from '@/integrations/supabase/client';
 export default function Community() {
   const { profile } = useAuth();
   
-  // Activer les mises à jour en temps réel pour les tables utilisées dans cette page
+  // Set up real-time updates for tables used in this page
   useEffect(() => {
-    // Activer les canaux pour écouter les changements dans les tables
+    console.log('Setting up real-time subscriptions in Community page');
+    
+    // Listen for changes in the profiles table
     const profilesChannel = supabase
       .channel('real-time-profiles')
       .on('postgres_changes', 
@@ -24,6 +26,7 @@ export default function Community() {
         console.log(`Profiles subscription status: ${status}`);
       });
       
+    // Listen for changes in the trades table
     const tradesChannel = supabase
       .channel('real-time-trades')
       .on('postgres_changes', 
@@ -36,6 +39,7 @@ export default function Community() {
         console.log(`Trades subscription status: ${status}`);
       });
       
+    // Listen for changes in the forum_topics table
     const forumTopicsChannel = supabase
       .channel('real-time-forum')
       .on('postgres_changes', 
@@ -48,7 +52,7 @@ export default function Community() {
         console.log(`Forum subscription status: ${status}`);
       });
       
-    // Nettoyer les abonnements
+    // Clean up subscriptions when component unmounts
     return () => {
       console.log('Cleaning up realtime subscriptions');
       supabase.removeChannel(profilesChannel);

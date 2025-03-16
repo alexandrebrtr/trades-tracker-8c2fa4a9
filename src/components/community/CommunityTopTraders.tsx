@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -37,6 +36,7 @@ export function CommunityTopTraders() {
   const { user } = useAuth();
   
   useEffect(() => {
+    console.log('Setting up top traders component and fetching data');
     fetchTopTraders();
     
     // Set up real-time subscription
@@ -45,6 +45,7 @@ export function CommunityTopTraders() {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'trades' }, 
         () => {
+          console.log('Trades change detected, refreshing top traders');
           fetchTopTraders();
         }
       )
@@ -58,7 +59,7 @@ export function CommunityTopTraders() {
   const fetchTopTraders = async () => {
     setIsLoading(true);
     try {
-      console.log("Récupération des top traders...");
+      console.log("Retrieving top traders...");
       
       // Get all users with their profiles
       const { data: profiles, error: profilesError } = await supabase
@@ -66,11 +67,11 @@ export function CommunityTopTraders() {
         .select('*');
         
       if (profilesError) {
-        console.error("Erreur lors de la récupération des profils:", profilesError);
+        console.error("Error retrieving profiles:", profilesError);
         throw profilesError;
       }
       
-      console.log(`${profiles?.length || 0} profils récupérés`);
+      console.log(`${profiles?.length || 0} profiles retrieved`);
       
       if (!profiles || profiles.length === 0) {
         setTopTraders([]);
@@ -91,11 +92,11 @@ export function CommunityTopTraders() {
           return null;
         }
         
-        // Si aucun trade, on retourne quand même l'utilisateur avec des stats à zéro
+        // If no trades, return the user with zero stats
         if (!trades || trades.length === 0) {
           return {
             id: profile.id,
-            name: profile.username || 'Trader anonyme',
+            name: profile.username || 'Anonymous Trader',
             username: `@${profile.username?.toLowerCase().replace(/\s+/g, '_') || 'trader'}`,
             avatar: profile.avatar_url || '',
             winRate: 0,
@@ -153,7 +154,7 @@ export function CommunityTopTraders() {
         const changeOptions: ('up' | 'down' | 'same')[] = ['up', 'down', 'same'];
         const change = changeOptions[Math.floor(Math.random() * changeOptions.length)];
         
-        const username = profile.username || 'Trader anonyme';
+        const username = profile.username || 'Anonymous Trader';
         
         return {
           id: profile.id,
@@ -176,7 +177,7 @@ export function CommunityTopTraders() {
         .filter(Boolean)
         .sort((a, b) => ((b?.overallScore || 0) - (a?.overallScore || 0)));
       
-      console.log(`${validTraders.length} traders valides après filtrage et tri`);
+      console.log(`${validTraders.length} valid traders after filtering and sorting`);
       
       // Add rank
       const rankedTraders = validTraders.map((trader, index) => ({
@@ -214,7 +215,7 @@ export function CommunityTopTraders() {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-4 text-muted-foreground">Chargement du classement...</p>
+        <p className="mt-4 text-muted-foreground">Loading ranking...</p>
       </div>
     );
   }
@@ -297,8 +298,8 @@ function LeaderboardContent({ traders, following, onFollow, period }: Leaderboar
     return (
       <div className="text-center py-10 border-2 border-dashed border-muted rounded-lg">
         <Trophy className="mx-auto h-12 w-12 text-muted-foreground opacity-30" />
-        <p className="mt-2 text-lg font-medium">Pas encore de top traders {period}</p>
-        <p className="text-muted-foreground">Soyez le premier à rentrer dans le classement !</p>
+        <p className="mt-2 text-lg font-medium">No top traders {period}</p>
+        <p className="text-muted-foreground">Be the first to enter the ranking!</p>
       </div>
     );
   }
@@ -309,7 +310,7 @@ function LeaderboardContent({ traders, following, onFollow, period }: Leaderboar
         <h3 className="text-lg font-medium">Top traders {period}</h3>
         <Button variant="ghost" size="sm" className="flex items-center gap-1">
           <Info className="h-4 w-4" />
-          <span>Comment fonctionne le classement</span>
+          <span>How does the ranking work?</span>
         </Button>
       </div>
       
@@ -390,7 +391,7 @@ function LeaderboardContent({ traders, following, onFollow, period }: Leaderboar
                 disabled={trader.id === user?.id}
               >
                 <UserPlus className="h-4 w-4 mr-2" />
-                {trader.id === user?.id ? "Vous-même" : following.includes(trader.id) ? "Abonné" : "Suivre"}
+                {trader.id === user?.id ? "You yourself" : following.includes(trader.id) ? "Subscribed" : "Follow"}
               </Button>
             </CardFooter>
           </Card>

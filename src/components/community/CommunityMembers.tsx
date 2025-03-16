@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
-// Interface pour représenter un membre
+// Interface to represent a member
 interface Member {
   id: string;
   name: string;
@@ -35,6 +35,7 @@ export function CommunityMembers() {
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
+    console.log('Setting up members component and fetching users');
     fetchMembers();
     
     // Set up real-time subscription for profiles changes
@@ -43,6 +44,7 @@ export function CommunityMembers() {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'profiles' }, 
         () => {
+          console.log('Profiles change detected, refreshing members');
           fetchMembers();
         }
       )
@@ -54,6 +56,7 @@ export function CommunityMembers() {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'trades' }, 
         () => {
+          console.log('Trades change detected, refreshing members');
           fetchMembers();
         }
       )
@@ -68,57 +71,58 @@ export function CommunityMembers() {
   const fetchMembers = async () => {
     setIsLoading(true);
     try {
-      // Récupérer tous les profils des utilisateurs
+      console.log('Fetching all user profiles');
+      
+      // Get all user profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
       
       if (profilesError) {
-        console.error("Erreur lors de la récupération des membres:", profilesError);
+        console.error("Error fetching members:", profilesError);
         throw profilesError;
       }
       
       if (!profilesData || profilesData.length === 0) {
-        console.log("Aucun profil trouvé");
+        console.log("No profiles found");
         setMembers([]);
         setIsLoading(false);
         return;
       }
       
-      console.log(`Récupération de ${profilesData.length} profils`);
+      console.log(`Retrieved ${profilesData.length} profiles`);
       
-      // Récupérer les statistiques de trades pour chaque utilisateur
+      // Get trading statistics for each user
       const membersWithStats = await Promise.all(profilesData.map(async (profile) => {
-        // Récupérer les trades de l'utilisateur
+        // Get user's trades
         const { data: userTrades, error: tradesError } = await supabase
           .from('trades')
           .select('*')
           .eq('user_id', profile.id);
         
         if (tradesError) {
-          console.error(`Erreur lors de la récupération des trades pour l'utilisateur ${profile.id}:`, tradesError);
+          console.error(`Error fetching trades for user ${profile.id}:`, tradesError);
         }
         
         const trades = userTrades || [];
-        console.log(`${trades.length} trades trouvés pour l'utilisateur ${profile.id}`);
+        console.log(`Found ${trades.length} trades for user ${profile.id}`);
         
-        // Calculer le win rate
+        // Calculate win rate
         const winningTrades = trades.filter(trade => (trade.pnl || 0) > 0);
         const winRate = trades.length > 0 ? Math.round((winningTrades.length / trades.length) * 100) : 0;
         
-        // Calculer le ROI
+        // Calculate ROI
         const totalInvested = trades.reduce((sum, trade) => sum + (trade.size || 0), 0);
         const totalProfit = trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
         const roi = totalInvested > 0 ? Math.round((totalProfit / totalInvested) * 100 * 10) / 10 : 0;
         
-        // Calculer les followers (simulé pour l'exemple)
-        // Dans une vraie app, vous auriez une table followers
+        // Calculate followers (simulated for now)
         const followers = Math.floor(Math.random() * 500);
         
-        // Utiliser un nom d'utilisateur par défaut si non défini
+        // Default username if not defined
         const username = profile.username || "Trader anonyme";
         
-        // Créer un objet membre enrichi
+        // Create an enriched member object
         return {
           id: profile.id,
           name: username,
@@ -130,17 +134,17 @@ export function CommunityMembers() {
           winRate,
           roi,
           isVerified: profile.premium === true,
-          trending: Math.random() > 0.7 // 30% de chance d'être tendance pour l'exemple
+          trending: Math.random() > 0.7 // 30% chance of being trending for demonstration
         };
       }));
       
-      console.log(`${membersWithStats.length} membres avec statistiques générés`);
+      console.log(`Generated ${membersWithStats.length} members with statistics`);
       setMembers(membersWithStats);
     } catch (error) {
-      console.error("Erreur lors du chargement des membres:", error);
+      console.error("Error loading members:", error);
       toast({
-        title: "Erreur de chargement",
-        description: "Impossible de charger les membres.",
+        title: "Error loading members",
+        description: "Unable to load members.",
         variant: "destructive"
       });
     } finally {
@@ -200,7 +204,7 @@ export function CommunityMembers() {
     return (
       <div className="flex flex-col items-center justify-center h-64 w-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-4 text-muted-foreground">Chargement des membres...</p>
+        <p className="mt-4 text-muted-foreground">Loading members...</p>
       </div>
     );
   }
