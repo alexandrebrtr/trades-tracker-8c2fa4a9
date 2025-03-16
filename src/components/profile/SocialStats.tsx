@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, TrendingUp, Award, MessageCircle, Share, Heart } from 'lucide-react';
 import { usePremium } from '@/context/PremiumContext';
+import { Button } from '@/components/ui/button';
 
 interface SocialStatsProps {
   followersCount?: number;
@@ -11,6 +12,10 @@ interface SocialStatsProps {
   winRate?: number;
   likesReceived?: number;
   commentsCount?: number;
+  onShowFollowers?: () => void;
+  onShowFollowing?: () => void;
+  onShowLikes?: () => void;
+  onShowComments?: () => void;
 }
 
 export function SocialStats({
@@ -19,7 +24,11 @@ export function SocialStats({
   tradesCount = 0,
   winRate = 0,
   likesReceived = 0,
-  commentsCount = 0
+  commentsCount = 0,
+  onShowFollowers,
+  onShowFollowing,
+  onShowLikes,
+  onShowComments
 }: SocialStatsProps) {
   const { isPremium } = usePremium();
 
@@ -37,7 +46,10 @@ export function SocialStats({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 py-2">
-          <div className="text-center">
+          <div 
+            className="text-center cursor-pointer hover:bg-secondary/50 rounded-lg p-2 transition-colors"
+            onClick={onShowFollowers}
+          >
             <div className="flex flex-col items-center">
               <div className="bg-primary/10 w-10 h-10 rounded-full flex items-center justify-center mb-2">
                 <Users className="h-5 w-5 text-primary" />
@@ -47,7 +59,10 @@ export function SocialStats({
             </div>
           </div>
           
-          <div className="text-center">
+          <div 
+            className="text-center cursor-pointer hover:bg-secondary/50 rounded-lg p-2 transition-colors"
+            onClick={onShowFollowing}
+          >
             <div className="flex flex-col items-center">
               <div className="bg-primary/10 w-10 h-10 rounded-full flex items-center justify-center mb-2">
                 <Users className="h-5 w-5 text-primary" />
@@ -77,7 +92,10 @@ export function SocialStats({
             </div>
           </div>
           
-          <div className="text-center">
+          <div 
+            className="text-center cursor-pointer hover:bg-secondary/50 rounded-lg p-2 transition-colors"
+            onClick={onShowLikes}
+          >
             <div className="flex flex-col items-center">
               <div className="bg-red-500/10 w-10 h-10 rounded-full flex items-center justify-center mb-2">
                 <Heart className="h-5 w-5 text-red-500" />
@@ -87,7 +105,10 @@ export function SocialStats({
             </div>
           </div>
           
-          <div className="text-center">
+          <div 
+            className="text-center cursor-pointer hover:bg-secondary/50 rounded-lg p-2 transition-colors"
+            onClick={onShowComments}
+          >
             <div className="flex flex-col items-center">
               <div className="bg-blue-500/10 w-10 h-10 rounded-full flex items-center justify-center mb-2">
                 <MessageCircle className="h-5 w-5 text-blue-500" />
