@@ -25,10 +25,6 @@ interface ForumTopic {
   likes_count: number;
   created_at: string;
   user_id: string;
-  profiles?: {
-    username: string | null;
-    avatar_url: string | null;
-  };
   author?: string;
   authorAvatar?: string;
   date?: string;
@@ -80,33 +76,44 @@ export function CommunityForums() {
   const fetchForumTopics = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      // First, fetch all forum topics
+      const { data: topicsData, error: topicsError } = await supabase
         .from('forum_topics')
-        .select(`
-          *,
-          profiles:user_id (username, avatar_url)
-        `);
+        .select('*');
       
-      if (error) {
-        throw error;
+      if (topicsError) {
+        throw topicsError;
       }
       
-      // Process the data to match our component's expected format
-      const processedTopics: ForumTopic[] = data?.map(topic => ({
-        id: topic.id,
-        title: topic.title,
-        category: topic.category,
-        author: topic.profiles?.username || 'Utilisateur anonyme',
-        authorAvatar: topic.profiles?.avatar_url || '',
-        date: topic.created_at,
-        views: topic.views || 0,
-        replies_count: topic.replies_count || 0,
-        likes_count: topic.likes_count || 0,
-        hot: (topic.views || 0) > 300 || (topic.replies_count || 0) > 20,
-        description: topic.description,
-        created_at: topic.created_at,
-        user_id: topic.user_id
-      })) || [];
+      // Then for each topic, fetch the user profile information separately
+      const processedTopics: ForumTopic[] = [];
+      
+      if (topicsData) {
+        for (const topic of topicsData) {
+          // Fetch user profile for this topic
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('username, avatar_url')
+            .eq('id', topic.user_id)
+            .single();
+          
+          processedTopics.push({
+            id: topic.id,
+            title: topic.title,
+            category: topic.category,
+            author: profileData?.username || 'Utilisateur anonyme',
+            authorAvatar: profileData?.avatar_url || '',
+            date: topic.created_at,
+            views: topic.views || 0,
+            replies_count: topic.replies_count || 0,
+            likes_count: topic.likes_count || 0,
+            hot: (topic.views || 0) > 300 || (topic.replies_count || 0) > 20,
+            description: topic.description,
+            created_at: topic.created_at,
+            user_id: topic.user_id
+          });
+        }
+      }
       
       setForumTopics(processedTopics);
     } catch (error) {
