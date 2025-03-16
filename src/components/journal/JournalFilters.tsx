@@ -65,7 +65,7 @@ export function JournalFilters({
                   id="filter-long" 
                   checked={tradeTypes.long} 
                   onCheckedChange={(checked) => 
-                    setTradeTypes(prev => ({...prev, long: checked === true}))
+                    setTradeTypes({...tradeTypes, long: checked === true})
                   }
                 />
                 <Label htmlFor="filter-long">Long</Label>
@@ -75,7 +75,7 @@ export function JournalFilters({
                   id="filter-short" 
                   checked={tradeTypes.short} 
                   onCheckedChange={(checked) => 
-                    setTradeTypes(prev => ({...prev, short: checked === true}))
+                    setTradeTypes({...tradeTypes, short: checked === true})
                   }
                 />
                 <Label htmlFor="filter-short">Short</Label>
@@ -94,9 +94,9 @@ export function JournalFilters({
                       checked={selectedSymbols.includes(symbol)} 
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          setSelectedSymbols(prev => [...prev, symbol]);
+                          setSelectedSymbols([...selectedSymbols, symbol]);
                         } else {
-                          setSelectedSymbols(prev => prev.filter(s => s !== symbol));
+                          setSelectedSymbols(selectedSymbols.filter(s => s !== symbol));
                         }
                       }}
                     />
@@ -118,9 +118,9 @@ export function JournalFilters({
                       checked={selectedStrategies.includes(strategy)} 
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          setSelectedStrategies(prev => [...prev, strategy]);
+                          setSelectedSymbols([...selectedStrategies, strategy]);
                         } else {
-                          setSelectedStrategies(prev => prev.filter(s => s !== strategy));
+                          setSelectedStrategies(selectedStrategies.filter(s => s !== strategy));
                         }
                       }}
                     />

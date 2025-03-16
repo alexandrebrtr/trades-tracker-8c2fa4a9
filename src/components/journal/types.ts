@@ -11,4 +11,7 @@ export interface Trade {
   strategy?: string;
   notes?: string;
   fees?: number;
+  user_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
