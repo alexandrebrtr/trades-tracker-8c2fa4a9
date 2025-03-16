@@ -2,8 +2,11 @@
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CommunityContent } from '@/components/community/CommunityContent';
 import { UsersRound } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Community() {
+  const { profile } = useAuth();
+  
   return (
     <AppLayout>
       <div className="page-transition space-y-8">
@@ -17,6 +20,14 @@ export default function Community() {
               <p className="text-muted-foreground">Échanger, apprendre et progresser ensemble</p>
             </div>
           </div>
+          
+          {profile && (
+            <div className="bg-primary/10 px-4 py-2 rounded-lg">
+              <p className="text-sm font-medium">
+                Bienvenue dans la communauté, <span className="text-primary">{profile.username || 'Trader'}</span>!
+              </p>
+            </div>
+          )}
         </div>
         
         <CommunityContent />

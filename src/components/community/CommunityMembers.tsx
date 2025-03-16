@@ -8,88 +8,152 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BadgeCheck, Search, TrendingUp, UserPlus, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/components/ui/use-toast';
 
 export function CommunityMembers() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('followers');
-  const [following, setFollowing] = useState<number[]>([]);
+  const [following, setFollowing] = useState<string[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    const fetchMembers = async () => {
-      setIsLoading(true);
-      try {
-        // Récupérer tous les profils des utilisateurs
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*');
-        
-        if (error) {
-          console.error("Erreur lors de la récupération des membres:", error);
-          throw error;
-        }
-        
-        // Récupérer les statistiques de trades pour chaque utilisateur
-        const membersWithStats = await Promise.all(data.map(async (profile) => {
-          // Récupérer les trades de l'utilisateur
-          const { data: userTrades, error: tradesError } = await supabase
-            .from('trades')
-            .select('*')
-            .eq('user_id', profile.id);
-          
-          if (tradesError) {
-            console.error("Erreur lors de la récupération des trades:", tradesError);
-          }
-          
-          const trades = userTrades || [];
-          
-          // Calculer le win rate
-          const winningTrades = trades.filter(trade => trade.pnl > 0);
-          const winRate = trades.length > 0 ? Math.round((winningTrades.length / trades.length) * 100) : 0;
-          
-          // Créer un objet membre enrichi
-          return {
-            id: profile.id,
-            name: profile.username || "Utilisateur anonyme",
-            username: `@${profile.username?.toLowerCase().replace(/\s+/g, '_') || 'trader'}`,
-            avatar: profile.avatar_url,
-            bio: "Trader sur TradeTracker", // Valeur par défaut
-            trades: trades.length,
-            followers: Math.floor(Math.random() * 500), // Valeur simulée pour l'exemple
-            winRate,
-            isVerified: profile.premium === true,
-            trending: Math.random() > 0.7 // 30% de chance d'être tendance pour l'exemple
-          };
-        }));
-        
-        setMembers(membersWithStats);
-      } catch (error) {
-        console.error("Erreur lors du chargement des membres:", error);
-        // Utiliser des données de secours en cas d'erreur
-        setMembers(getDefaultMembers());
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
     fetchMembers();
+    
+    // Set up real-time subscription for profiles changes
+    const profilesChannel = supabase
+      .channel('profiles-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'profiles' }, 
+        () => {
+          fetchMembers();
+        }
+      )
+      .subscribe();
+      
+    // Set up real-time subscription for trades changes  
+    const tradesChannel = supabase
+      .channel('trades-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'trades' }, 
+        () => {
+          fetchMembers();
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(profilesChannel);
+      supabase.removeChannel(tradesChannel);
+    };
   }, []);
   
-  const handleFollow = (memberId: string) => {
-    // Convertir l'ID en nombre pour la compatibilité avec le state
-    const numericId = parseInt(memberId as any);
-    if (following.includes(numericId)) {
-      setFollowing(following.filter(id => id !== numericId));
-    } else {
-      setFollowing([...following, numericId]);
+  const fetchMembers = async () => {
+    setIsLoading(true);
+    try {
+      // Récupérer tous les profils des utilisateurs
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*');
+      
+      if (error) {
+        console.error("Erreur lors de la récupération des membres:", error);
+        throw error;
+      }
+      
+      // Récupérer les statistiques de trades pour chaque utilisateur
+      const membersWithStats = await Promise.all(data.map(async (profile) => {
+        // Récupérer les trades de l'utilisateur
+        const { data: userTrades, error: tradesError } = await supabase
+          .from('trades')
+          .select('*')
+          .eq('user_id', profile.id);
+        
+        if (tradesError) {
+          console.error("Erreur lors de la récupération des trades:", tradesError);
+        }
+        
+        const trades = userTrades || [];
+        
+        // Calculer le win rate
+        const winningTrades = trades.filter(trade => (trade.pnl || 0) > 0);
+        const winRate = trades.length > 0 ? Math.round((winningTrades.length / trades.length) * 100) : 0;
+        
+        // Calculer le ROI
+        const totalInvested = trades.reduce((sum, trade) => sum + (trade.size || 0), 0);
+        const totalProfit = trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+        const roi = totalInvested > 0 ? Math.round((totalProfit / totalInvested) * 100 * 10) / 10 : 0;
+        
+        // Calculer les followers (simulé pour l'exemple)
+        // Dans une vraie app, vous auriez une table followers
+        const followers = Math.floor(Math.random() * 500);
+        
+        // Créer un objet membre enrichi
+        return {
+          id: profile.id,
+          name: profile.username || "Utilisateur anonyme",
+          username: `@${profile.username?.toLowerCase().replace(/\s+/g, '_') || 'trader'}`,
+          avatar: profile.avatar_url,
+          bio: profile.bio || "Trader sur TradeTracker",
+          trades: trades.length,
+          followers,
+          winRate,
+          roi,
+          isVerified: profile.premium === true,
+          trending: Math.random() > 0.7 // 30% de chance d'être tendance pour l'exemple
+        };
+      }));
+      
+      setMembers(membersWithStats);
+    } catch (error) {
+      console.error("Erreur lors du chargement des membres:", error);
+      toast({
+        title: "Erreur de chargement",
+        description: "Impossible de charger les membres.",
+        variant: "destructive"
+      });
+      // Utiliser des données de secours en cas d'erreur
+      setMembers(getDefaultMembers());
+    } finally {
+      setIsLoading(false);
     }
+  };
+  
+  const handleFollow = async (memberId: string) => {
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour suivre un membre.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Convertir l'ID en nombre pour la compatibilité avec le state
+    if (following.includes(memberId)) {
+      setFollowing(following.filter(id => id !== memberId));
+      toast({
+        title: "Désabonnement",
+        description: "Vous ne suivez plus ce membre."
+      });
+    } else {
+      setFollowing([...following, memberId]);
+      toast({
+        title: "Abonnement",
+        description: "Vous suivez maintenant ce membre."
+      });
+    }
+    
+    // Dans une vraie app, vous sauvegarderiez ces relations dans la base de données
+    // Par exemple:
+    // await supabase.from('followers').upsert({ follower_id: user.id, following_id: memberId });
   };
   
   const getDefaultMembers = () => [
     {
-      id: 1,
+      id: "1",
       name: 'Emma Bernard',
       username: '@emma_trader',
       avatar: '',
@@ -97,31 +161,38 @@ export function CommunityMembers() {
       trades: 876,
       followers: 245,
       winRate: 68,
+      roi: 14.5,
       isVerified: true,
       trending: true
     },
     {
-      id: 2,
+      id: "2",
       name: 'Thomas Martin',
       username: '@tomtrader',
       avatar: '',
       bio: 'Investisseur crypto & swing trader. Analyste technique certifié.',
       trades: 532,
       followers: 189,
-      winRate: 72
+      winRate: 72,
+      roi: 21.2,
+      isVerified: false,
+      trending: false
     },
     {
-      id: 3,
+      id: "3",
       name: 'Sophie Dubois',
       username: '@sophmarket',
       avatar: '',
       bio: 'Position trader actions. Je partage mes analyses et résultats chaque semaine.',
       trades: 327,
       followers: 97,
-      winRate: 65
+      winRate: 65,
+      roi: 9.7,
+      isVerified: false,
+      trending: false
     },
     {
-      id: 4,
+      id: "4",
       name: 'Nicolas Klein',
       username: '@niko_invest',
       avatar: '',
@@ -129,10 +200,12 @@ export function CommunityMembers() {
       trades: 1204,
       followers: 567,
       winRate: 74,
-      isVerified: true
+      roi: 18.3,
+      isVerified: true,
+      trending: false
     },
     {
-      id: 5,
+      id: "5",
       name: 'Laura Blanc',
       username: '@lblanc_trade',
       avatar: '',
@@ -140,17 +213,22 @@ export function CommunityMembers() {
       trades: 689,
       followers: 215,
       winRate: 69,
+      roi: 12.8,
+      isVerified: false,
       trending: true
     },
     {
-      id: 6,
+      id: "6",
       name: 'Jean Moreau',
       username: '@jean_scalp',
       avatar: '',
       bio: 'Scalper forex et indices. Stratégies intraday uniquement.',
       trades: 2341,
       followers: 412,
-      winRate: 62
+      winRate: 62,
+      roi: 8.4,
+      isVerified: false,
+      trending: false
     }
   ];
   
@@ -165,6 +243,8 @@ export function CommunityMembers() {
         return b.followers - a.followers;
       } else if (sortBy === 'winRate') {
         return b.winRate - a.winRate;
+      } else if (sortBy === 'roi') {
+        return b.roi - a.roi;
       } else {
         return b.trades - a.trades;
       }
@@ -201,6 +281,7 @@ export function CommunityMembers() {
             <SelectContent>
               <SelectItem value="followers">Abonnés</SelectItem>
               <SelectItem value="winRate">Win Rate</SelectItem>
+              <SelectItem value="roi">ROI</SelectItem>
               <SelectItem value="trades">Nombre de trades</SelectItem>
             </SelectContent>
           </Select>
@@ -251,19 +332,23 @@ export function CommunityMembers() {
                     <p className="font-bold">{member.winRate}%</p>
                   </div>
                   <div className="text-center p-2 bg-secondary/50 rounded-lg">
+                    <p className="text-xs text-muted-foreground">ROI</p>
+                    <p className="font-bold text-green-500">+{member.roi}%</p>
+                  </div>
+                  <div className="text-center p-2 bg-secondary/50 rounded-lg col-span-3">
                     <p className="text-xs text-muted-foreground">Abonnés</p>
                     <p className="font-bold">{member.followers}</p>
                   </div>
                 </div>
                 
                 <Button 
-                  variant={following.includes(member.id as any) ? "outline" : "default"} 
+                  variant={following.includes(member.id) ? "outline" : "default"} 
                   className="w-full"
                   onClick={() => handleFollow(member.id)}
                   disabled={member.id === user?.id}
                 >
                   <UserPlus className="h-4 w-4 mr-2" />
-                  {member.id === user?.id ? "Vous-même" : following.includes(member.id as any) ? "Abonné" : "Suivre"}
+                  {member.id === user?.id ? "Vous-même" : following.includes(member.id) ? "Abonné" : "Suivre"}
                 </Button>
               </CardContent>
             </Card>

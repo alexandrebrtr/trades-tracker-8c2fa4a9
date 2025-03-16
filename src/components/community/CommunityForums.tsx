@@ -1,11 +1,18 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageCircle, ThumbsUp, Eye, Filter, Clock, TrendingUp } from 'lucide-react';
+import { MessageCircle, ThumbsUp, Eye, Filter, Clock, TrendingUp, Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from "@/components/ui/use-toast";
 
 const forumCategories = [
   { id: 'all', name: 'Tous' },
@@ -15,70 +22,133 @@ const forumCategories = [
   { id: 'tools', name: 'Outils & Technologies' }
 ];
 
-const forumTopics = [
-  {
-    id: 1,
-    title: 'Stratégie de trading sur les indices US',
-    category: 'strategies',
-    author: 'Jean Dupont',
-    authorAvatar: '',
-    date: '2024-05-15',
-    views: 342,
-    replies: 28,
-    likes: 56,
-    hot: true
-  },
-  {
-    id: 2,
-    title: 'Analyse fondamentale des cryptomonnaies',
-    category: 'analysis',
-    author: 'Marie Martin',
-    authorAvatar: '',
-    date: '2024-05-14',
-    views: 189,
-    replies: 15,
-    likes: 32
-  },
-  {
-    id: 3,
-    title: 'Comment gérer le stress pendant les périodes volatiles',
-    category: 'psychology',
-    author: 'Sophie Bernard',
-    authorAvatar: '',
-    date: '2024-05-12',
-    views: 412,
-    replies: 45,
-    likes: 87,
-    hot: true
-  },
-  {
-    id: 4,
-    title: 'Les meilleurs indicateurs pour le day trading',
-    category: 'tools',
-    author: 'Thomas Leroy',
-    authorAvatar: '',
-    date: '2024-05-10',
-    views: 276,
-    replies: 19,
-    likes: 41
-  },
-  {
-    id: 5,
-    title: 'Analyse technique: Crypto vs Actions',
-    category: 'analysis',
-    author: 'Laura Klein',
-    authorAvatar: '',
-    date: '2024-05-08',
-    views: 198,
-    replies: 23,
-    likes: 37
-  }
-];
-
 export function CommunityForums() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('latest');
+  const [forumTopics, setForumTopics] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newTopic, setNewTopic] = useState({
+    title: '',
+    category: 'strategies',
+    description: ''
+  });
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    fetchForumTopics();
+    
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'forum_topics' }, 
+        () => {
+          fetchForumTopics();
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+  
+  const fetchForumTopics = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('forum_topics')
+        .select(`
+          *,
+          profiles:user_id (username, avatar_url)
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Process the data to match our component's expected format
+      const processedTopics = data.map(topic => ({
+        id: topic.id,
+        title: topic.title,
+        category: topic.category,
+        author: topic.profiles?.username || 'Utilisateur anonyme',
+        authorAvatar: topic.profiles?.avatar_url || '',
+        date: topic.created_at,
+        views: topic.views || 0,
+        replies: topic.replies_count || 0,
+        likes: topic.likes_count || 0,
+        hot: (topic.views || 0) > 300 || (topic.replies_count || 0) > 20,
+        description: topic.description
+      }));
+      
+      setForumTopics(processedTopics);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des forums:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateTopic = async () => {
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour créer un sujet.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!newTopic.title.trim() || !newTopic.category || !newTopic.description.trim()) {
+      toast({
+        title: "Informations incomplètes",
+        description: "Veuillez remplir tous les champs.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('forum_topics')
+        .insert({
+          title: newTopic.title,
+          category: newTopic.category,
+          description: newTopic.description,
+          user_id: user.id
+        });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Sujet créé",
+        description: "Votre nouveau sujet a été créé avec succès."
+      });
+      
+      // Reset form and close dialog
+      setNewTopic({
+        title: '',
+        category: 'strategies',
+        description: ''
+      });
+      setDialogOpen(false);
+      
+      // Refresh topics
+      fetchForumTopics();
+    } catch (error) {
+      console.error("Erreur lors de la création du sujet:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la création du sujet.",
+        variant: "destructive"
+      });
+    }
+  };
   
   const filteredTopics = forumTopics
     .filter(topic => 
@@ -157,71 +227,137 @@ export function CommunityForums() {
           </CardContent>
         </Card>
         
-        {filteredTopics.map((topic) => (
-          <Card key={topic.id} className={topic.hot ? "border-primary/30 bg-primary/5" : ""}>
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg line-clamp-1 hover:text-primary cursor-pointer">
-                    {topic.title}
-                  </CardTitle>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="text-xs py-0.5 px-2 bg-secondary rounded-full">
-                      {forumCategories.find(c => c.id === topic.category)?.name}
-                    </div>
-                    {topic.hot && (
-                      <div className="text-xs py-0.5 px-2 bg-primary/20 text-primary rounded-full">
-                        Populaire
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : filteredTopics.length === 0 ? (
+          <div className="text-center py-10 border-2 border-dashed border-muted rounded-lg">
+            <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground opacity-30" />
+            <p className="mt-2 text-muted-foreground">Aucune discussion trouvée pour cette catégorie.</p>
+          </div>
+        ) : (
+          filteredTopics.map((topic) => (
+            <Card key={topic.id} className={topic.hot ? "border-primary/30 bg-primary/5" : ""}>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg line-clamp-1 hover:text-primary cursor-pointer">
+                      {topic.title}
+                    </CardTitle>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="text-xs py-0.5 px-2 bg-secondary rounded-full">
+                        {forumCategories.find(c => c.id === topic.category)?.name}
                       </div>
-                    )}
+                      {topic.hot && (
+                        <div className="text-xs py-0.5 px-2 bg-primary/20 text-primary rounded-full">
+                          Populaire
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pb-2 pt-0">
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={topic.authorAvatar} alt={topic.author} />
-                  <AvatarFallback className="text-xs">
-                    {topic.author.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium">{topic.author}</span>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(topic.date).toLocaleDateString('fr-FR', { 
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  })}
-                </span>
-              </div>
-            </CardContent>
-            <CardFooter className="pt-0 flex justify-between">
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Eye className="h-4 w-4" />
-                  <span>{topic.views}</span>
+              </CardHeader>
+              <CardContent className="pb-2 pt-0">
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={topic.authorAvatar} alt={topic.author} />
+                    <AvatarFallback className="text-xs">
+                      {topic.author.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium">{topic.author}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(topic.date).toLocaleDateString('fr-FR', { 
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <MessageCircle className="h-4 w-4" />
-                  <span>{topic.replies}</span>
+              </CardContent>
+              <CardFooter className="pt-0 flex justify-between">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Eye className="h-4 w-4" />
+                    <span>{topic.views}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MessageCircle className="h-4 w-4" />
+                    <span>{topic.replies}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <ThumbsUp className="h-4 w-4" />
+                    <span>{topic.likes}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <ThumbsUp className="h-4 w-4" />
-                  <span>{topic.likes}</span>
-                </div>
-              </div>
-              <Button size="sm" variant="ghost">Lire</Button>
-            </CardFooter>
-          </Card>
-        ))}
+                <Button size="sm" variant="ghost">Lire</Button>
+              </CardFooter>
+            </Card>
+          ))
+        )}
       </div>
       
       <div className="flex justify-center mt-6">
-        <Button className="flex gap-2">
-          <MessageCircle className="w-4 h-4" />
-          <span>Créer une nouvelle discussion</span>
-        </Button>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="flex gap-2">
+              <Plus className="w-4 h-4" />
+              <span>Créer une nouvelle discussion</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[525px]">
+            <DialogHeader>
+              <DialogTitle>Créer une nouvelle discussion</DialogTitle>
+              <DialogDescription>
+                Partagez vos idées ou posez vos questions à la communauté.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="title">Titre</Label>
+                <Input
+                  id="title"
+                  placeholder="Titre de votre discussion"
+                  value={newTopic.title}
+                  onChange={(e) => setNewTopic({...newTopic, title: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="category">Catégorie</Label>
+                <Select
+                  value={newTopic.category}
+                  onValueChange={(value) => setNewTopic({...newTopic, category: value})}
+                >
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Sélectionnez une catégorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {forumCategories.filter(c => c.id !== 'all').map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Détaillez votre sujet de discussion..."
+                  value={newTopic.description}
+                  onChange={(e) => setNewTopic({...newTopic, description: e.target.value})}
+                  rows={5}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
+              <Button onClick={handleCreateTopic}>Publier</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
