@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Search, Star, Calendar, CheckCircle } from 'lucide-react';
+import { Loader2, Search, Star, Calendar, CheckCircle, Users } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -160,7 +159,13 @@ const AdminPanel = () => {
     <AppLayout>
       <div className="page-transition space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold tracking-tight">Panneau d'administration</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight">Panneau d'administration</h1>
+            <div className="flex items-center text-xs bg-blue-500/10 text-blue-500 px-2 py-1 rounded-full border border-blue-500/20">
+              <Users className="h-3 w-3 mr-1" />
+              {users.length} Utilisateurs
+            </div>
+          </div>
           <Button onClick={fetchUsers} variant="outline" size="sm">
             Rafraîchir
           </Button>
@@ -264,38 +269,40 @@ const AdminPanel = () => {
               Guide pour intégrer une IA à votre application
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">1. Choisissez un fournisseur d'IA</h3>
-              <p className="text-muted-foreground">
-                Des services comme OpenAI (GPT), Google (Gemini), Anthropic (Claude) ou Perplexity offrent des API simples à intégrer.
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">2. Utilisez des Edge Functions Supabase</h3>
-              <p className="text-muted-foreground">
-                Le moyen le plus sécurisé d'intégrer une IA est d'utiliser les Edge Functions de Supabase pour protéger vos clés API.
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">3. Implémentation</h3>
-              <div className="bg-muted p-4 rounded-md">
-                <p className="font-mono text-sm">
-                  Pour implémenter une IA avec OpenAI, suivez ces étapes :<br />
-                  1. Créez une Edge Function dans Supabase<br />
-                  2. Ajoutez votre clé API OpenAI dans les secrets Supabase<br />
-                  3. Créez un composant React pour interagir avec l'IA
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">1. Choisissez un fournisseur d'IA</h3>
+                <p className="text-muted-foreground">
+                  Des services comme OpenAI (GPT), Google (Gemini), Anthropic (Claude) ou Perplexity offrent des API simples à intégrer.
                 </p>
               </div>
-            </div>
-            
-            <div className="flex justify-end">
-              <Button>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Voir l'exemple complet
-              </Button>
+              
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">2. Utilisez des Edge Functions Supabase</h3>
+                <p className="text-muted-foreground">
+                  Le moyen le plus sécurisé d'intégrer une IA est d'utiliser les Edge Functions de Supabase pour protéger vos clés API.
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">3. Implémentation</h3>
+                <div className="bg-muted p-4 rounded-md">
+                  <p className="font-mono text-sm">
+                    Pour implémenter une IA avec OpenAI, suivez ces étapes :<br />
+                    1. Créez une Edge Function dans Supabase<br />
+                    2. Ajoutez votre clé API OpenAI dans les secrets Supabase<br />
+                    3. Créez un composant React pour interagir avec l'IA
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex justify-end">
+                <Button>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Voir l'exemple complet
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

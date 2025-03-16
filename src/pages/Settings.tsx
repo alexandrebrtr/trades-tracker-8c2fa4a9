@@ -5,16 +5,13 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
 import { useState, useEffect } from 'react';
-import { usePremium } from '@/context/PremiumContext';
+import { usePremium, UserSettings } from '@/context/PremiumContext';
 import { useTheme } from '@/context/ThemeContext';
-import { Bell, Layout, Palette, Shield, User } from 'lucide-react';
+import { Bell, Layout, Palette, Shield, User, Key, Lock } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
-// Define or import types that match what's in PremiumContext
-import { UserSettings } from '@/context/PremiumContext';
-
-// Define more specific types for the settings
 interface ThemeSettings {
   primary: string;
   background: string;
@@ -33,7 +30,13 @@ interface NotificationSettings {
   alerts?: boolean;
 }
 
-// Your component code follows
+interface BrokerSettings {
+  name?: string;
+  apiKey?: string;
+  secretKey?: string;
+  isConnected?: boolean;
+}
+
 export default function Settings() {
   const { userSettings, updateUserSettings } = usePremium();
   const [themeSettings, setThemeSettings] = useState<ThemeSettings>({
@@ -51,17 +54,20 @@ export default function Settings() {
     news: true,
     alerts: true
   });
+  const [brokerSettings, setBrokerSettings] = useState<BrokerSettings>({
+    name: '',
+    apiKey: '',
+    secretKey: '',
+    isConnected: false
+  });
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load settings from context when component mounts
   useEffect(() => {
     if (userSettings) {
       if (userSettings.theme) {
-        // Convert string to ThemeSettings object if needed
         if (typeof userSettings.theme === 'string') {
-          // Apply default theme settings
           setThemeSettings({
             primary: '#0f172a',
             background: '#ffffff',
@@ -69,7 +75,6 @@ export default function Settings() {
             sidebar: '#f8fafc'
           });
         } else if (typeof userSettings.theme === 'object') {
-          // Cast to proper type and update
           setThemeSettings(userSettings.theme as ThemeSettings);
         }
       }
@@ -81,18 +86,21 @@ export default function Settings() {
       if (userSettings.notifications) {
         setNotificationSettings(userSettings.notifications);
       }
+
+      if (userSettings.broker) {
+        setBrokerSettings(userSettings.broker);
+      }
     }
   }, [userSettings]);
 
-  // Save all settings
   const saveSettings = async () => {
     try {
       setIsSaving(true);
-      // Create the new settings object with proper structure
       const newSettings: UserSettings = {
         theme: themeSettings,
         layout: layoutSettings,
-        notifications: notificationSettings
+        notifications: notificationSettings,
+        broker: brokerSettings
       };
       
       await updateUserSettings(newSettings);
@@ -101,7 +109,6 @@ export default function Settings() {
         description: "Vos préférences ont été mises à jour avec succès.",
       });
     } catch (error) {
-      // Error handling
       console.error("Failed to save settings:", error);
       toast({
         title: "Erreur",
@@ -127,6 +134,13 @@ export default function Settings() {
     }));
   };
 
+  const handleBrokerChange = (key: keyof BrokerSettings, value: string | boolean) => {
+    setBrokerSettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
   return (
     <AppLayout>
       <div className="container py-8 max-w-4xl mx-auto page-transition">
@@ -139,7 +153,7 @@ export default function Settings() {
           </div>
 
           <Tabs defaultValue="appearance" className="space-y-6">
-            <TabsList className="grid grid-cols-4 w-full max-w-lg">
+            <TabsList className="grid grid-cols-5 w-full max-w-lg">
               <TabsTrigger value="appearance" className="flex items-center gap-2">
                 <Palette className="h-4 w-4" />
                 <span className="hidden sm:inline">Apparence</span>
@@ -151,6 +165,10 @@ export default function Settings() {
               <TabsTrigger value="notifications" className="flex items-center gap-2">
                 <Bell className="h-4 w-4" />
                 <span className="hidden sm:inline">Notifications</span>
+              </TabsTrigger>
+              <TabsTrigger value="brokers" className="flex items-center gap-2">
+                <Key className="h-4 w-4" />
+                <span className="hidden sm:inline">Brokers</span>
               </TabsTrigger>
               <TabsTrigger value="account" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
@@ -351,6 +369,118 @@ export default function Settings() {
                         checked={notificationSettings.alerts} 
                         onCheckedChange={(checked) => handleNotificationChange('alerts', checked)} 
                       />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="brokers">
+              <Card>
+                <CardHeader>
+                  <CardTitle>API des Brokers</CardTitle>
+                  <CardDescription>
+                    Connectez vos comptes de trading et configurez vos API
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="broker-name">Broker</Label>
+                      <select 
+                        id="broker-name" 
+                        className="w-full p-2 border rounded-md"
+                        value={brokerSettings.name || ''}
+                        onChange={(e) => handleBrokerChange('name', e.target.value)}
+                      >
+                        <option value="">Sélectionner un broker</option>
+                        <option value="binance">Binance</option>
+                        <option value="ftx">FTX</option>
+                        <option value="coinbase">Coinbase</option>
+                        <option value="kraken">Kraken</option>
+                        <option value="mt4">MetaTrader 4</option>
+                        <option value="mt5">MetaTrader 5</option>
+                        <option value="trading212">Trading 212</option>
+                      </select>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="api-key" className="flex items-center gap-2">
+                        <Key className="h-4 w-4 text-muted-foreground" />
+                        Clé API
+                      </Label>
+                      <Input 
+                        id="api-key" 
+                        type="text" 
+                        placeholder="Entrez votre clé API"
+                        value={brokerSettings.apiKey || ''}
+                        onChange={(e) => handleBrokerChange('apiKey', e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        La clé API est requise pour accéder à votre compte de trading.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="secret-key" className="flex items-center gap-2">
+                        <Lock className="h-4 w-4 text-muted-foreground" />
+                        Clé Secrète
+                      </Label>
+                      <Input 
+                        id="secret-key" 
+                        type="password" 
+                        placeholder="Entrez votre clé secrète"
+                        value={brokerSettings.secretKey || ''}
+                        onChange={(e) => handleBrokerChange('secretKey', e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        La clé secrète est nécessaire pour signer vos requêtes API.
+                      </p>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="is-connected">État de la connexion</Label>
+                        <p className="text-sm text-muted-foreground">
+                          {brokerSettings.isConnected 
+                            ? "Votre compte est connecté" 
+                            : "Votre compte n'est pas connecté"}
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={() => {
+                          if (brokerSettings.name && brokerSettings.apiKey && brokerSettings.secretKey) {
+                            handleBrokerChange('isConnected', true);
+                            toast({
+                              title: "Compte connecté",
+                              description: `Votre compte ${brokerSettings.name} a été connecté avec succès.`
+                            });
+                          } else {
+                            toast({
+                              title: "Erreur de connexion",
+                              description: "Veuillez remplir tous les champs requis.",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                        variant={brokerSettings.isConnected ? "outline" : "default"}
+                      >
+                        {brokerSettings.isConnected ? "Reconnecter" : "Connecter"}
+                      </Button>
+                    </div>
+
+                    <div className="bg-muted p-4 rounded-md mt-4">
+                      <h4 className="text-sm font-medium mb-2">Instructions</h4>
+                      <ol className="text-xs text-muted-foreground space-y-1 list-decimal pl-4">
+                        <li>Créez une clé API dans votre compte de broker avec des permissions en lecture seule.</li>
+                        <li>Copiez la clé API et la clé secrète dans les champs ci-dessus.</li>
+                        <li>Cliquez sur "Connecter" pour lier votre compte.</li>
+                        <li>Vos trades et soldes seront synchronisés automatiquement.</li>
+                      </ol>
                     </div>
                   </div>
                 </CardContent>

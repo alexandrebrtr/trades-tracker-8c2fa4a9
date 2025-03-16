@@ -2,9 +2,15 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 
 interface UserSettings {
-  theme?: string;
+  theme?: string | {
+    primary: string;
+    background: string;
+    text: string;
+    sidebar: string;
+  };
   notifications?: {
     trades?: boolean;
     news?: boolean;
@@ -13,6 +19,12 @@ interface UserSettings {
   layout?: {
     compactMode?: boolean;
     showBalances?: boolean;
+  };
+  broker?: {
+    name?: string;
+    apiKey?: string;
+    secretKey?: string;
+    isConnected?: boolean;
   };
 }
 
@@ -93,7 +105,7 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ settings: newSettings })
+        .update({ settings: newSettings as Json })
         .eq('id', user.id);
         
       if (error) throw error;
@@ -166,7 +178,7 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
       setIsPremium(isActive);
       setPremiumSince(data.premium_since);
       setPremiumExpires(data.premium_expires);
-      setUserSettings(data.settings || {});
+      setUserSettings(data.settings as UserSettings || {});
 
       console.log('Premium status loaded:', isActive);
     } catch (error) {

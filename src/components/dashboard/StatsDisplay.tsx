@@ -81,7 +81,7 @@ export function StatsDisplay({ balance, monthlyPnL, trades }: StatsDisplayProps)
         value={formatCurrency(balance)}
         icon={<Wallet className="w-4 h-4" />}
         trend={monthlyPnL !== 0 ? { 
-          value: Math.abs((monthlyPnL / balance) * 100), 
+          value: Math.abs((monthlyPnL / (balance || 1)) * 100), 
           isPositive: monthlyPnL >= 0 
         } : undefined}
       />
@@ -132,7 +132,7 @@ export function StatsDisplay({ balance, monthlyPnL, trades }: StatsDisplayProps)
           title="En attente de données"
           value="--"
           isLoading={false}
-          icon={<Clock className="w-4 h-4" />}
+          icon={<Clock className="w-4 w-4" />}
         />
       ))}
     </div>
