@@ -11,7 +11,7 @@ export interface Trade {
   strategy?: string;
   notes?: string;
   fees?: number;
-  user_id?: string;
-  created_at?: string;
-  updated_at?: string;
+  user_id: string; // Changed from optional to required
+  created_at: string; // Changed from optional to required
+  updated_at: string; // Changed from optional to required
 }

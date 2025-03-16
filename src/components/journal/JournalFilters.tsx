@@ -118,7 +118,7 @@ export function JournalFilters({
                       checked={selectedStrategies.includes(strategy)} 
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          setSelectedSymbols([...selectedStrategies, strategy]);
+                          setSelectedStrategies([...selectedStrategies, strategy]); // Fixed: was using setSelectedSymbols
                         } else {
                           setSelectedStrategies(selectedStrategies.filter(s => s !== strategy));
                         }
