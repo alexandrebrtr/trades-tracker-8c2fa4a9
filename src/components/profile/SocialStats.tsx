@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Users, TrendingUp, Award, MessageCircle, Share, Heart } from 'lucide-react';
 import { usePremium } from '@/context/PremiumContext';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface SocialStatsProps {
   followersCount?: number;
@@ -31,6 +33,27 @@ export function SocialStats({
   onShowComments
 }: SocialStatsProps) {
   const { isPremium } = usePremium();
+  const navigate = useNavigate();
+
+  const handleInteraction = (
+    isPremiumFeature: boolean,
+    callback?: () => void
+  ) => {
+    if (isPremiumFeature && !isPremium) {
+      toast.error("Cette fonctionnalité est réservée aux utilisateurs premium", {
+        description: "Passez au mode premium pour accéder à toutes les fonctionnalités sociales.",
+        action: {
+          label: "Premium",
+          onClick: () => navigate("/premium")
+        }
+      });
+      return;
+    }
+    
+    if (callback) {
+      callback();
+    }
+  };
 
   return (
     <Card>
@@ -48,7 +71,7 @@ export function SocialStats({
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 py-2">
           <div 
             className="text-center cursor-pointer hover:bg-secondary/50 rounded-lg p-2 transition-colors"
-            onClick={onShowFollowers}
+            onClick={() => handleInteraction(true, onShowFollowers)}
           >
             <div className="flex flex-col items-center">
               <div className="bg-primary/10 w-10 h-10 rounded-full flex items-center justify-center mb-2">
@@ -61,7 +84,7 @@ export function SocialStats({
           
           <div 
             className="text-center cursor-pointer hover:bg-secondary/50 rounded-lg p-2 transition-colors"
-            onClick={onShowFollowing}
+            onClick={() => handleInteraction(true, onShowFollowing)}
           >
             <div className="flex flex-col items-center">
               <div className="bg-primary/10 w-10 h-10 rounded-full flex items-center justify-center mb-2">
@@ -94,7 +117,7 @@ export function SocialStats({
           
           <div 
             className="text-center cursor-pointer hover:bg-secondary/50 rounded-lg p-2 transition-colors"
-            onClick={onShowLikes}
+            onClick={() => handleInteraction(true, onShowLikes)}
           >
             <div className="flex flex-col items-center">
               <div className="bg-red-500/10 w-10 h-10 rounded-full flex items-center justify-center mb-2">
@@ -107,7 +130,7 @@ export function SocialStats({
           
           <div 
             className="text-center cursor-pointer hover:bg-secondary/50 rounded-lg p-2 transition-colors"
-            onClick={onShowComments}
+            onClick={() => handleInteraction(true, onShowComments)}
           >
             <div className="flex flex-col items-center">
               <div className="bg-blue-500/10 w-10 h-10 rounded-full flex items-center justify-center mb-2">
