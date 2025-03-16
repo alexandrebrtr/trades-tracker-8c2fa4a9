@@ -16,19 +16,23 @@ const Statistics = () => {
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold tracking-tight">Statistiques & Analyse</h1>
-            {isPremium && (
-              <div className="flex items-center text-xs bg-yellow-500/10 text-yellow-500 px-2 py-1 rounded-full border border-yellow-500/20">
-                <Star className="h-3 w-3 mr-1 fill-yellow-500" />
-                Analyses Premium
-              </div>
-            )}
           </div>
-          <Button variant="outline" asChild>
-            <Link to="/portfolio" className="flex items-center gap-2">
-              <Wallet className="h-4 w-4" />
-              <span>Gérer le portefeuille</span>
-            </Link>
-          </Button>
+          <div className="flex gap-4">
+            {isPremium && (
+              <Button asChild>
+                <Link to="/premium-analytics" className="flex items-center gap-2">
+                  <Star className="h-4 w-4" />
+                  <span>Analyses Premium</span>
+                </Link>
+              </Button>
+            )}
+            <Button variant="outline" asChild>
+              <Link to="/portfolio" className="flex items-center gap-2">
+                <Wallet className="h-4 w-4" />
+                <span>Gérer le portefeuille</span>
+              </Link>
+            </Button>
+          </div>
         </div>
         
         {!isPremium && (

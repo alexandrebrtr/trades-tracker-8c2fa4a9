@@ -23,6 +23,8 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
 import AdminPanel from "./pages/AdminPanel";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import PremiumAnalytics from "./pages/PremiumAnalytics";
 
 function App() {
   const { user, isLoading } = useAuth();
@@ -31,16 +33,6 @@ function App() {
   useEffect(() => {
     setIsLoggedIn(!!user);
   }, [user]);
-
-  const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-    if (isLoading) {
-      return <div>Loading...</div>;
-    }
-    if (!isLoggedIn) {
-      return <Navigate to="/login" />;
-    }
-    return children;
-  };
 
   return (
     <div className="app">
@@ -54,8 +46,9 @@ function App() {
           <Route path="/trade-entry" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
           <Route path="/portfolio" element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
           <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
+          <Route path="/premium-analytics" element={<ProtectedRoute requirePremium={true}><PremiumAnalytics /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
-          <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+          <Route path="/community" element={<ProtectedRoute requirePremium={true}><Community /></ProtectedRoute>} />
           <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
           <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
           <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />

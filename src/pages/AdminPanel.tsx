@@ -1,28 +1,27 @@
+
 import { useEffect, useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Switch } from '@/components/ui/switch';
-import { Loader2, Search, Star, Calendar, CheckCircle, Users } from 'lucide-react';
+import { Loader2, Users, CheckCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { UserTable } from '@/components/admin/UserTable';
+import { UserSearch } from '@/components/admin/UserSearch';
 
 const AdminPanel = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Admin IDs - hardcoded for simplicity. In a real app, this should be in a database
-  const adminIds = ['9ce47b0c-0d0a-4834-ae81-e103dff2e386']; // Replace with your actual admin user ID
+  // Admin IDs - hardcoded for simplicity
+  const adminIds = ['9ce47b0c-0d0a-4834-ae81-e103dff2e386'];
   
   useEffect(() => {
     if (!user) {
@@ -74,65 +73,6 @@ const AdminPanel = () => {
     }
   };
   
-  const togglePremium = async (userId: string, currentStatus: boolean) => {
-    try {
-      // Prevent multiple simultaneous operations
-      if (isProcessing) return;
-      setIsProcessing(userId);
-      
-      const now = new Date();
-      const oneYearFromNow = new Date();
-      oneYearFromNow.setFullYear(now.getFullYear() + 1);
-      
-      // Update premium status in the database
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          premium: !currentStatus,
-          premium_since: !currentStatus ? now.toISOString() : null,
-          premium_expires: !currentStatus ? oneYearFromNow.toISOString() : null,
-          updated_at: now.toISOString()
-        })
-        .eq('id', userId);
-        
-      if (error) throw error;
-      
-      // Update local state
-      setUsers(users.map(user => 
-        user.id === userId ? { 
-          ...user, 
-          premium: !currentStatus, 
-          premium_since: !currentStatus ? now.toISOString() : null, 
-          premium_expires: !currentStatus ? oneYearFromNow.toISOString() : null 
-        } : user
-      ));
-      
-      // Success notification
-      toast({
-        title: !currentStatus ? "Abonnement premium activé" : "Abonnement premium désactivé",
-        description: `Le statut premium de l'utilisateur a été ${!currentStatus ? 'activé' : 'désactivé'} avec succès.`,
-      });
-      
-      // Trigger a real-time update to notify clients
-      await supabase
-        .from('profiles')
-        .update({ 
-          updated_at: new Date().toISOString() // Force an update
-        })
-        .eq('id', userId);
-        
-    } catch (error: any) {
-      console.error('Error updating premium status:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la mise à jour du statut premium.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(null);
-    }
-  };
-  
   const filteredUsers = users.filter(user => {
     if (!searchTerm) return true;
     
@@ -144,12 +84,6 @@ const AdminPanel = () => {
       (user.address && user.address.toLowerCase().includes(searchTermLower))
     );
   });
-  
-  // Format date function
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('fr-FR');
-  };
   
   if (!isAdmin) {
     return null; // Redirect happens in useEffect
@@ -179,85 +113,14 @@ const AdminPanel = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-              <Input
-                placeholder="Rechercher un utilisateur..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
+            <UserSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             
             {isLoading ? (
               <div className="flex justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nom d'utilisateur</TableHead>
-                      <TableHead>Premium</TableHead>
-                      <TableHead>Date d'expiration</TableHead>
-                      <TableHead>Solde</TableHead>
-                      <TableHead>Trades</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                          Aucun utilisateur trouvé
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredUsers.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell className="font-medium">
-                            {user.username || 'Utilisateur sans nom'}
-                          </TableCell>
-                          <TableCell>
-                            {user.premium ? (
-                              <div className="flex items-center text-yellow-500">
-                                <Star className="h-4 w-4 mr-1 fill-yellow-500" />
-                                Premium
-                              </div>
-                            ) : 'Standard'}
-                          </TableCell>
-                          <TableCell>
-                            {user.premium ? formatDate(user.premium_expires) : 'N/A'}
-                          </TableCell>
-                          <TableCell>
-                            {user.balance ? `${Number(user.balance).toLocaleString('fr-FR')} €` : '0 €'}
-                          </TableCell>
-                          <TableCell>
-                            {user.trades_count || 0}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end items-center gap-2">
-                              {isProcessing === user.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              ) : (
-                                <Switch
-                                  checked={!!user.premium}
-                                  onCheckedChange={() => togglePremium(user.id, !!user.premium)}
-                                  disabled={isProcessing !== null}
-                                />
-                              )}
-                              <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                                <Calendar className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+              <UserTable users={filteredUsers} onRefresh={fetchUsers} />
             )}
           </CardContent>
         </Card>
