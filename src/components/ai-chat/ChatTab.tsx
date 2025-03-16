@@ -1,14 +1,20 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import { Message } from './Message';
 import { aiResponseGenerator } from '@/utils/aiResponseGenerator';
+import { usePremium } from '@/context/PremiumContext';
 
-export function ChatTab() {
+interface ChatTabProps {
+  analysisPrompt?: string;
+}
+
+export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
   const { toast } = useToast();
+  const { isPremium } = usePremium();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -19,6 +25,13 @@ export function ChatTab() {
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [analysisType, setAnalysisType] = useState<string | null>(null);
+
+  // Handle processing an analysis request that comes from the AnalysisTab
+  useEffect(() => {
+    if (analysisPrompt && !isProcessing && isPremium) {
+      handleSendMessage(analysisPrompt);
+    }
+  }, [analysisPrompt]);
 
   const handleSendMessage = async (inputValue: string) => {
     // Use analysis type or input value

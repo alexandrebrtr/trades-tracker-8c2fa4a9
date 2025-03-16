@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Brain, BarChart3, PlusCircle } from 'lucide-react';
+import { Brain, BarChart3, PlusCircle, Crown } from 'lucide-react';
+import { usePremium } from '@/context/PremiumContext';
 
 interface AnalysisTabProps {
   isProcessing: boolean;
@@ -10,10 +11,15 @@ interface AnalysisTabProps {
 }
 
 export function AnalysisTab({ isProcessing, onRequestAnalysis }: AnalysisTabProps) {
+  const { isPremium } = usePremium();
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Analyses IA</CardTitle>
+        <CardTitle className="flex items-center">
+          Analyses IA Premium
+          <Crown className="ml-2 h-4 w-4 text-yellow-500" />
+        </CardTitle>
       </CardHeader>
       <CardContent className="p-6">
         <div className="space-y-4">
@@ -69,11 +75,12 @@ export function AnalysisTab({ isProcessing, onRequestAnalysis }: AnalysisTabProp
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Débloquez des analyses avancées et des prédictions de marché en temps réel avec notre abonnement premium.
+                Vous avez accès à des analyses avancées et des prédictions de marché en temps réel grâce à votre abonnement premium.
               </p>
-              <Button className="w-full">
-                Explorer les options premium
-              </Button>
+              <div className="bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 rounded-lg p-3 text-sm">
+                <Crown className="h-4 w-4 mb-2" />
+                <p>Premium actif - Toutes les fonctionnalités sont débloquées.</p>
+              </div>
             </CardContent>
           </Card>
         </div>
