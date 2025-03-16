@@ -72,15 +72,33 @@ const AdvancedAnalytics = () => {
       setIsLoading(true);
       try {
         // Récupérer les trades de l'utilisateur
-        const { data: trades, error } = await supabase
+        const { data: tradesData, error } = await supabase
           .from('trades')
           .select('*')
           .eq('user_id', user.id);
 
         if (error) throw error;
 
+        // Process the trades data to ensure it conforms to the Trade type
+        const trades: Trade[] = (tradesData || []).map(trade => ({
+          ...trade,
+          // Explicitly cast type to either "long" or "short"
+          type: (trade.type?.toLowerCase() === 'short' ? 'short' : 'long') as 'long' | 'short',
+          // Ensure other required properties are present
+          id: trade.id,
+          date: trade.date || new Date().toISOString(),
+          symbol: trade.symbol,
+          entry_price: trade.entry_price,
+          exit_price: trade.exit_price,
+          size: trade.size,
+          pnl: trade.pnl || 0,
+          user_id: trade.user_id,
+          created_at: trade.created_at || new Date().toISOString(),
+          updated_at: trade.updated_at || new Date().toISOString()
+        }));
+
         // Traiter les données pour les visualisations
-        processTradeData(trades || []);
+        processTradeData(trades);
       } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
         // Utiliser des données par défaut en cas d'erreur
@@ -185,14 +203,16 @@ const AdvancedAnalytics = () => {
       const day = date.getDay();
       
       // Performance par heure
-      hourlyPerf[hour] = hourlyPerf[hour] || { total: 0, count: 0 };
-      hourlyPerf[hour].total += (trade.pnl || 0);
-      hourlyPerf[hour].count += 1;
+      const hourKey = hour.toString();
+      hourlyPerf[hourKey] = hourlyPerf[hourKey] || { total: 0, count: 0 };
+      hourlyPerf[hourKey].total += (trade.pnl || 0);
+      hourlyPerf[hourKey].count += 1;
       
       // Performance par jour
-      dailyPerf[day] = dailyPerf[day] || { total: 0, count: 0 };
-      dailyPerf[day].total += (trade.pnl || 0);
-      dailyPerf[day].count += 1;
+      const dayKey = day.toString();
+      dailyPerf[dayKey] = dailyPerf[dayKey] || { total: 0, count: 0 };
+      dailyPerf[dayKey].total += (trade.pnl || 0);
+      dailyPerf[dayKey].count += 1;
     });
     
     // Trouver la meilleure heure
