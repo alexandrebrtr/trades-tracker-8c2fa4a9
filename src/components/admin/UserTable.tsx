@@ -68,13 +68,14 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
     }
   };
 
-  // Add function to view user data
+  // View user profile (redirect to profile page)
   const viewUserData = (userId: string) => {
-    // Here you would navigate to a detailed view or open a modal
-    // For now, we'll just show a toast
+    // Navigate to a detailed view or user profile
+    navigate(`/profile/${userId}`);
+    
     toast({
-      title: "Détails utilisateur",
-      description: `Affichage des détails pour l'utilisateur: ${userId}`,
+      title: "Navigation",
+      description: `Redirection vers le profil de l'utilisateur: ${userId}`,
     });
   };
   

@@ -49,6 +49,21 @@ const AdminPanel = () => {
     // If user is admin, fetch all users
     if (adminIds.includes(user.id)) {
       fetchUsers();
+      
+      // Set up real-time subscription for profiles changes
+      const channel = supabase
+        .channel('schema-db-changes')
+        .on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'profiles' }, 
+          () => {
+            fetchUsers();
+          }
+        )
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user, navigate]);
   

@@ -3,9 +3,52 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { CommunityContent } from '@/components/community/CommunityContent';
 import { UsersRound } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Community() {
   const { profile } = useAuth();
+  
+  // Activer les mises à jour en temps réel pour les tables utilisées dans cette page
+  useEffect(() => {
+    // Activer les canaux pour écouter les changements dans les tables
+    const profilesChannel = supabase
+      .channel('profiles-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'profiles' }, 
+        (payload) => {
+          console.log('Profiles change detected:', payload);
+        }
+      )
+      .subscribe();
+      
+    const tradesChannel = supabase
+      .channel('trades-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'trades' }, 
+        (payload) => {
+          console.log('Trades change detected:', payload);
+        }
+      )
+      .subscribe();
+      
+    const forumTopicsChannel = supabase
+      .channel('forum-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'forum_topics' }, 
+        (payload) => {
+          console.log('Forum topic change detected:', payload);
+        }
+      )
+      .subscribe();
+      
+    // Nettoyer les abonnements
+    return () => {
+      supabase.removeChannel(profilesChannel);
+      supabase.removeChannel(tradesChannel);
+      supabase.removeChannel(forumTopicsChannel);
+    };
+  }, []);
   
   return (
     <AppLayout>
