@@ -13,8 +13,7 @@ import {
   X,
   Brain,
   Wallet,
-  Shield,
-  Star
+  Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -104,12 +103,6 @@ export function Sidebar() {
       icon: <BarChart3 className="w-5 h-5" />
     },
     {
-      name: 'Analyses Premium',
-      path: '/premium-analytics',
-      icon: <Star className="w-5 h-5" />,
-      requirePremium: true
-    },
-    {
       name: 'Journal',
       path: '/journal',
       icon: <Book className="w-5 h-5" />
@@ -117,8 +110,7 @@ export function Sidebar() {
     {
       name: 'Communauté',
       path: '/community',
-      icon: <Users className="w-5 h-5" />,
-      requirePremium: true
+      icon: <Users className="w-5 h-5" />
     },
     {
       name: 'Assistant IA',

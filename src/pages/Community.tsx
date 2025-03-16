@@ -1,13 +1,22 @@
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CommunityContent } from '@/components/community/CommunityContent';
+import { UsersRound } from 'lucide-react';
 
 export default function Community() {
   return (
     <AppLayout>
       <div className="page-transition space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-3xl font-bold tracking-tight">Communauté</h1>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <UsersRound className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Communauté</h1>
+              <p className="text-muted-foreground">Échanger, apprendre et progresser ensemble</p>
+            </div>
+          </div>
         </div>
         
         <CommunityContent />
