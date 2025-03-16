@@ -30,5 +30,6 @@ export const supabase = createClient<Database>(
   }
 );
 
-// Configure realtime subscriptions for the relevant tables
-supabase.realtime.setRelTime(true);
+// The setRelTime method doesn't exist in the current Supabase JS client
+// Instead, we're using the proper configuration options above
+// No need to call additional methods to configure realtime subscriptions
