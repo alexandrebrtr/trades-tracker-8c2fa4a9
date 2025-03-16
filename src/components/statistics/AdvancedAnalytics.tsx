@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   ResponsiveContainer,
@@ -12,7 +11,6 @@ import {
   ScatterChart,
   Scatter,
   ZAxis,
-  HeatMap,
   BarChart,
   Bar
 } from 'recharts';
