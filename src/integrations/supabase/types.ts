@@ -112,6 +112,7 @@ export type Database = {
           premium: boolean | null
           premium_expires: string | null
           premium_since: string | null
+          settings: Json | null
           trades_count: number | null
           updated_at: string | null
           username: string | null
@@ -126,6 +127,7 @@ export type Database = {
           premium?: boolean | null
           premium_expires?: string | null
           premium_since?: string | null
+          settings?: Json | null
           trades_count?: number | null
           updated_at?: string | null
           username?: string | null
@@ -140,6 +142,7 @@ export type Database = {
           premium?: boolean | null
           premium_expires?: string | null
           premium_since?: string | null
+          settings?: Json | null
           trades_count?: number | null
           updated_at?: string | null
           username?: string | null

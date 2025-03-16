@@ -39,6 +39,7 @@ interface PremiumContextType {
   refreshPremiumStatus: () => Promise<void>;
   userSettings: UserSettings;
   updateUserSettings: (settings: UserSettings) => Promise<void>;
+  setPremiumStatus: (status: boolean) => Promise<void>;
 }
 
 const PremiumContext = createContext<PremiumContextType>({
@@ -49,6 +50,7 @@ const PremiumContext = createContext<PremiumContextType>({
   refreshPremiumStatus: async () => {},
   userSettings: {},
   updateUserSettings: async () => {},
+  setPremiumStatus: async () => {},
 });
 
 export const usePremium = () => useContext(PremiumContext);
@@ -71,7 +73,7 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('settings')
         .eq('id', userId)
         .single();
 
@@ -100,6 +102,40 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
     } catch (error) {
       console.error('Error updating user settings:', error);
       throw error;
+    }
+  };
+
+  const setPremiumStatus = async (status: boolean) => {
+    if (!user) return;
+    
+    setLoadingPremium(true);
+    try {
+      const now = new Date();
+      const expiryDate = status 
+        ? new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+        : null;
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          premium: status,
+          premium_since: status ? now.toISOString() : null,
+          premium_expires: expiryDate ? expiryDate.toISOString() : null
+        })
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      setIsPremium(status);
+      setPremiumSince(status ? now.toISOString() : null);
+      setPremiumExpires(expiryDate ? expiryDate.toISOString() : null);
+      
+      console.log(`Premium status updated to: ${status}`);
+    } catch (error) {
+      console.error('Error updating premium status:', error);
+      throw error;
+    } finally {
+      setLoadingPremium(false);
     }
   };
 
@@ -155,6 +191,7 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
         refreshPremiumStatus,
         userSettings,
         updateUserSettings,
+        setPremiumStatus,
       }}
     >
       {children}

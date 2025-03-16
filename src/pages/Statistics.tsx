@@ -1,6 +1,6 @@
 
 import { AppLayout } from '@/components/layout/AppLayout';
-import { AnalyticsView } from '@/components/statistics/AnalyticsView';
+import AnalyticsView from '@/components/statistics/AnalyticsView';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Wallet, Star, ArrowRight } from 'lucide-react';

@@ -1,542 +1,437 @@
-
-import { useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Brush, 
-  Code, 
-  Key, 
-  Lock, 
-  Save, 
-  Bell, 
-  LayoutGrid, 
-  Copy,
-  Check,
-  PanelLeft,
-  Palette,
-} from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { usePremium } from '@/context/PremiumContext';
+import { useTheme } from '@/context/ThemeContext';
+import { Bell, Layout, Palette, Shield, User } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { usePremium, UserSettings } from '@/context/PremiumContext';
-import { useState } from 'react';
 
+// Define or import types that match what's in PremiumContext
+import { UserSettings } from '@/context/PremiumContext';
+
+// Define more specific types for the settings
+interface ThemeSettings {
+  primary: string;
+  background: string;
+  text: string;
+  sidebar: string;
+}
+
+interface LayoutSettings {
+  compactMode?: boolean;
+  showBalances?: boolean;
+}
+
+interface NotificationSettings {
+  trades?: boolean;
+  news?: boolean;
+  alerts?: boolean;
+}
+
+// Your component code follows
 export default function Settings() {
-  const { toast } = useToast();
-  const { isPremium, userSettings, updateUserSettings } = usePremium();
-  const [copied, setCopied] = useState(false);
-  
-  // États locaux pour les paramètres de l'utilisateur
-  const [theme, setTheme] = useState({
-    primary: '#9b87f5',
+  const { userSettings, updateUserSettings } = usePremium();
+  const [themeSettings, setThemeSettings] = useState<ThemeSettings>({
+    primary: '#0f172a',
     background: '#ffffff',
-    text: '#000000',
-    sidebar: '#f9fafb'
+    text: '#1e293b',
+    sidebar: '#f8fafc'
   });
-  
-  const [apiKeys, setApiKeys] = useState({
-    alphavantage: '',
-    finnhub: '',
-    tradingview: ''
+  const [layoutSettings, setLayoutSettings] = useState<LayoutSettings>({
+    compactMode: false,
+    showBalances: true
   });
-  
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: false,
-    tradeAlerts: true,
-    marketNews: false
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
+    trades: true,
+    news: true,
+    alerts: true
   });
-  
-  const [layout, setLayout] = useState({
-    compactSidebar: false,
-    gridLayout: false,
-    showWelcome: true
-  });
+  const { theme, toggleTheme } = useTheme();
+  const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Mettre à jour les états locaux lorsque les paramètres utilisateur sont chargés
+  // Load settings from context when component mounts
   useEffect(() => {
     if (userSettings) {
-      setTheme(userSettings.theme);
-      setLayout(userSettings.layout);
-      setNotifications(userSettings.notifications);
+      if (userSettings.theme) {
+        // Convert string to ThemeSettings object if needed
+        if (typeof userSettings.theme === 'string') {
+          // Apply default theme settings
+          setThemeSettings({
+            primary: '#0f172a',
+            background: '#ffffff',
+            text: '#1e293b',
+            sidebar: '#f8fafc'
+          });
+        } else if (typeof userSettings.theme === 'object') {
+          // Cast to proper type and update
+          setThemeSettings(userSettings.theme as ThemeSettings);
+        }
+      }
+      
+      if (userSettings.layout) {
+        setLayoutSettings(userSettings.layout);
+      }
+      
+      if (userSettings.notifications) {
+        setNotificationSettings(userSettings.notifications);
+      }
     }
   }, [userSettings]);
 
-  const handleSaveTheme = async () => {
-    await updateUserSettings({ theme });
+  // Save all settings
+  const saveSettings = async () => {
+    try {
+      setIsSaving(true);
+      // Create the new settings object with proper structure
+      const newSettings: UserSettings = {
+        theme: themeSettings,
+        layout: layoutSettings,
+        notifications: notificationSettings
+      };
+      
+      await updateUserSettings(newSettings);
+      toast({
+        title: "Paramètres enregistrés",
+        description: "Vos préférences ont été mises à jour avec succès.",
+      });
+    } catch (error) {
+      // Error handling
+      console.error("Failed to save settings:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer vos paramètres. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleSaveApiKeys = () => {
-    toast({
-      title: "Clés API enregistrées",
-      description: "Vos clés API ont été sauvegardées en toute sécurité.",
-    });
+  const handleLayoutChange = (key: keyof LayoutSettings, value: boolean) => {
+    setLayoutSettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
-  const handleSaveNotifications = async () => {
-    await updateUserSettings({ notifications });
-  };
-
-  const handleSaveLayout = async () => {
-    await updateUserSettings({ layout });
-  };
-
-  const handleCopyTheme = () => {
-    navigator.clipboard.writeText(JSON.stringify(theme, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast({
-      title: "Copié !",
-      description: "Configuration du thème copiée dans le presse-papier.",
-    });
+  const handleNotificationChange = (key: keyof NotificationSettings, value: boolean) => {
+    setNotificationSettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
   return (
     <AppLayout>
-      <div className="page-transition space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
+      <div className="container py-8 max-w-4xl mx-auto page-transition">
+        <div className="space-y-8">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
+            <p className="text-muted-foreground mt-2">
+              Gérez vos préférences et personnalisez votre expérience
+            </p>
+          </div>
+
+          <Tabs defaultValue="appearance" className="space-y-6">
+            <TabsList className="grid grid-cols-4 w-full max-w-lg">
+              <TabsTrigger value="appearance" className="flex items-center gap-2">
+                <Palette className="h-4 w-4" />
+                <span className="hidden sm:inline">Apparence</span>
+              </TabsTrigger>
+              <TabsTrigger value="layout" className="flex items-center gap-2">
+                <Layout className="h-4 w-4" />
+                <span className="hidden sm:inline">Interface</span>
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="flex items-center gap-2">
+                <Bell className="h-4 w-4" />
+                <span className="hidden sm:inline">Notifications</span>
+              </TabsTrigger>
+              <TabsTrigger value="account" className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">Compte</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="appearance">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Apparence</CardTitle>
+                  <CardDescription>
+                    Personnalisez l'apparence de l'application
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="theme-mode">Mode sombre</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Basculer entre le mode clair et sombre
+                        </p>
+                      </div>
+                      <Switch 
+                        id="theme-mode" 
+                        checked={theme === 'dark'} 
+                        onCheckedChange={toggleTheme} 
+                      />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <Label>Couleurs personnalisées</Label>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Personnalisez les couleurs principales de l'interface
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="primary-color">Couleur principale</Label>
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="color" 
+                              id="primary-color" 
+                              value={themeSettings.primary}
+                              onChange={(e) => setThemeSettings({...themeSettings, primary: e.target.value})}
+                              className="w-10 h-10 rounded cursor-pointer"
+                            />
+                            <span className="text-sm font-mono">{themeSettings.primary}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="background-color">Arrière-plan</Label>
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="color" 
+                              id="background-color" 
+                              value={themeSettings.background}
+                              onChange={(e) => setThemeSettings({...themeSettings, background: e.target.value})}
+                              className="w-10 h-10 rounded cursor-pointer"
+                            />
+                            <span className="text-sm font-mono">{themeSettings.background}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="text-color">Texte</Label>
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="color" 
+                              id="text-color" 
+                              value={themeSettings.text}
+                              onChange={(e) => setThemeSettings({...themeSettings, text: e.target.value})}
+                              className="w-10 h-10 rounded cursor-pointer"
+                            />
+                            <span className="text-sm font-mono">{themeSettings.text}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="sidebar-color">Barre latérale</Label>
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="color" 
+                              id="sidebar-color" 
+                              value={themeSettings.sidebar}
+                              onChange={(e) => setThemeSettings({...themeSettings, sidebar: e.target.value})}
+                              className="w-10 h-10 rounded cursor-pointer"
+                            />
+                            <span className="text-sm font-mono">{themeSettings.sidebar}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="layout">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Interface</CardTitle>
+                  <CardDescription>
+                    Personnalisez la disposition et l'affichage de l'interface
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="compact-mode">Mode compact</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Réduire l'espacement pour afficher plus de contenu
+                        </p>
+                      </div>
+                      <Switch 
+                        id="compact-mode" 
+                        checked={layoutSettings.compactMode} 
+                        onCheckedChange={(checked) => handleLayoutChange('compactMode', checked)} 
+                      />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="show-balances">Afficher les soldes</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Afficher les montants et soldes dans l'interface
+                        </p>
+                      </div>
+                      <Switch 
+                        id="show-balances" 
+                        checked={layoutSettings.showBalances} 
+                        onCheckedChange={(checked) => handleLayoutChange('showBalances', checked)} 
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="notifications">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Notifications</CardTitle>
+                  <CardDescription>
+                    Configurez vos préférences de notifications
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="trade-notifications">Notifications de trades</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Recevoir des notifications pour les trades et transactions
+                        </p>
+                      </div>
+                      <Switch 
+                        id="trade-notifications" 
+                        checked={notificationSettings.trades} 
+                        onCheckedChange={(checked) => handleNotificationChange('trades', checked)} 
+                      />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="news-notifications">Actualités financières</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Recevoir des notifications pour les actualités importantes
+                        </p>
+                      </div>
+                      <Switch 
+                        id="news-notifications" 
+                        checked={notificationSettings.news} 
+                        onCheckedChange={(checked) => handleNotificationChange('news', checked)} 
+                      />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="alert-notifications">Alertes de prix</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Recevoir des notifications pour les alertes de prix
+                        </p>
+                      </div>
+                      <Switch 
+                        id="alert-notifications" 
+                        checked={notificationSettings.alerts} 
+                        onCheckedChange={(checked) => handleNotificationChange('alerts', checked)} 
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="account">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Compte et sécurité</CardTitle>
+                  <CardDescription>
+                    Gérez les paramètres de votre compte et la sécurité
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <h3 className="text-sm font-medium">Mot de passe</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Dernière modification il y a 3 mois
+                        </p>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        Modifier
+                      </Button>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <h3 className="text-sm font-medium">Authentification à deux facteurs</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Protégez votre compte avec une couche de sécurité supplémentaire
+                        </p>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        Configurer
+                      </Button>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <h3 className="text-sm font-medium">Sessions actives</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Gérez les appareils connectés à votre compte
+                        </p>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        Gérer
+                      </Button>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <h3 className="text-sm font-medium text-destructive">Supprimer le compte</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Supprimer définitivement votre compte et toutes vos données
+                        </p>
+                      </div>
+                      <Button variant="destructive" size="sm">
+                        Supprimer
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end">
+            <Button onClick={saveSettings} disabled={isSaving}>
+              {isSaving ? "Enregistrement..." : "Enregistrer les paramètres"}
+            </Button>
+          </div>
         </div>
-
-        <Tabs defaultValue="appearance" className="space-y-6">
-          <TabsList className="mb-6">
-            <TabsTrigger value="appearance" className="flex gap-2 items-center">
-              <Brush className="w-4 h-4" />
-              <span>Apparence</span>
-            </TabsTrigger>
-            <TabsTrigger value="api" className="flex gap-2 items-center">
-              <Key className="w-4 h-4" />
-              <span>API</span>
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex gap-2 items-center">
-              <Bell className="w-4 h-4" />
-              <span>Notifications</span>
-            </TabsTrigger>
-            <TabsTrigger value="layout" className="flex gap-2 items-center">
-              <LayoutGrid className="w-4 h-4" />
-              <span>Mise en page</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="appearance" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Palette className="w-5 h-5" />
-                  <span>Personnalisation du thème</span>
-                  {!isPremium && (
-                    <Badge variant="outline" className="ml-2">Premium</Badge>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  Personnalisez les couleurs et l'apparence de l'application
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="primary-color">Couleur principale</Label>
-                      <div className="flex gap-3">
-                        <div 
-                          className="w-10 h-10 rounded-md border" 
-                          style={{ backgroundColor: theme.primary }}
-                        />
-                        <Input 
-                          id="primary-color" 
-                          type="text" 
-                          value={theme.primary}
-                          onChange={(e) => setTheme({...theme, primary: e.target.value})}
-                          className="flex-1"
-                          disabled={!isPremium}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="background-color">Couleur d'arrière-plan</Label>
-                      <div className="flex gap-3">
-                        <div 
-                          className="w-10 h-10 rounded-md border" 
-                          style={{ backgroundColor: theme.background }}
-                        />
-                        <Input 
-                          id="background-color" 
-                          type="text" 
-                          value={theme.background}
-                          onChange={(e) => setTheme({...theme, background: e.target.value})}
-                          className="flex-1"
-                          disabled={!isPremium}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="text-color">Couleur du texte</Label>
-                      <div className="flex gap-3">
-                        <div 
-                          className="w-10 h-10 rounded-md border" 
-                          style={{ backgroundColor: theme.text }}
-                        />
-                        <Input 
-                          id="text-color" 
-                          type="text" 
-                          value={theme.text}
-                          onChange={(e) => setTheme({...theme, text: e.target.value})}
-                          className="flex-1"
-                          disabled={!isPremium}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="sidebar-color">Couleur de la barre latérale</Label>
-                      <div className="flex gap-3">
-                        <div 
-                          className="w-10 h-10 rounded-md border" 
-                          style={{ backgroundColor: theme.sidebar }}
-                        />
-                        <Input 
-                          id="sidebar-color" 
-                          type="text" 
-                          value={theme.sidebar}
-                          onChange={(e) => setTheme({...theme, sidebar: e.target.value})}
-                          className="flex-1"
-                          disabled={!isPremium}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <Button 
-                    onClick={handleSaveTheme} 
-                    disabled={!isPremium}
-                    className="flex gap-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>Enregistrer le thème</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleCopyTheme}
-                    disabled={!isPremium}
-                    className="flex gap-2"
-                  >
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    <span>{copied ? "Copié !" : "Copier la configuration"}</span>
-                  </Button>
-                </div>
-                
-                {!isPremium && (
-                  <div className="bg-muted/50 rounded-lg p-4 text-center">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      La personnalisation du thème est une fonctionnalité premium
-                    </p>
-                    <Button size="sm" asChild>
-                      <a href="/premium">Passer à Premium</a>
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <PanelLeft className="w-5 h-5" />
-                  <span>Options de la barre latérale</span>
-                </CardTitle>
-                <CardDescription>
-                  Personnalisez le comportement de la barre latérale
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="sidebar-collapse" className="flex flex-col gap-1">
-                    <span>Réduire automatiquement</span>
-                    <span className="font-normal text-sm text-muted-foreground">
-                      Réduire automatiquement la barre latérale sur les petits écrans
-                    </span>
-                  </Label>
-                  <Switch id="sidebar-collapse" />
-                </div>
-                
-                <Separator />
-                
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="sidebar-hover" className="flex flex-col gap-1">
-                    <span>Élargir au survol</span>
-                    <span className="font-normal text-sm text-muted-foreground">
-                      Élargir la barre latérale lorsque la souris passe dessus
-                    </span>
-                  </Label>
-                  <Switch id="sidebar-hover" />
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="api" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Code className="w-5 h-5" />
-                  <span>Intégrations d'API</span>
-                  {!isPremium && (
-                    <Badge variant="outline" className="ml-2">Premium</Badge>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  Configurez vos clés API pour intégrer des services externes
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="alphavantage-api" className="flex items-center gap-2">
-                      Alpha Vantage API
-                      <Lock className="w-4 h-4 text-muted-foreground" />
-                    </Label>
-                    <Input 
-                      id="alphavantage-api" 
-                      type="password" 
-                      placeholder="Entrez votre clé API Alpha Vantage" 
-                      value={apiKeys.alphavantage}
-                      onChange={(e) => setApiKeys({...apiKeys, alphavantage: e.target.value})}
-                      disabled={!isPremium}
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Utilisé pour récupérer les données historiques des actions
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="finnhub-api" className="flex items-center gap-2">
-                      Finnhub API
-                      <Lock className="w-4 h-4 text-muted-foreground" />
-                    </Label>
-                    <Input 
-                      id="finnhub-api" 
-                      type="password" 
-                      placeholder="Entrez votre clé API Finnhub" 
-                      value={apiKeys.finnhub}
-                      onChange={(e) => setApiKeys({...apiKeys, finnhub: e.target.value})}
-                      disabled={!isPremium}
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Utilisé pour les actualités financières et les données fondamentales
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="tradingview-api" className="flex items-center gap-2">
-                      TradingView API
-                      <Lock className="w-4 h-4 text-muted-foreground" />
-                    </Label>
-                    <Input 
-                      id="tradingview-api" 
-                      type="password" 
-                      placeholder="Entrez votre clé API TradingView" 
-                      value={apiKeys.tradingview}
-                      onChange={(e) => setApiKeys({...apiKeys, tradingview: e.target.value})}
-                      disabled={!isPremium}
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Utilisé pour les graphiques et les analyses techniques
-                    </p>
-                  </div>
-                </div>
-                
-                <Button 
-                  onClick={handleSaveApiKeys} 
-                  disabled={!isPremium}
-                  className="flex gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>Enregistrer les clés API</span>
-                </Button>
-                
-                {!isPremium && (
-                  <div className="bg-muted/50 rounded-lg p-4 text-center">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Les intégrations API sont des fonctionnalités premium
-                    </p>
-                    <Button size="sm" asChild>
-                      <a href="/premium">Passer à Premium</a>
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="notifications" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="w-5 h-5" />
-                  <span>Préférences de notifications</span>
-                </CardTitle>
-                <CardDescription>
-                  Configurez quand et comment vous souhaitez être notifié
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="email-notifs" className="flex flex-col gap-1">
-                      <span>Notifications par email</span>
-                      <span className="font-normal text-sm text-muted-foreground">
-                        Recevoir des mises à jour par email
-                      </span>
-                    </Label>
-                    <Switch 
-                      id="email-notifs"
-                      checked={notifications.email}
-                      onCheckedChange={(checked) => setNotifications({...notifications, email: checked})}
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="push-notifs" className="flex flex-col gap-1">
-                      <span>Notifications push</span>
-                      <span className="font-normal text-sm text-muted-foreground">
-                        Recevoir des notifications dans le navigateur
-                      </span>
-                    </Label>
-                    <Switch 
-                      id="push-notifs"
-                      checked={notifications.push}
-                      onCheckedChange={(checked) => setNotifications({...notifications, push: checked})}
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="trade-alerts" className="flex flex-col gap-1">
-                      <span>Alertes de trading</span>
-                      <span className="font-normal text-sm text-muted-foreground">
-                        Alertes pour les entrées/sorties planifiées
-                      </span>
-                    </Label>
-                    <Switch 
-                      id="trade-alerts"
-                      checked={notifications.tradeAlerts}
-                      onCheckedChange={(checked) => setNotifications({...notifications, tradeAlerts: checked})}
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="market-news" className="flex flex-col gap-1">
-                      <span>Actualités du marché</span>
-                      <span className="font-normal text-sm text-muted-foreground">
-                        Notifications sur les nouvelles importantes du marché
-                      </span>
-                    </Label>
-                    <Switch 
-                      id="market-news"
-                      checked={notifications.marketNews}
-                      onCheckedChange={(checked) => setNotifications({...notifications, marketNews: checked})}
-                    />
-                  </div>
-                </div>
-                
-                <Button 
-                  onClick={handleSaveNotifications} 
-                  className="flex gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>Enregistrer les préférences</span>
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="layout" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <LayoutGrid className="w-5 h-5" />
-                  <span>Mise en page</span>
-                </CardTitle>
-                <CardDescription>
-                  Personnalisez l'agencement et l'affichage de l'application
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="compact-sidebar" className="flex flex-col gap-1">
-                      <span>Barre latérale compacte</span>
-                      <span className="font-normal text-sm text-muted-foreground">
-                        Afficher la barre latérale en mode compact par défaut
-                      </span>
-                    </Label>
-                    <Switch 
-                      id="compact-sidebar"
-                      checked={layout.compactSidebar}
-                      onCheckedChange={(checked) => setLayout({...layout, compactSidebar: checked})}
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="grid-layout" className="flex flex-col gap-1">
-                      <span>Disposition en grille</span>
-                      <span className="font-normal text-sm text-muted-foreground">
-                        Afficher les tableaux de bord en disposition grille
-                      </span>
-                    </Label>
-                    <Switch 
-                      id="grid-layout"
-                      checked={layout.gridLayout}
-                      onCheckedChange={(checked) => setLayout({...layout, gridLayout: checked})}
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="show-welcome" className="flex flex-col gap-1">
-                      <span>Message de bienvenue</span>
-                      <span className="font-normal text-sm text-muted-foreground">
-                        Afficher le message de bienvenue à la connexion
-                      </span>
-                    </Label>
-                    <Switch 
-                      id="show-welcome"
-                      checked={layout.showWelcome}
-                      onCheckedChange={(checked) => setLayout({...layout, showWelcome: checked})}
-                    />
-                  </div>
-                </div>
-                
-                <Button 
-                  onClick={handleSaveLayout} 
-                  className="flex gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>Enregistrer la mise en page</span>
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
       </div>
     </AppLayout>
   );

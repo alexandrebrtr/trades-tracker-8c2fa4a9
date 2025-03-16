@@ -1,4 +1,3 @@
-
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { usePremium } from '@/context/PremiumContext';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Phone, MapPin, Star, Wallet, Calendar, HandCoins, Share } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Star, Wallet, Calendar, HandCoins, Share, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +15,15 @@ import { SocialStats } from '@/components/profile/SocialStats';
 import { RecentActivity } from '@/components/profile/RecentActivity';
 import { FollowSection } from '@/components/profile/FollowSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+interface ActivityItem {
+  id: string;
+  type: 'trade' | 'comment' | 'like' | 'follow';
+  title: string;
+  description?: string;
+  timestamp: Date;
+  metadata?: Record<string, any>;
+}
 
 export default function Profile() {
   const { isPremium, premiumExpires } = usePremium();
@@ -31,8 +39,7 @@ export default function Profile() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Mock data for the social profile features
-  const [mockActivity] = useState([
+  const [mockActivity] = useState<ActivityItem[]>([
     {
       id: '1',
       type: 'trade',
@@ -115,7 +122,6 @@ export default function Profile() {
       return;
     }
 
-    // Initialiser les champs avec les données du profil
     if (profile) {
       setName(profile.username || '');
       setEmail(user.email || '');
@@ -125,7 +131,6 @@ export default function Profile() {
     }
   }, [user, profile, navigate]);
 
-  // Format the expiry date
   const formatExpiryDate = (dateString: string | null) => {
     if (!dateString) return "Non disponible";
     return new Date(dateString).toLocaleDateString('fr-FR');
@@ -152,7 +157,6 @@ export default function Profile() {
         throw error;
       }
       
-      // Rafraîchir le profil
       await refreshProfile();
       
       setIsEditing(false);
@@ -172,7 +176,7 @@ export default function Profile() {
   };
 
   if (!user || !profile) {
-    return null; // Ou un composant de chargement
+    return null;
   }
 
   return (
