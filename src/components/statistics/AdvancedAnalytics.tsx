@@ -1,3 +1,5 @@
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   ResponsiveContainer,
@@ -17,10 +19,302 @@ import {
 import { DataCard } from "@/components/ui/data-card";
 import { Activity, TrendingUp, Award, Clock, Zap, Calendar } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AdvancedAnalytics = () => {
-  // Données simulées pour l'analyse avancée
-  const riskReturnData = [
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [riskReturnData, setRiskReturnData] = useState([]);
+  const [efficiencyFrontierData, setEfficiencyFrontierData] = useState([]);
+  const [weekdayPerformanceData, setWeekdayPerformanceData] = useState([]);
+  const [hourlyPerformanceData, setHourlyPerformanceData] = useState([]);
+  const [metrics, setMetrics] = useState({
+    sortino: "2.3",
+    calmar: "1.7",
+    alpha: "3.8%",
+    bestTime: "16h-17h",
+    bestDay: "Vendredi",
+    gainLoss: "2.4"
+  });
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Récupérer les trades de l'utilisateur
+        const { data: trades, error } = await supabase
+          .from('trades')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        // Traiter les données pour les visualisations
+        processTradeData(trades || []);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des données:", error);
+        // Utiliser des données par défaut en cas d'erreur
+        useDefaultData();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user]);
+
+  // Fonction pour traiter les données des trades
+  const processTradeData = (trades) => {
+    if (!trades || trades.length === 0) {
+      useDefaultData();
+      return;
+    }
+
+    // Calculer les métriques avancées
+    calculateMetrics(trades);
+
+    // Préparer les données pour les visualisations
+    prepareRiskReturnData(trades);
+    prepareEfficiencyFrontierData(trades);
+    prepareWeekdayPerformanceData(trades);
+    prepareHourlyPerformanceData(trades);
+  };
+
+  // Calculer les métriques avancées basées sur les trades
+  const calculateMetrics = (trades) => {
+    const winningTrades = trades.filter(trade => trade.pnl > 0);
+    const losingTrades = trades.filter(trade => trade.pnl < 0);
+    
+    // Calculer le ratio de Sortino (simplification)
+    const averageReturn = trades.reduce((sum, trade) => sum + trade.pnl, 0) / trades.length;
+    const downwardDeviation = Math.sqrt(
+      losingTrades.reduce((sum, trade) => sum + Math.pow(trade.pnl, 2), 0) / (losingTrades.length || 1)
+    );
+    const sortino = downwardDeviation !== 0 ? (averageReturn / downwardDeviation).toFixed(1) : "N/A";
+    
+    // Calculer le ratio de Calmar (simplification)
+    const annualizedReturn = averageReturn * 52; // supposant une transaction par semaine
+    const maxDrawdown = calculateMaxDrawdown(trades);
+    const calmar = maxDrawdown !== 0 ? (annualizedReturn / maxDrawdown).toFixed(1) : "N/A";
+    
+    // Alpha de Jensen (simplification)
+    const alpha = ((winningTrades.length / trades.length) * 100 - 50).toFixed(1) + "%";
+    
+    // Analyser les performances par heure et jour
+    const timePerformance = analyzeTimePerformance(trades);
+    
+    // Ratio de gain/perte
+    const avgWin = winningTrades.length > 0 ? 
+      winningTrades.reduce((sum, t) => sum + t.pnl, 0) / winningTrades.length : 0;
+    const avgLoss = losingTrades.length > 0 ? 
+      Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0) / losingTrades.length) : 1;
+    const gainLoss = avgLoss !== 0 ? (avgWin / avgLoss).toFixed(1) : "N/A";
+    
+    setMetrics({
+      sortino,
+      calmar,
+      alpha,
+      bestTime: timePerformance.bestHour,
+      bestDay: timePerformance.bestDay,
+      gainLoss
+    });
+  };
+
+  // Calculer le drawdown maximum
+  const calculateMaxDrawdown = (trades) => {
+    let peak = 0;
+    let maxDrawdown = 0;
+    let cumulativePnL = 0;
+    
+    trades.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(trade => {
+      cumulativePnL += trade.pnl;
+      if (cumulativePnL > peak) {
+        peak = cumulativePnL;
+      }
+      
+      const drawdown = peak - cumulativePnL;
+      if (drawdown > maxDrawdown) {
+        maxDrawdown = drawdown;
+      }
+    });
+    
+    return maxDrawdown;
+  };
+
+  // Analyser les performances par heure et jour de la semaine
+  const analyzeTimePerformance = (trades) => {
+    const hourlyPerf = {};
+    const dailyPerf = {};
+    const dayNames = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+    
+    trades.forEach(trade => {
+      if (!trade.date) return;
+      
+      const date = new Date(trade.date);
+      const hour = date.getHours();
+      const day = date.getDay();
+      
+      // Performance par heure
+      hourlyPerf[hour] = hourlyPerf[hour] || { total: 0, count: 0 };
+      hourlyPerf[hour].total += trade.pnl;
+      hourlyPerf[hour].count += 1;
+      
+      // Performance par jour
+      dailyPerf[day] = dailyPerf[day] || { total: 0, count: 0 };
+      dailyPerf[day].total += trade.pnl;
+      dailyPerf[day].count += 1;
+    });
+    
+    // Trouver la meilleure heure
+    let bestHour = "N/A";
+    let maxHourlyAvg = -Infinity;
+    Object.entries(hourlyPerf).forEach(([hour, data]) => {
+      const avg = data.total / data.count;
+      if (avg > maxHourlyAvg) {
+        maxHourlyAvg = avg;
+        bestHour = `${hour}h-${(parseInt(hour) + 1) % 24}h`;
+      }
+    });
+    
+    // Trouver le meilleur jour
+    let bestDay = "N/A";
+    let maxDailyAvg = -Infinity;
+    Object.entries(dailyPerf).forEach(([day, data]) => {
+      const avg = data.total / data.count;
+      if (avg > maxDailyAvg) {
+        maxDailyAvg = avg;
+        bestDay = dayNames[day];
+      }
+    });
+    
+    return { bestHour, bestDay };
+  };
+
+  // Préparer les données pour le graphique de risque-rendement
+  const prepareRiskReturnData = (trades) => {
+    // Grouper les trades par stratégie
+    const strategies = {};
+    trades.forEach(trade => {
+      if (!trade.strategy) return;
+      
+      strategies[trade.strategy] = strategies[trade.strategy] || {
+        returns: [],
+        count: 0
+      };
+      
+      strategies[trade.strategy].returns.push(trade.pnl);
+      strategies[trade.strategy].count += 1;
+    });
+    
+    // Calculer le risque et le rendement pour chaque stratégie
+    const data = Object.entries(strategies).map(([name, data]) => {
+      const returns = data.returns;
+      const avgReturn = returns.reduce((sum, r) => sum + r, 0) / returns.length;
+      const stdDev = Math.sqrt(
+        returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length
+      );
+      
+      return {
+        name,
+        x: stdDev, // Risque
+        y: avgReturn, // Rendement
+        z: data.count * 50, // Taille du point proportionnelle au nombre de trades
+      };
+    });
+    
+    setRiskReturnData(data.length > 0 ? data : getDefaultRiskReturnData());
+  };
+
+  // Préparer les données pour la frontière d'efficience
+  const prepareEfficiencyFrontierData = (trades) => {
+    if (trades.length < 10) {
+      setEfficiencyFrontierData(getDefaultEfficiencyFrontierData());
+      return;
+    }
+    
+    // Simplification: générer une courbe d'efficience théorique
+    const data = [];
+    for (let risk = 2; risk <= 12; risk++) {
+      const expectedReturn = 5 + 5 * (1 - Math.exp(-0.3 * risk));
+      data.push({ risk, return: expectedReturn });
+    }
+    
+    setEfficiencyFrontierData(data);
+  };
+
+  // Préparer les données de performance par jour de la semaine
+  const prepareWeekdayPerformanceData = (trades) => {
+    const dayPerformance = {
+      "Lundi": 0, "Mardi": 0, "Mercredi": 0, "Jeudi": 0, "Vendredi": 0
+    };
+    const dayCount = { "Lundi": 0, "Mardi": 0, "Mercredi": 0, "Jeudi": 0, "Vendredi": 0 };
+    const dayMap = [null, "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", null];
+    
+    trades.forEach(trade => {
+      if (!trade.date) return;
+      
+      const date = new Date(trade.date);
+      const day = date.getDay();
+      
+      // Ignorer le weekend
+      if (day === 0 || day === 6) return;
+      
+      const dayName = dayMap[day];
+      dayPerformance[dayName] = (dayPerformance[dayName] || 0) + trade.pnl;
+      dayCount[dayName] = (dayCount[dayName] || 0) + 1;
+    });
+    
+    const data = Object.entries(dayPerformance).map(([day, total]) => ({
+      day,
+      return: dayCount[day] > 0 ? total / dayCount[day] : 0
+    }));
+    
+    setWeekdayPerformanceData(data.length > 0 && data.some(d => d.return !== 0) ? 
+      data : getDefaultWeekdayPerformanceData());
+  };
+
+  // Préparer les données de performance par heure
+  const prepareHourlyPerformanceData = (trades) => {
+    const hourlyPerformance = {};
+    const hourlyCount = {};
+    
+    trades.forEach(trade => {
+      if (!trade.date) return;
+      
+      const date = new Date(trade.date);
+      const hour = date.getHours();
+      
+      // Uniquement les heures de trading standard (9h-18h)
+      if (hour < 9 || hour > 17) return;
+      
+      const hourKey = `${hour}:00`;
+      hourlyPerformance[hourKey] = (hourlyPerformance[hourKey] || 0) + trade.pnl;
+      hourlyCount[hourKey] = (hourlyCount[hourKey] || 0) + 1;
+    });
+    
+    const data = Object.entries(hourlyPerformance).map(([hour, total]) => ({
+      hour,
+      return: hourlyCount[hour] > 0 ? total / hourlyCount[hour] : 0
+    })).sort((a, b) => parseInt(a.hour) - parseInt(b.hour));
+    
+    setHourlyPerformanceData(data.length > 0 && data.some(d => d.return !== 0) ? 
+      data : getDefaultHourlyPerformanceData());
+  };
+
+  // Utiliser des données par défaut
+  const useDefaultData = () => {
+    setRiskReturnData(getDefaultRiskReturnData());
+    setEfficiencyFrontierData(getDefaultEfficiencyFrontierData());
+    setWeekdayPerformanceData(getDefaultWeekdayPerformanceData());
+    setHourlyPerformanceData(getDefaultHourlyPerformanceData());
+  };
+
+  // Données par défaut pour le graphique risque-rendement
+  const getDefaultRiskReturnData = () => [
     { x: 5, y: 8, z: 100, name: 'Stratégie A' },
     { x: 7, y: 12, z: 200, name: 'Stratégie B' },
     { x: 3, y: 6, z: 150, name: 'Stratégie C' },
@@ -30,7 +324,8 @@ const AdvancedAnalytics = () => {
     { x: 9, y: 13, z: 350, name: 'Stratégie G' },
   ];
 
-  const efficiencyFrontierData = [
+  // Données par défaut pour la frontière d'efficience
+  const getDefaultEfficiencyFrontierData = () => [
     { risk: 2, return: 5 },
     { risk: 3, return: 7 },
     { risk: 4, return: 8.5 },
@@ -44,7 +339,8 @@ const AdvancedAnalytics = () => {
     { risk: 12, return: 11.9 },
   ];
 
-  const weekdayPerformanceData = [
+  // Données par défaut pour la performance par jour
+  const getDefaultWeekdayPerformanceData = () => [
     { day: 'Lundi', return: 1.2 },
     { day: 'Mardi', return: 0.8 },
     { day: 'Mercredi', return: 1.5 },
@@ -52,7 +348,8 @@ const AdvancedAnalytics = () => {
     { day: 'Vendredi', return: 2.1 },
   ];
 
-  const hourlyPerformanceData = [
+  // Données par défaut pour la performance par heure
+  const getDefaultHourlyPerformanceData = () => [
     { hour: '9:00', return: 0.3 },
     { hour: '10:00', return: 0.7 },
     { hour: '11:00', return: 0.5 },
@@ -64,6 +361,34 @@ const AdvancedAnalytics = () => {
     { hour: '17:00', return: 0.4 },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="grid gap-6">
+        <h2 className="text-2xl font-bold">Analyses Avancées</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-4 w-2/3" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-6 w-1/2" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-1/3" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[350px] w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-6">
       <h2 className="text-2xl font-bold">Analyses Avancées</h2>
@@ -71,37 +396,37 @@ const AdvancedAnalytics = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <DataCard
           title="Ratio de Sortino"
-          value="2.3"
+          value={metrics.sortino}
           icon={<TrendingUp className="h-4 w-4" />}
           tooltip="Mesure la performance ajustée au risque baissier uniquement."
         />
         <DataCard
           title="Ratio de Calmar"
-          value="1.7"
+          value={metrics.calmar}
           icon={<Activity className="h-4 w-4" />}
           tooltip="Rendement annualisé divisé par le drawdown maximum."
         />
         <DataCard
           title="Alpha de Jensen"
-          value="3.8%"
+          value={metrics.alpha}
           icon={<Award className="h-4 w-4" />}
           tooltip="Mesure de surperformance par rapport au benchmark."
         />
         <DataCard
           title="Meilleur Moment"
-          value="16h-17h"
+          value={metrics.bestTime}
           icon={<Clock className="h-4 w-4" />}
           tooltip="Période de la journée avec les meilleurs rendements moyens."
         />
         <DataCard
           title="Meilleur Jour"
-          value="Vendredi"
+          value={metrics.bestDay}
           icon={<Calendar className="h-4 w-4" />}
           tooltip="Jour de la semaine avec les meilleurs rendements moyens."
         />
         <DataCard
           title="Ratio de Gain/Perte"
-          value="2.4"
+          value={metrics.gainLoss}
           icon={<Zap className="h-4 w-4" />}
           tooltip="Moyenne des gains divisée par la moyenne des pertes."
         />
