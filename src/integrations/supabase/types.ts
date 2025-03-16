@@ -74,6 +74,45 @@ export type Database = {
         }
         Relationships: []
       }
+      forum_topics: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          likes_count: number | null
+          replies_count: number | null
+          title: string
+          updated_at: string
+          user_id: string
+          views: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          likes_count?: number | null
+          replies_count?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+          views?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          likes_count?: number | null
+          replies_count?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          views?: number | null
+        }
+        Relationships: []
+      }
       portfolios: {
         Row: {
           balance: number | null
@@ -106,6 +145,7 @@ export type Database = {
           address: string | null
           avatar_url: string | null
           balance: number | null
+          bio: string | null
           created_at: string | null
           id: string
           phone: string | null
@@ -121,6 +161,7 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           balance?: number | null
+          bio?: string | null
           created_at?: string | null
           id: string
           phone?: string | null
@@ -136,6 +177,7 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           balance?: number | null
+          bio?: string | null
           created_at?: string | null
           id?: string
           phone?: string | null

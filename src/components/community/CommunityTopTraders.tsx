@@ -21,6 +21,7 @@ interface TopTrader {
   profitFactor: number;
   isVerified: boolean;
   change: 'up' | 'down' | 'same';
+  overallScore?: number;
 }
 
 export function CommunityTopTraders() {
@@ -28,6 +29,11 @@ export function CommunityTopTraders() {
   const [following, setFollowing] = useState<string[]>([]);
   const [topTraders, setTopTraders] = useState<TopTrader[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [performanceData, setPerformanceData] = useState([
+    { name: 'Win Rate', trader1: 87, trader2: 82, trader3: 79 },
+    { name: 'ROI', trader1: 24.8, trader2: 21.3, trader3: 19.5 },
+    { name: 'Profit Factor', trader1: 3.2, trader2: 2.9, trader3: 2.7 }
+  ]);
   const { user } = useAuth();
   
   useEffect(() => {
@@ -67,25 +73,7 @@ export function CommunityTopTraders() {
       
       // For each profile, get their trades
       const tradersWithStats = await Promise.all(profiles.map(async (profile) => {
-        // Set the time range based on the selected tab
-        let timeConstraint = {};
-        const now = new Date();
-        
-        if (tabValue === 'weekly') {
-          const oneWeekAgo = new Date(now);
-          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-          timeConstraint = {
-            gte: oneWeekAgo.toISOString()
-          };
-        } else if (tabValue === 'monthly') {
-          const oneMonthAgo = new Date(now);
-          oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-          timeConstraint = {
-            gte: oneMonthAgo.toISOString()
-          };
-        }
-        
-        // Get trades for this user within the time range
+        // Get trades for this user
         const { data: trades, error: tradesError } = await supabase
           .from('trades')
           .select('*')
@@ -97,21 +85,24 @@ export function CommunityTopTraders() {
           return null;
         }
         
-        const filteredTrades = tabValue !== 'alltime' 
-          ? trades?.filter(trade => {
-              const tradeDate = new Date(trade.created_at || '');
-              if (tabValue === 'weekly') {
-                const oneWeekAgo = new Date();
-                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-                return tradeDate >= oneWeekAgo;
-              } else if (tabValue === 'monthly') {
-                const oneMonthAgo = new Date();
-                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-                return tradeDate >= oneMonthAgo;
-              }
-              return true;
-            }) 
-          : trades;
+        // Filter trades based on the selected time period
+        const filteredTrades = trades?.filter(trade => {
+          if (!trade.created_at) return false;
+          
+          const tradeDate = new Date(trade.created_at);
+          const now = new Date();
+          
+          if (tabValue === 'weekly') {
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            return tradeDate >= oneWeekAgo;
+          } else if (tabValue === 'monthly') {
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+            return tradeDate >= oneMonthAgo;
+          }
+          return true; // alltime
+        });
           
         if (!filteredTrades || filteredTrades.length === 0) {
           return null;
@@ -159,11 +150,10 @@ export function CommunityTopTraders() {
         };
       }));
       
-      // Remove null entries and sort by overall score
+      // Remove null entries and sort by overall score (prioritizing win rate)
       const validTraders = tradersWithStats
         .filter(Boolean)
-        .sort((a, b) => (b?.overallScore || 0) - (a?.overallScore || 0))
-        .slice(0, 5); // Get top 5
+        .sort((a, b) => ((b?.overallScore || 0) - (a?.overallScore || 0)));
       
       // Add rank
       const rankedTraders = validTraders.map((trader, index) => ({
@@ -190,12 +180,6 @@ export function CommunityTopTraders() {
       setIsLoading(false);
     }
   };
-  
-  const [performanceData, setPerformanceData] = useState([
-    { name: 'Win Rate', trader1: 87, trader2: 82, trader3: 79 },
-    { name: 'ROI', trader1: 24.8, trader2: 21.3, trader3: 19.5 },
-    { name: 'Profit Factor', trader1: 3.2, trader2: 2.9, trader3: 2.7 }
-  ]);
   
   const handleFollow = (traderId: string) => {
     if (following.includes(traderId)) {

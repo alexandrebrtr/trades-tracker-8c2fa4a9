@@ -10,13 +10,28 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
+// Interface pour représenter un membre
+interface Member {
+  id: string;
+  name: string;
+  username: string;
+  avatar: string;
+  bio: string;
+  trades: number;
+  followers: number;
+  winRate: number;
+  roi: number;
+  isVerified: boolean;
+  trending: boolean;
+}
+
 export function CommunityMembers() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('followers');
   const [following, setFollowing] = useState<string[]>([]);
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
@@ -95,7 +110,7 @@ export function CommunityMembers() {
           id: profile.id,
           name: profile.username || "Utilisateur anonyme",
           username: `@${profile.username?.toLowerCase().replace(/\s+/g, '_') || 'trader'}`,
-          avatar: profile.avatar_url,
+          avatar: profile.avatar_url || '',
           bio: profile.bio || "Trader sur TradeTracker",
           trades: trades.length,
           followers,
@@ -151,7 +166,7 @@ export function CommunityMembers() {
     // await supabase.from('followers').upsert({ follower_id: user.id, following_id: memberId });
   };
   
-  const getDefaultMembers = () => [
+  const getDefaultMembers = (): Member[] => [
     {
       id: "1",
       name: 'Emma Bernard',
@@ -236,7 +251,7 @@ export function CommunityMembers() {
     .filter(member => 
       member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (member.bio && member.bio.toLowerCase().includes(searchQuery.toLowerCase()))
+      member.bio.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => {
       if (sortBy === 'followers') {

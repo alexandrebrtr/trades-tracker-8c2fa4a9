@@ -14,6 +14,27 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from "@/components/ui/use-toast";
 
+// Définition du type pour les sujets de forum
+interface ForumTopic {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  views: number;
+  replies_count: number;
+  likes_count: number;
+  created_at: string;
+  user_id: string;
+  profiles?: {
+    username: string | null;
+    avatar_url: string | null;
+  };
+  author?: string;
+  authorAvatar?: string;
+  date?: string;
+  hot?: boolean;
+}
+
 const forumCategories = [
   { id: 'all', name: 'Tous' },
   { id: 'strategies', name: 'Stratégies' },
@@ -26,7 +47,7 @@ export function CommunityForums() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('latest');
-  const [forumTopics, setForumTopics] = useState<any[]>([]);
+  const [forumTopics, setForumTopics] = useState<ForumTopic[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newTopic, setNewTopic] = useState({
@@ -64,15 +85,14 @@ export function CommunityForums() {
         .select(`
           *,
           profiles:user_id (username, avatar_url)
-        `)
-        .order('created_at', { ascending: false });
+        `);
       
       if (error) {
         throw error;
       }
       
       // Process the data to match our component's expected format
-      const processedTopics = data.map(topic => ({
+      const processedTopics: ForumTopic[] = data?.map(topic => ({
         id: topic.id,
         title: topic.title,
         category: topic.category,
@@ -80,11 +100,13 @@ export function CommunityForums() {
         authorAvatar: topic.profiles?.avatar_url || '',
         date: topic.created_at,
         views: topic.views || 0,
-        replies: topic.replies_count || 0,
-        likes: topic.likes_count || 0,
+        replies_count: topic.replies_count || 0,
+        likes_count: topic.likes_count || 0,
         hot: (topic.views || 0) > 300 || (topic.replies_count || 0) > 20,
-        description: topic.description
-      }));
+        description: topic.description,
+        created_at: topic.created_at,
+        user_id: topic.user_id
+      })) || [];
       
       setForumTopics(processedTopics);
     } catch (error) {
@@ -159,11 +181,11 @@ export function CommunityForums() {
     )
     .sort((a, b) => {
       if (sortBy === 'latest') {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
+        return new Date(b.date || '').getTime() - new Date(a.date || '').getTime();
       } else if (sortBy === 'popular') {
         return b.views - a.views;
       } else {
-        return (b.likes + b.replies) - (a.likes + a.replies);
+        return (b.likes_count + b.replies_count) - (a.likes_count + a.replies_count);
       }
     });
   
@@ -263,12 +285,12 @@ export function CommunityForums() {
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={topic.authorAvatar} alt={topic.author} />
                     <AvatarFallback className="text-xs">
-                      {topic.author.charAt(0)}
+                      {topic.author?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <span className="text-sm font-medium">{topic.author}</span>
                   <span className="text-xs text-muted-foreground">
-                    {new Date(topic.date).toLocaleDateString('fr-FR', { 
+                    {new Date(topic.date || '').toLocaleDateString('fr-FR', { 
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric'
@@ -284,11 +306,11 @@ export function CommunityForums() {
                   </div>
                   <div className="flex items-center gap-1">
                     <MessageCircle className="h-4 w-4" />
-                    <span>{topic.replies}</span>
+                    <span>{topic.replies_count}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <ThumbsUp className="h-4 w-4" />
-                    <span>{topic.likes}</span>
+                    <span>{topic.likes_count}</span>
                   </div>
                 </div>
                 <Button size="sm" variant="ghost">Lire</Button>
