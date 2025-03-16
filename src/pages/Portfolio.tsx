@@ -98,7 +98,7 @@ export default function Portfolio() {
         
         if (tradesError) throw tradesError;
         
-        if (tradesData && tradesData.length > 0) {
+        if (tradesData) {
           setTrades(tradesData.map(t => ({
             id: t.id,
             date: new Date(t.date),
