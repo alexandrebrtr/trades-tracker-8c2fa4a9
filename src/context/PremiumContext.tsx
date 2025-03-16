@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -81,6 +80,9 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
   const [loadingPremium, setLoadingPremium] = useState(true);
   const [userSettings, setUserSettings] = useState<UserSettings>({});
 
+  const adminIds = ['9ce47b0c-0d0a-4834-ae81-e103dff2e386'];
+  const isDeveloper = user && adminIds.includes(user.id);
+
   const loadUserSettings = async (userId: string) => {
     try {
       const { data: profile, error } = await supabase
@@ -91,7 +93,6 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
 
       if (error) throw error;
 
-      // Return stored settings or empty object if not found
       return profile?.settings as UserSettings || {};
     } catch (error) {
       console.error('Error loading user settings:', error);
@@ -170,17 +171,24 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
 
       if (error) throw error;
 
-      // Check if premium and not expired
-      const now = new Date();
-      const expiryDate = data.premium_expires ? new Date(data.premium_expires) : null;
-      const isActive = data.premium && expiryDate && expiryDate > now;
+      if (isDeveloper) {
+        setIsPremium(true);
+        setPremiumSince(data.premium_since || new Date().toISOString());
+        setPremiumExpires(data.premium_expires || new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString());
+        setUserSettings(data.settings as UserSettings || {});
+        console.log('Developer access granted with premium status');
+      } else {
+        const now = new Date();
+        const expiryDate = data.premium_expires ? new Date(data.premium_expires) : null;
+        const isActive = data.premium && expiryDate && expiryDate > now;
 
-      setIsPremium(isActive);
-      setPremiumSince(data.premium_since);
-      setPremiumExpires(data.premium_expires);
-      setUserSettings(data.settings as UserSettings || {});
+        setIsPremium(isActive);
+        setPremiumSince(data.premium_since);
+        setPremiumExpires(data.premium_expires);
+        setUserSettings(data.settings as UserSettings || {});
 
-      console.log('Premium status loaded:', isActive);
+        console.log('Premium status loaded:', isActive);
+      }
     } catch (error) {
       console.error('Error loading premium status:', error);
       setIsPremium(false);

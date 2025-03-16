@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Loader2, Calendar, Star } from 'lucide-react';
+import { Loader2, Calendar, Star, Eye } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface UserTableProps {
   users: any[];
@@ -15,6 +16,7 @@ interface UserTableProps {
 export function UserTable({ users, onRefresh }: UserTableProps) {
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Format date function
   const formatDate = (dateString: string | null) => {
@@ -64,6 +66,16 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
     } finally {
       setIsProcessing(null);
     }
+  };
+
+  // Add function to view user data
+  const viewUserData = (userId: string) => {
+    // Here you would navigate to a detailed view or open a modal
+    // For now, we'll just show a toast
+    toast({
+      title: "Détails utilisateur",
+      description: `Affichage des détails pour l'utilisateur: ${userId}`,
+    });
   };
   
   return (
@@ -120,6 +132,9 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
                         disabled={isProcessing !== null}
                       />
                     )}
+                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => viewUserData(user.id)}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                       <Calendar className="h-4 w-4" />
                     </Button>

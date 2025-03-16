@@ -1,11 +1,8 @@
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CommunityContent } from '@/components/community/CommunityContent';
-import { usePremium } from '@/context/PremiumContext';
 
 export default function Community() {
-  const { isPremium } = usePremium();
-  
   return (
     <AppLayout>
       <div className="page-transition space-y-8">
