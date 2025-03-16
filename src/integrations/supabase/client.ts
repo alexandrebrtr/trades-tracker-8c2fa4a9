@@ -9,15 +9,26 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Create supabase client with realtime enabled
+// Create supabase client with enhanced realtime configuration
 export const supabase = createClient<Database>(
   SUPABASE_URL, 
   SUPABASE_PUBLISHABLE_KEY,
   {
     realtime: {
       params: {
-        eventsPerSecond: 10
+        eventsPerSecond: 20, // Increased event rate
       }
-    }
+    },
+    db: {
+      schema: 'public'
+    },
+    global: {
+      headers: {
+        'x-application-name': 'tradetracker'
+      },
+    },
   }
 );
+
+// Configure realtime subscriptions for the relevant tables
+supabase.realtime.setRelTime(true);

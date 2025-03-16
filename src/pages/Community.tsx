@@ -13,37 +13,44 @@ export default function Community() {
   useEffect(() => {
     // Activer les canaux pour écouter les changements dans les tables
     const profilesChannel = supabase
-      .channel('profiles-changes')
+      .channel('real-time-profiles')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'profiles' }, 
         (payload) => {
           console.log('Profiles change detected:', payload);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`Profiles subscription status: ${status}`);
+      });
       
     const tradesChannel = supabase
-      .channel('trades-changes')
+      .channel('real-time-trades')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'trades' }, 
         (payload) => {
           console.log('Trades change detected:', payload);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`Trades subscription status: ${status}`);
+      });
       
     const forumTopicsChannel = supabase
-      .channel('forum-changes')
+      .channel('real-time-forum')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'forum_topics' }, 
         (payload) => {
           console.log('Forum topic change detected:', payload);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`Forum subscription status: ${status}`);
+      });
       
     // Nettoyer les abonnements
     return () => {
+      console.log('Cleaning up realtime subscriptions');
       supabase.removeChannel(profilesChannel);
       supabase.removeChannel(tradesChannel);
       supabase.removeChannel(forumTopicsChannel);

@@ -58,12 +58,19 @@ export function CommunityTopTraders() {
   const fetchTopTraders = async () => {
     setIsLoading(true);
     try {
+      console.log("Récupération des top traders...");
+      
       // Get all users with their profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
         
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error("Erreur lors de la récupération des profils:", profilesError);
+        throw profilesError;
+      }
+      
+      console.log(`${profiles?.length || 0} profils récupérés`);
       
       if (!profiles || profiles.length === 0) {
         setTopTraders([]);
@@ -77,16 +84,32 @@ export function CommunityTopTraders() {
         const { data: trades, error: tradesError } = await supabase
           .from('trades')
           .select('*')
-          .eq('user_id', profile.id)
-          .order('created_at', { ascending: false });
+          .eq('user_id', profile.id);
           
         if (tradesError) {
           console.error("Error fetching trades for user", profile.id, tradesError);
           return null;
         }
         
+        // Si aucun trade, on retourne quand même l'utilisateur avec des stats à zéro
+        if (!trades || trades.length === 0) {
+          return {
+            id: profile.id,
+            name: profile.username || 'Trader anonyme',
+            username: `@${profile.username?.toLowerCase().replace(/\s+/g, '_') || 'trader'}`,
+            avatar: profile.avatar_url || '',
+            winRate: 0,
+            roi: 0,
+            trades: 0,
+            profitFactor: 0,
+            isVerified: profile.premium === true,
+            change: 'same' as const,
+            overallScore: 0
+          };
+        }
+        
         // Filter trades based on the selected time period
-        const filteredTrades = trades?.filter(trade => {
+        const filteredTrades = trades.filter(trade => {
           if (!trade.created_at) return false;
           
           const tradeDate = new Date(trade.created_at);
@@ -103,15 +126,11 @@ export function CommunityTopTraders() {
           }
           return true; // alltime
         });
-          
-        if (!filteredTrades || filteredTrades.length === 0) {
-          return null;
-        }
         
         // Calculate trading stats
         const totalTrades = filteredTrades.length;
         const winningTrades = filteredTrades.filter(trade => (trade.pnl || 0) > 0);
-        const winRate = Math.round((winningTrades.length / totalTrades) * 100);
+        const winRate = totalTrades > 0 ? Math.round((winningTrades.length / totalTrades) * 100) : 0;
         
         // Calculate ROI
         const totalInvested = filteredTrades.reduce((sum, trade) => sum + (trade.size || 0), 0);
@@ -134,10 +153,12 @@ export function CommunityTopTraders() {
         const changeOptions: ('up' | 'down' | 'same')[] = ['up', 'down', 'same'];
         const change = changeOptions[Math.floor(Math.random() * changeOptions.length)];
         
+        const username = profile.username || 'Trader anonyme';
+        
         return {
           id: profile.id,
-          name: profile.username || 'Trader anonyme',
-          username: `@${profile.username?.toLowerCase().replace(/\s+/g, '_') || 'trader'}`,
+          name: username,
+          username: `@${username.toLowerCase().replace(/\s+/g, '_')}`,
           avatar: profile.avatar_url || '',
           winRate,
           roi,
@@ -154,6 +175,8 @@ export function CommunityTopTraders() {
       const validTraders = tradersWithStats
         .filter(Boolean)
         .sort((a, b) => ((b?.overallScore || 0) - (a?.overallScore || 0)));
+      
+      console.log(`${validTraders.length} traders valides après filtrage et tri`);
       
       // Add rank
       const rankedTraders = validTraders.map((trader, index) => ({
@@ -174,8 +197,6 @@ export function CommunityTopTraders() {
       }
     } catch (error) {
       console.error("Error fetching top traders:", error);
-      // Use mock data in case of error
-      setTopTraders(getDefaultTopTraders());
     } finally {
       setIsLoading(false);
     }
@@ -188,74 +209,6 @@ export function CommunityTopTraders() {
       setFollowing([...following, traderId]);
     }
   };
-  
-  const getDefaultTopTraders = (): TopTrader[] => [
-    {
-      id: "1",
-      rank: 1,
-      name: 'Thomas Klein',
-      username: '@thomas_trader',
-      avatar: '',
-      winRate: 87,
-      roi: 24.8,
-      trades: 146,
-      profitFactor: 3.2,
-      isVerified: true,
-      change: 'up'
-    },
-    {
-      id: "2",
-      rank: 2,
-      name: 'Emma Laurent',
-      username: '@emma_invest',
-      avatar: '',
-      winRate: 82,
-      roi: 21.3,
-      trades: 203,
-      profitFactor: 2.9,
-      isVerified: true,
-      change: 'up'
-    },
-    {
-      id: "3",
-      rank: 3,
-      name: 'Hugo Mercier',
-      username: '@hugo_m',
-      avatar: '',
-      winRate: 79,
-      roi: 19.5,
-      trades: 178,
-      profitFactor: 2.7,
-      isVerified: false,
-      change: 'down'
-    },
-    {
-      id: "4",
-      rank: 4,
-      name: 'Sophie Dubois',
-      username: '@sophmarket',
-      avatar: '',
-      winRate: 76,
-      roi: 18.9,
-      trades: 112,
-      profitFactor: 2.5,
-      isVerified: false,
-      change: 'same'
-    },
-    {
-      id: "5",
-      rank: 5,
-      name: 'Nicolas Blanc',
-      username: '@nico_trader',
-      avatar: '',
-      winRate: 74,
-      roi: 16.7,
-      trades: 189,
-      profitFactor: 2.3,
-      isVerified: false,
-      change: 'up'
-    }
-  ];
   
   if (isLoading) {
     return (

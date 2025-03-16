@@ -69,17 +69,26 @@ export function CommunityMembers() {
     setIsLoading(true);
     try {
       // Récupérer tous les profils des utilisateurs
-      const { data, error } = await supabase
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
       
-      if (error) {
-        console.error("Erreur lors de la récupération des membres:", error);
-        throw error;
+      if (profilesError) {
+        console.error("Erreur lors de la récupération des membres:", profilesError);
+        throw profilesError;
       }
       
+      if (!profilesData || profilesData.length === 0) {
+        console.log("Aucun profil trouvé");
+        setMembers([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log(`Récupération de ${profilesData.length} profils`);
+      
       // Récupérer les statistiques de trades pour chaque utilisateur
-      const membersWithStats = await Promise.all(data.map(async (profile) => {
+      const membersWithStats = await Promise.all(profilesData.map(async (profile) => {
         // Récupérer les trades de l'utilisateur
         const { data: userTrades, error: tradesError } = await supabase
           .from('trades')
@@ -87,10 +96,11 @@ export function CommunityMembers() {
           .eq('user_id', profile.id);
         
         if (tradesError) {
-          console.error("Erreur lors de la récupération des trades:", tradesError);
+          console.error(`Erreur lors de la récupération des trades pour l'utilisateur ${profile.id}:`, tradesError);
         }
         
         const trades = userTrades || [];
+        console.log(`${trades.length} trades trouvés pour l'utilisateur ${profile.id}`);
         
         // Calculer le win rate
         const winningTrades = trades.filter(trade => (trade.pnl || 0) > 0);
@@ -105,11 +115,14 @@ export function CommunityMembers() {
         // Dans une vraie app, vous auriez une table followers
         const followers = Math.floor(Math.random() * 500);
         
+        // Utiliser un nom d'utilisateur par défaut si non défini
+        const username = profile.username || "Trader anonyme";
+        
         // Créer un objet membre enrichi
         return {
           id: profile.id,
-          name: profile.username || "Utilisateur anonyme",
-          username: `@${profile.username?.toLowerCase().replace(/\s+/g, '_') || 'trader'}`,
+          name: username,
+          username: `@${username.toLowerCase().replace(/\s+/g, '_')}`,
           avatar: profile.avatar_url || '',
           bio: profile.bio || "Trader sur TradeTracker",
           trades: trades.length,
@@ -121,6 +134,7 @@ export function CommunityMembers() {
         };
       }));
       
+      console.log(`${membersWithStats.length} membres avec statistiques générés`);
       setMembers(membersWithStats);
     } catch (error) {
       console.error("Erreur lors du chargement des membres:", error);
@@ -129,8 +143,6 @@ export function CommunityMembers() {
         description: "Impossible de charger les membres.",
         variant: "destructive"
       });
-      // Utiliser des données de secours en cas d'erreur
-      setMembers(getDefaultMembers());
     } finally {
       setIsLoading(false);
     }
@@ -165,87 +177,6 @@ export function CommunityMembers() {
     // Par exemple:
     // await supabase.from('followers').upsert({ follower_id: user.id, following_id: memberId });
   };
-  
-  const getDefaultMembers = (): Member[] => [
-    {
-      id: "1",
-      name: 'Emma Bernard',
-      username: '@emma_trader',
-      avatar: '',
-      bio: 'Day trader spécialisée en actions et indices. 5 ans d\'expérience.',
-      trades: 876,
-      followers: 245,
-      winRate: 68,
-      roi: 14.5,
-      isVerified: true,
-      trending: true
-    },
-    {
-      id: "2",
-      name: 'Thomas Martin',
-      username: '@tomtrader',
-      avatar: '',
-      bio: 'Investisseur crypto & swing trader. Analyste technique certifié.',
-      trades: 532,
-      followers: 189,
-      winRate: 72,
-      roi: 21.2,
-      isVerified: false,
-      trending: false
-    },
-    {
-      id: "3",
-      name: 'Sophie Dubois',
-      username: '@sophmarket',
-      avatar: '',
-      bio: 'Position trader actions. Je partage mes analyses et résultats chaque semaine.',
-      trades: 327,
-      followers: 97,
-      winRate: 65,
-      roi: 9.7,
-      isVerified: false,
-      trending: false
-    },
-    {
-      id: "4",
-      name: 'Nicolas Klein',
-      username: '@niko_invest',
-      avatar: '',
-      bio: 'Trader options et futures. Formateur en gestion des risques.',
-      trades: 1204,
-      followers: 567,
-      winRate: 74,
-      roi: 18.3,
-      isVerified: true,
-      trending: false
-    },
-    {
-      id: "5",
-      name: 'Laura Blanc',
-      username: '@lblanc_trade',
-      avatar: '',
-      bio: 'Day & swing trader. J\'analyse principalement les marchés européens.',
-      trades: 689,
-      followers: 215,
-      winRate: 69,
-      roi: 12.8,
-      isVerified: false,
-      trending: true
-    },
-    {
-      id: "6",
-      name: 'Jean Moreau',
-      username: '@jean_scalp',
-      avatar: '',
-      bio: 'Scalper forex et indices. Stratégies intraday uniquement.',
-      trades: 2341,
-      followers: 412,
-      winRate: 62,
-      roi: 8.4,
-      isVerified: false,
-      trending: false
-    }
-  ];
   
   const filteredMembers = members
     .filter(member => 
