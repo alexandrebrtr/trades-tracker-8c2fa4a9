@@ -1,26 +1,9 @@
-
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ArrowDown, ArrowUp, Calendar, DollarSign, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-export interface Trade {
-  id: string;
-  user_id: string;
-  date: string;
-  symbol: string;
-  type: "long" | "short";
-  strategy: string;
-  entry_price: number;
-  exit_price: number;
-  size: number;
-  fees: number;
-  pnl: number;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import { Trade } from "./types"; // Import the Trade interface from types.ts
 
 interface TradeDetailProps {
   trade: Trade;
