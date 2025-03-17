@@ -2,7 +2,7 @@
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Wallet, Lock } from 'lucide-react';
+import { Wallet, Lock, Database } from 'lucide-react';
 import { usePremium } from '@/context/PremiumContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -12,12 +12,38 @@ import StrategyAnalysis from '@/components/statistics/StrategyAnalysis';
 import PerformanceMetrics from '@/components/statistics/PerformanceMetrics';
 import AdvancedAnalytics from '@/components/statistics/AdvancedAnalytics';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTradesFetcher } from '@/hooks/useTradesFetcher';
+
+const NoDataView = ({ tabName }: { tabName: string }) => {
+  return (
+    <Card className="py-16">
+      <CardContent className="flex flex-col items-center justify-center">
+        <Database className="h-12 w-12 text-muted-foreground/50 mb-4" />
+        <CardTitle className="text-xl mb-2">Aucune donnée disponible</CardTitle>
+        <p className="text-muted-foreground text-center max-w-md mb-6">
+          Vous n'avez pas encore de trades ou d'informations pour {tabName.toLowerCase()}. 
+          Commencez par ajouter des trades dans votre portefeuille pour voir apparaitre des statistiques.
+        </p>
+        <Button asChild>
+          <Link to="/portfolio">Ajouter des trades</Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
 
 const Statistics = () => {
   const { isPremium } = usePremium();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('general');
+
+  // Récupérer les trades pour vérifier si l'utilisateur a des données
+  const { isLoading, trades } = useTradesFetcher(user?.id, 'all');
+  const hasData = trades.length > 0;
 
   useEffect(() => {
     // Extract tab from URL if present
@@ -70,20 +96,52 @@ const Statistics = () => {
           </TabsList>
           
           <TabsContent value="general" className="mt-6">
-            <AnalyticsView />
+            {isLoading ? (
+              <div className="flex justify-center items-center py-24">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-r-transparent rounded-full"></div>
+              </div>
+            ) : hasData ? (
+              <AnalyticsView />
+            ) : (
+              <NoDataView tabName="la vue générale" />
+            )}
           </TabsContent>
           
           <TabsContent value="strategy" className="mt-6">
-            <StrategyAnalysis />
+            {isLoading ? (
+              <div className="flex justify-center items-center py-24">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-r-transparent rounded-full"></div>
+              </div>
+            ) : hasData ? (
+              <StrategyAnalysis />
+            ) : (
+              <NoDataView tabName="l'analyse des stratégies" />
+            )}
           </TabsContent>
           
           <TabsContent value="performance" className="mt-6">
-            <PerformanceMetrics />
+            {isLoading ? (
+              <div className="flex justify-center items-center py-24">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-r-transparent rounded-full"></div>
+              </div>
+            ) : hasData ? (
+              <PerformanceMetrics />
+            ) : (
+              <NoDataView tabName="les métriques de performance" />
+            )}
           </TabsContent>
           
           <TabsContent value="advanced" className="mt-6">
             {isPremium ? (
-              <AdvancedAnalytics />
+              isLoading ? (
+                <div className="flex justify-center items-center py-24">
+                  <div className="animate-spin h-8 w-8 border-4 border-primary border-r-transparent rounded-full"></div>
+                </div>
+              ) : hasData ? (
+                <AdvancedAnalytics />
+              ) : (
+                <NoDataView tabName="les analyses avancées" />
+              )
             ) : (
               <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-muted-foreground/30 rounded-lg">
                 <Lock className="h-12 w-12 text-yellow-500 mb-4" />
