@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   PerformanceComparison, 
@@ -8,8 +9,63 @@ import {
 } from "./premium/AdvancedCharts";
 import { PerformanceMetricsPanel } from "./premium/PerformanceMetrics";
 import { PremiumAnalyticsContent } from "./PremiumAnalyticsContent";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdvancedAnalytics() {
+  const [hasData, setHasData] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const checkUserData = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { count, error } = await supabase
+          .from('trades')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+        
+        setHasData(count ? count > 0 : false);
+      } catch (err) {
+        console.error("Error checking user data:", err);
+        setHasData(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkUserData();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[300px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!hasData) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold">Analyses Avancées Premium</h2>
+        <div className="flex flex-col items-center justify-center py-12 px-6 bg-secondary/10 rounded-lg">
+          <p className="text-lg font-medium mb-2">Aucune donnée disponible</p>
+          <p className="text-muted-foreground text-center max-w-md mb-6">
+            Ajoutez des trades à votre portefeuille pour voir apparaître des analyses avancées ici.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Analyses Avancées Premium</h2>

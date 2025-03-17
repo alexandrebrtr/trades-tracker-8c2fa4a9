@@ -65,17 +65,17 @@ export function PerformanceMetricsPanel() {
         console.error("Erreur lors du calcul des métriques de performance:", err);
         // Utiliser des données par défaut en cas d'erreur
         setMetricData({
-          alpha: 2.87,
-          beta: 0.74,
-          r2: 0.68,
-          informationRatio: 1.32,
-          correlations: {
-            technology: 0.85,
-            finance: 0.42,
-            health: 0.63,
-            energy: 0.21,
-            consumer: 0.67
-          }
+            alpha: 2.87,
+            beta: 0.74,
+            r2: 0.68,
+            informationRatio: 1.32,
+            correlations: {
+              technology: 0.85,
+              finance: 0.42,
+              health: 0.63,
+              energy: 0.21,
+              consumer: 0.67
+            }
         });
       } finally {
         setLoading(false);
@@ -120,7 +120,13 @@ export function PerformanceMetricsPanel() {
       beta: Number(beta.toFixed(2)),
       r2: Number(r2),
       informationRatio: Number(ir),
-      correlations: sectorCorrelations
+      correlations: {
+        technology: Number(sectorCorrelations.technology),
+        finance: Number(sectorCorrelations.finance),
+        health: Number(sectorCorrelations.health),
+        energy: Number(sectorCorrelations.energy),
+        consumer: Number(sectorCorrelations.consumer)
+      }
     };
   };
 
@@ -161,11 +167,11 @@ export function PerformanceMetricsPanel() {
     const randomFactor = () => 0.7 + Math.random() * 0.6; // Entre 0.7 et 1.3
     
     return {
-      technology: Math.min(0.99, (techCount / totalClassified) * randomFactor()).toFixed(2),
-      finance: Math.min(0.99, (finCount / totalClassified) * randomFactor()).toFixed(2),
-      health: Math.min(0.99, (healthCount / totalClassified) * randomFactor()).toFixed(2),
-      energy: Math.min(0.99, (energyCount / totalClassified) * randomFactor()).toFixed(2),
-      consumer: Math.min(0.99, (consumerCount / totalClassified) * randomFactor()).toFixed(2)
+      technology: Number(Math.min(0.99, (techCount / totalClassified) * randomFactor()).toFixed(2)),
+      finance: Number(Math.min(0.99, (finCount / totalClassified) * randomFactor()).toFixed(2)),
+      health: Number(Math.min(0.99, (healthCount / totalClassified) * randomFactor()).toFixed(2)),
+      energy: Number(Math.min(0.99, (energyCount / totalClassified) * randomFactor()).toFixed(2)),
+      consumer: Number(Math.min(0.99, (consumerCount / totalClassified) * randomFactor()).toFixed(2))
     };
   };
 
@@ -210,35 +216,35 @@ export function PerformanceMetricsPanel() {
           <div className="flex items-center justify-between">
             <span className="text-sm">Technologie</span>
             <div className="w-2/3 bg-secondary/30 rounded-full h-2">
-              <div className="bg-primary h-2 rounded-full" style={{ width: `${Number(metricData.correlations.technology) * 100}%` }}></div>
+              <div className="bg-primary h-2 rounded-full" style={{ width: `${metricData.correlations.technology * 100}%` }}></div>
             </div>
             <span className="text-sm font-medium">{metricData.correlations.technology}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">Finance</span>
             <div className="w-2/3 bg-secondary/30 rounded-full h-2">
-              <div className="bg-primary h-2 rounded-full" style={{ width: `${Number(metricData.correlations.finance) * 100}%` }}></div>
+              <div className="bg-primary h-2 rounded-full" style={{ width: `${metricData.correlations.finance * 100}%` }}></div>
             </div>
             <span className="text-sm font-medium">{metricData.correlations.finance}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">Santé</span>
             <div className="w-2/3 bg-secondary/30 rounded-full h-2">
-              <div className="bg-primary h-2 rounded-full" style={{ width: `${Number(metricData.correlations.health) * 100}%` }}></div>
+              <div className="bg-primary h-2 rounded-full" style={{ width: `${metricData.correlations.health * 100}%` }}></div>
             </div>
             <span className="text-sm font-medium">{metricData.correlations.health}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">Énergie</span>
             <div className="w-2/3 bg-secondary/30 rounded-full h-2">
-              <div className="bg-primary h-2 rounded-full" style={{ width: `${Number(metricData.correlations.energy) * 100}%` }}></div>
+              <div className="bg-primary h-2 rounded-full" style={{ width: `${metricData.correlations.energy * 100}%` }}></div>
             </div>
             <span className="text-sm font-medium">{metricData.correlations.energy}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">Consommation</span>
             <div className="w-2/3 bg-secondary/30 rounded-full h-2">
-              <div className="bg-primary h-2 rounded-full" style={{ width: `${Number(metricData.correlations.consumer) * 100}%` }}></div>
+              <div className="bg-primary h-2 rounded-full" style={{ width: `${metricData.correlations.consumer * 100}%` }}></div>
             </div>
             <span className="text-sm font-medium">{metricData.correlations.consumer}</span>
           </div>
