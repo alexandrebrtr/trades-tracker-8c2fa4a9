@@ -27,6 +27,7 @@ export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [analysisType, setAnalysisType] = useState<string | null>(null);
+  const [modelType, setModelType] = useState<string>('gpt-4o-mini');
 
   // Handle processing an analysis request that comes from the AnalysisTab
   useEffect(() => {
@@ -76,7 +77,7 @@ export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
       
       // Call Supabase Edge Function instead of generating response locally
       const { data, error } = await supabase.functions.invoke('chat-with-ai', {
-        body: { prompt: messageContent, model: 'gpt-4o-mini' }
+        body: { prompt: messageContent, model: modelType }
       });
       
       if (error) {
