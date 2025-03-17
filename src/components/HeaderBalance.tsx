@@ -53,7 +53,7 @@ export function HeaderBalance() {
           async (payload) => {
             console.log('Portfolio update received in HeaderBalance:', payload);
             // When portfolio is updated, refresh the profile data to ensure consistency
-            if (payload.new && typeof payload.new === 'object' && 'balance' in payload.new) {
+            if (payload.new && typeof payload.new === 'object') {
               try {
                 // Get the latest profile data to ensure we have the most recent balance
                 const { data: latestProfile, error } = await supabase
@@ -81,11 +81,6 @@ export function HeaderBalance() {
       };
     }
   }, [user, profile]);
-
-  // Update when isPremium changes
-  useEffect(() => {
-    console.log('Premium status in HeaderBalance:', isPremium);
-  }, [isPremium]);
   
   return (
     <div className="flex items-center gap-2">

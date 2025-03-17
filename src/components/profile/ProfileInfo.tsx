@@ -34,6 +34,9 @@ export function ProfileInfo({
   setAddress,
   setBalance
 }: ProfileInfoProps) {
+  // Get the first character for avatar fallback
+  const avatarFallback = name.charAt(0).toUpperCase() || email.charAt(0).toUpperCase() || "U";
+  
   return (
     <Card className="col-span-1">
       <CardHeader>
@@ -47,7 +50,7 @@ export function ProfileInfo({
           <Avatar className="h-24 w-24">
             <AvatarImage src={avatarUrl} alt={name} />
             <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-              {name.charAt(0).toUpperCase() || email.charAt(0).toUpperCase() || "T"}
+              {avatarFallback}
             </AvatarFallback>
           </Avatar>
         </div>

@@ -18,6 +18,9 @@ export function Header() {
     navigate('/login');
   };
 
+  // Calculate display name - prioritize username from profile
+  const displayName = profile?.username || (user?.email ? user.email.split('@')[0] : 'Utilisateur');
+
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <div className="flex flex-1 items-center justify-end gap-4">
@@ -39,7 +42,7 @@ export function Header() {
                 <Avatar className="h-9 w-9">
                   <AvatarImage src={profile?.avatar_url || ''} alt="Avatar" />
                   <AvatarFallback>
-                    {profile?.username?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || "T"}
+                    {displayName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -47,7 +50,7 @@ export function Header() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{profile?.username || user.email?.split('@')[0] || 'Utilisateur'}</p>
+                  <p className="text-sm font-medium leading-none">{displayName}</p>
                   <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                 </div>
               </DropdownMenuLabel>

@@ -51,9 +51,9 @@ export function SidebarUserSection({ collapsed }: SidebarUserSectionProps) {
     );
   }
 
-  // Format username for display
-  const username = user.email ? user.email.split('@')[0] : 'Utilisateur';
-  const avatarText = username.charAt(0).toUpperCase();
+  // Prioritize username from profile, fallback to email username part
+  const displayName = profile?.username || (user.email ? user.email.split('@')[0] : 'Utilisateur');
+  const avatarText = displayName.charAt(0).toUpperCase();
 
   return (
     <div className="border-t border-sidebar-border p-4">
@@ -67,7 +67,7 @@ export function SidebarUserSection({ collapsed }: SidebarUserSectionProps) {
             )}
           >
             <Avatar className="h-8 w-8">
-              <AvatarImage src={profile?.avatar_url || ''} alt={username} />
+              <AvatarImage src={profile?.avatar_url || ''} alt={displayName} />
               <AvatarFallback className="bg-primary text-primary-foreground">
                 {avatarText}
               </AvatarFallback>
@@ -75,7 +75,7 @@ export function SidebarUserSection({ collapsed }: SidebarUserSectionProps) {
             
             {!collapsed && (
               <div className="flex flex-col text-left ml-2 overflow-hidden">
-                <span className="text-sm font-medium truncate">{username}</span>
+                <span className="text-sm font-medium truncate">{displayName}</span>
                 <span className="text-xs text-sidebar-foreground/70 truncate">{user.email}</span>
               </div>
             )}

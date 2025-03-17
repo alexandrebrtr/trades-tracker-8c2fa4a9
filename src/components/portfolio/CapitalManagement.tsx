@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,7 +25,7 @@ export function CapitalManagement({
   formatCurrency 
 }: CapitalManagementProps) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [depositAmount, setDepositAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
 
@@ -46,15 +45,24 @@ export function CapitalManagement({
     try {
       const newBalance = portfolioSize + amount;
       
-      const { error } = await supabase
+      const { error: portfolioError } = await supabase
         .from('portfolios')
         .update({ balance: newBalance })
         .eq('id', portfolioId);
       
-      if (error) throw error;
+      if (portfolioError) throw portfolioError;
+      
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ balance: newBalance })
+        .eq('id', user.id);
+      
+      if (profileError) throw profileError;
       
       setPortfolioSize(newBalance);
       setDepositAmount('');
+      
+      await refreshProfile();
       
       toast({
         title: "Dépôt effectué",
@@ -95,15 +103,24 @@ export function CapitalManagement({
     try {
       const newBalance = portfolioSize - amount;
       
-      const { error } = await supabase
+      const { error: portfolioError } = await supabase
         .from('portfolios')
         .update({ balance: newBalance })
         .eq('id', portfolioId);
       
-      if (error) throw error;
+      if (portfolioError) throw portfolioError;
+      
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ balance: newBalance })
+        .eq('id', user.id);
+      
+      if (profileError) throw profileError;
       
       setPortfolioSize(newBalance);
       setWithdrawAmount('');
+      
+      await refreshProfile();
       
       toast({
         title: "Retrait effectué",
