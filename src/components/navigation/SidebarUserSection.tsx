@@ -1,110 +1,122 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
+import { 
+  LogOut, 
+  Settings, 
+  User, 
+  ChevronDown, 
+  CreditCard,
+  Shield
+} from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, User, LogIn } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
+import { usePremium } from '@/context/PremiumContext';
 
-interface SidebarUserSectionProps {
-  collapsed: boolean;
-}
+export function SidebarUserSection({ collapsed }: { collapsed: boolean }) {
+  const { user, signOut } = useAuth();
+  const { isPremium } = usePremium();
+  const [isOpen, setIsOpen] = useState(false);
 
-export function SidebarUserSection({ collapsed }: SidebarUserSectionProps) {
-  const { user, profile, signOut } = useAuth();
-  const [open, setOpen] = useState(false);
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
-  // Si l'utilisateur n'est pas connecté, afficher un bouton de connexion
-  if (!user) {
+  const userInitials = user?.email 
+    ? user.email.substring(0, 2).toUpperCase() 
+    : 'GU';
+
+  if (collapsed) {
     return (
-      <div className="border-t border-sidebar-border p-4">
-        <Button 
-          variant="outline" 
-          className={cn(
-            "w-full flex items-center justify-center",
-            collapsed ? "p-2" : "px-4 py-2"
-          )}
-          asChild
-        >
-          <Link to="/login">
-            {collapsed ? (
-              <LogIn className="h-5 w-5" />
-            ) : (
-              <>
-                <LogIn className="h-5 w-5 mr-2" />
-                <span>Connexion</span>
-              </>
-            )}
-          </Link>
-        </Button>
-      </div>
-    );
-  }
-
-  // Prioritize username from profile, fallback to email username part
-  const displayName = profile?.username || (user.email ? user.email.split('@')[0] : 'Utilisateur');
-  const avatarText = displayName.charAt(0).toUpperCase();
-
-  return (
-    <div className="border-t border-sidebar-border p-4">
-      <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
-            className={cn(
-              'relative w-full flex items-center p-2 rounded-md cursor-pointer',
-              collapsed ? 'justify-center' : 'justify-start gap-2'
-            )}
-          >
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={profile?.avatar_url || ''} alt={displayName} />
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                {avatarText}
-              </AvatarFallback>
-            </Avatar>
-            
-            {!collapsed && (
-              <div className="flex flex-col text-left ml-2 overflow-hidden">
-                <span className="text-sm font-medium truncate">{displayName}</span>
-                <span className="text-xs text-sidebar-foreground/70 truncate">{user.email}</span>
-              </div>
-            )}
-          </Button>
-        </DropdownMenuTrigger>
-        
-        <DropdownMenuContent 
-          className="w-56" 
-          align={collapsed ? "center" : "end"}
-          side="top"
-        >
-          <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
+      <div className="mt-auto p-4 border-t border-sidebar-border">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+              <Avatar className="h-9 w-9">
+                <AvatarImage src={user?.avatar_url || ''} alt={user?.email || 'Guest User'} />
+                <AvatarFallback>{userInitials}</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/profile">
+              <Link to="/profile" className="flex w-full cursor-default">
                 <User className="mr-2 h-4 w-4" />
                 <span>Profil</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/settings">
+              <Link to="/settings" className="flex w-full cursor-default">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Paramètres</span>
               </Link>
             </DropdownMenuItem>
-          </DropdownMenuGroup>
+            <DropdownMenuItem asChild>
+              <Link to="/premium" className="flex w-full cursor-default">
+                <CreditCard className="mr-2 h-4 w-4" />
+                <span>{isPremium ? "Gérer l'abonnement" : "Passer au Premium"}</span>
+                {isPremium && <Shield className="ml-2 h-3 w-3 text-yellow-500" />}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Déconnexion</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-auto p-4 border-t border-sidebar-border">
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="w-full justify-start px-2">
+            <Avatar className="h-6 w-6 mr-2">
+              <AvatarImage src={user?.avatar_url || ''} alt={user?.email || 'Guest User'} />
+              <AvatarFallback>{userInitials}</AvatarFallback>
+            </Avatar>
+            <span className="truncate">{user?.email || 'Guest User'}</span>
+            <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => signOut()}>
+          <DropdownMenuItem asChild>
+            <Link to="/profile" className="flex w-full cursor-default">
+              <User className="mr-2 h-4 w-4" />
+              <span>Profil</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/settings" className="flex w-full cursor-default">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Paramètres</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/premium" className="flex w-full cursor-default">
+              <CreditCard className="mr-2 h-4 w-4" />
+              <span>{isPremium ? "Gérer l'abonnement" : "Passer au Premium"}</span>
+              {isPremium && <Shield className="ml-2 h-3 w-3 text-yellow-500" />}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
             <LogOut className="mr-2 h-4 w-4" />
             <span>Déconnexion</span>
           </DropdownMenuItem>
