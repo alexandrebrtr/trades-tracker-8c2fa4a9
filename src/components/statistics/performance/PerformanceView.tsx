@@ -17,17 +17,47 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function PerformanceView() {
+interface PerformanceViewProps {
+  loading?: boolean;
+  cumulativeReturnsData?: any[];
+  monthlyReturnsData?: any[];
+  volatilityData?: any[];
+  metrics?: {
+    totalReturn: number;
+    annualizedReturn: number;
+    sharpeRatio: number;
+    maxDrawdown: number;
+    winRate: number;
+    averageHoldingPeriod: string;
+  };
+}
+
+export default function PerformanceView({
+  loading: externalLoading,
+  cumulativeReturnsData: externalCumulativeData,
+  monthlyReturnsData: externalMonthlyData,
+  volatilityData: externalVolatilityData,
+  metrics: externalMetrics
+}: PerformanceViewProps = {}) {
   const { user } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [periodLabel, setPeriodLabel] = useState("Dernier mois");
+  
+  // Utiliser les données externes si disponibles, sinon utiliser le hook
   const { 
-    loading, 
-    cumulativeReturnsData, 
-    monthlyReturnsData, 
-    volatilityData, 
-    metrics 
-  } = usePerformanceData(user, selectedPeriod);
+    loading: internalLoading, 
+    cumulativeReturnsData: internalCumulativeData, 
+    monthlyReturnsData: internalMonthlyData, 
+    volatilityData: internalVolatilityData, 
+    metrics: internalMetrics 
+  } = usePerformanceData(externalCumulativeData ? null : user, selectedPeriod);
+  
+  // Priorité aux données externes si fournies
+  const loading = externalLoading !== undefined ? externalLoading : internalLoading;
+  const cumulativeReturnsData = externalCumulativeData || internalCumulativeData;
+  const monthlyReturnsData = externalMonthlyData || internalMonthlyData;
+  const volatilityData = externalVolatilityData || internalVolatilityData;
+  const metrics = externalMetrics || internalMetrics;
 
   const handlePeriodChange = (period: string, label: string) => {
     setSelectedPeriod(period);
