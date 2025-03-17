@@ -3,6 +3,7 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
+  Navigate,
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
@@ -37,18 +38,14 @@ function App() {
     <div className="app">
       <Router>
         <Routes>
-          {/* Routes accessibles sans authentification */}
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/statistics" element={<Statistics />} />
-          <Route path="/portfolio" element={<Portfolio />} />
-          <Route path="/login" element={<Login />} />
-          
-          {/* Routes protégées */}
+          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
           <Route path="/trade/:id" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
           <Route path="/trade-entry" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
+          <Route path="/portfolio" element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
+          <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
           <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
           <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
@@ -57,6 +54,7 @@ function App() {
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
           <Route path="/premium-analytics" element={<ProtectedRoute requirePremium={true}><PremiumAnalytics /></ProtectedRoute>} />
+          <Route path="/login" element={<Login />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
