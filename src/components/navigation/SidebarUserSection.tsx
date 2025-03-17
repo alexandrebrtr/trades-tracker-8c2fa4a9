@@ -21,7 +21,7 @@ interface SidebarUserSectionProps {
 }
 
 export function SidebarUserSection({ collapsed }: SidebarUserSectionProps) {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [open, setOpen] = useState(false);
 
   if (!user) return null;
@@ -42,7 +42,7 @@ export function SidebarUserSection({ collapsed }: SidebarUserSectionProps) {
             )}
           >
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user.avatar_url || ''} alt={username} />
+              <AvatarImage src={profile?.avatar_url || ''} alt={username} />
               <AvatarFallback className="bg-primary text-primary-foreground">
                 {avatarText}
               </AvatarFallback>
