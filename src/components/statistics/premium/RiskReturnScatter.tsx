@@ -153,8 +153,8 @@ export function RiskReturnScatter() {
             <Tooltip 
               cursor={{ strokeDasharray: '3 3' }} 
               formatter={(value, name) => {
-                if (name === 'Risque') return [`${parseFloat(value).toFixed(2)}`, name];
-                if (name === 'Rendement') return [`${parseFloat(value).toFixed(2)} €`, name];
+                if (name === 'Risque') return [`${parseFloat(String(value)).toFixed(2)}`, name];
+                if (name === 'Rendement') return [`${parseFloat(String(value)).toFixed(2)} €`, name];
                 if (name === 'Fréquence') return [value, 'Nombre de trades'];
                 return [value, name];
               }}
