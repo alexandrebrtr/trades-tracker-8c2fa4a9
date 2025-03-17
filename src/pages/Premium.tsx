@@ -107,7 +107,7 @@ export default function Premium() {
                   </div>
                   <CardTitle className="text-2xl">Premium Annuel</CardTitle>
                   <div className="mt-1">
-                    <span className="text-3xl font-bold">95,88€</span>
+                    <span className="text-3xl font-bold">99,99€</span>
                     <span className="text-muted-foreground"> /an</span>
                   </div>
                   <CardDescription className="mt-1.5">
