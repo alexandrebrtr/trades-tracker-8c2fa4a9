@@ -10,10 +10,10 @@ import { usePremium } from '@/context/PremiumContext';
 import { useAuth } from '@/context/AuthContext';
 
 interface ChatTabProps {
-  analysisPrompt?: string;
+  analysisPrompt?: string | null;
 }
 
-export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
+export function ChatTab({ analysisPrompt }: ChatTabProps) {
   const { toast } = useToast();
   const { isPremium } = usePremium();
   const { user } = useAuth();
@@ -26,7 +26,6 @@ export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
     },
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [analysisType, setAnalysisType] = useState<string | null>(null);
   const [modelType, setModelType] = useState<string>('gpt-4o-mini');
 
   // Handle processing an analysis request that comes from the AnalysisTab
@@ -37,9 +36,6 @@ export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
   }, [analysisPrompt]);
 
   const handleSendMessage = async (inputValue: string) => {
-    // Use analysis type or input value
-    const messageContent = analysisType || inputValue;
-    
     if (!user) {
       toast({
         title: "Non connecté",
@@ -52,13 +48,12 @@ export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: messageContent,
+      content: inputValue,
       sender: 'user',
       timestamp: new Date(),
     };
     
     setMessages(prev => [...prev, userMessage]);
-    setAnalysisType(null);
     
     // Add loading message
     const loadingMessageId = (Date.now() + 1).toString();
@@ -78,7 +73,7 @@ export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
       // Call Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('chat-with-ai', {
         body: { 
-          prompt: messageContent, 
+          prompt: inputValue, 
           model: modelType 
         }
       });
