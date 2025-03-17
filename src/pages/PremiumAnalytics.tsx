@@ -2,7 +2,7 @@
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { BarChart3, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -62,7 +62,7 @@ export default function PremiumAnalytics() {
             <TabsTrigger value="performance">Analyse Performance</TabsTrigger>
             <TabsTrigger value="risk">Gestion du Risque</TabsTrigger>
             <TabsTrigger value="optimization">Optimisation</TabsTrigger>
-            <TabsTrigger value="patterns">Patterns & Timing</TabsTrigger>
+            <TabsTrigger value="patterns">Patterns &amp; Timing</TabsTrigger>
           </TabsList>
           
           <TabsContent value="performance" className="space-y-6">
@@ -83,7 +83,7 @@ export default function PremiumAnalytics() {
                     <div className="p-4 bg-secondary/30 rounded-lg">
                       <p className="text-sm text-muted-foreground">Beta</p>
                       <p className="text-2xl font-bold">0.74</p>
-                      <p className="text-xs text-muted-foreground mt-1">Sensibilité au marché (< 1 = moins volatile)</p>
+                      <p className="text-xs text-muted-foreground mt-1">Sensibilité au marché (&lt; 1 = moins volatile)</p>
                     </div>
                     <div className="p-4 bg-secondary/30 rounded-lg">
                       <p className="text-sm text-muted-foreground">Ratio de Sortino</p>
@@ -200,7 +200,7 @@ export default function PremiumAnalytics() {
                     <h3 className="text-lg font-medium">Distribution des Pertes</h3>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm">Pertes < 1%</span>
+                        <span className="text-sm">Pertes &lt; 1%</span>
                         <span className="text-sm font-medium">42 trades (68.9%)</span>
                       </div>
                       <div className="flex items-center justify-between">
@@ -212,7 +212,7 @@ export default function PremiumAnalytics() {
                         <span className="text-sm font-medium">4 trades (6.6%)</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm">Pertes > 5%</span>
+                        <span className="text-sm">Pertes &gt; 5%</span>
                         <span className="text-sm font-medium">1 trade (1.6%)</span>
                       </div>
                     </div>
