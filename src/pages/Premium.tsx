@@ -1,4 +1,3 @@
-
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,7 +41,7 @@ export default function Premium() {
                 <TabsTrigger value="yearly">
                   Annuel
                   <Badge variant="outline" className="ml-2 bg-primary/10 text-primary">
-                    -20%
+                    -17%
                   </Badge>
                 </TabsTrigger>
               </TabsList>
@@ -112,7 +111,7 @@ export default function Premium() {
                   </div>
                   <CardDescription className="mt-1.5">
                     <span className="text-sm line-through text-muted-foreground">119,88€</span>
-                    <span className="text-green-500 font-semibold ml-2">Économisez 20%</span>
+                    <span className="text-green-500 font-semibold ml-2">Économisez 17%</span>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pb-4">
@@ -123,7 +122,7 @@ export default function Premium() {
                     </li>
                     <li className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                      <span>Économisez 20% par rapport au plan mensuel</span>
+                      <span>Économisez 17% par rapport au plan mensuel</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
