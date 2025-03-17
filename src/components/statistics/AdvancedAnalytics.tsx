@@ -6,6 +6,7 @@ import {
   DrawdownChart,
   RiskReturnScatter
 } from "./premium/AdvancedCharts";
+import { PerformanceMetricsPanel } from "./premium/PerformanceMetrics";
 import { PremiumAnalyticsContent } from "./PremiumAnalyticsContent";
 
 export default function AdvancedAnalytics() {
@@ -24,66 +25,7 @@ export default function AdvancedAnalytics() {
         <TabsContent value="comparison" className="space-y-6">
           <PerformanceComparison />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-secondary/10 p-6 rounded-lg">
-              <h3 className="text-lg font-medium mb-2">Alpha & Beta</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Analyse de votre surperformance par rapport au marché et de votre sensibilité aux mouvements du marché.
-              </p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Alpha</p>
-                  <p className="text-2xl font-bold text-green-500">+2.87</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Beta</p>
-                  <p className="text-2xl font-bold">0.74</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">R²</p>
-                  <p className="text-2xl font-bold">0.68</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Information Ratio</p>
-                  <p className="text-2xl font-bold">1.32</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-secondary/10 p-6 rounded-lg">
-              <h3 className="text-lg font-medium mb-2">Corrélation Sectorielle</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Analyse de la corrélation de votre portefeuille avec différents secteurs du marché.
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Technologie</span>
-                  <div className="w-2/3 bg-secondary/30 rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full" style={{ width: "85%" }}></div>
-                  </div>
-                  <span className="text-sm font-medium">0.85</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Finance</span>
-                  <div className="w-2/3 bg-secondary/30 rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full" style={{ width: "42%" }}></div>
-                  </div>
-                  <span className="text-sm font-medium">0.42</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Santé</span>
-                  <div className="w-2/3 bg-secondary/30 rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full" style={{ width: "63%" }}></div>
-                  </div>
-                  <span className="text-sm font-medium">0.63</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Énergie</span>
-                  <div className="w-2/3 bg-secondary/30 rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full" style={{ width: "21%" }}></div>
-                  </div>
-                  <span className="text-sm font-medium">0.21</span>
-                </div>
-              </div>
-            </div>
+            <PerformanceMetricsPanel />
           </div>
         </TabsContent>
         
