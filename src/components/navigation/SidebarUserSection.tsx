@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, User } from 'lucide-react';
+import { LogOut, Settings, User, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SidebarUserSectionProps {
@@ -24,7 +24,32 @@ export function SidebarUserSection({ collapsed }: SidebarUserSectionProps) {
   const { user, profile, signOut } = useAuth();
   const [open, setOpen] = useState(false);
 
-  if (!user) return null;
+  // Si l'utilisateur n'est pas connecté, afficher un bouton de connexion
+  if (!user) {
+    return (
+      <div className="border-t border-sidebar-border p-4">
+        <Button 
+          variant="outline" 
+          className={cn(
+            "w-full flex items-center justify-center",
+            collapsed ? "p-2" : "px-4 py-2"
+          )}
+          asChild
+        >
+          <Link to="/login">
+            {collapsed ? (
+              <LogIn className="h-5 w-5" />
+            ) : (
+              <>
+                <LogIn className="h-5 w-5 mr-2" />
+                <span>Connexion</span>
+              </>
+            )}
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
   // Format username for display
   const username = user.email ? user.email.split('@')[0] : 'Utilisateur';

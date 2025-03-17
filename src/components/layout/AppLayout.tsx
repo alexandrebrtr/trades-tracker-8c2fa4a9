@@ -5,6 +5,7 @@ import { Header } from '@/components/navigation/Header';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
+import { useAuth } from '@/context/AuthContext';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -13,6 +14,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { user } = useAuth();
   
   useEffect(() => {
     const handleResize = () => {
