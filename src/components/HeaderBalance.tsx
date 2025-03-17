@@ -17,9 +17,10 @@ export function HeaderBalance() {
       setBalance(Number(profile.balance));
     }
     
-    // Subscribe to real-time changes on the profiles table
+    // Subscribe to real-time changes on both profiles and portfolios tables
     if (user) {
-      const channel = supabase
+      // Subscribe to profiles table changes
+      const profilesChannel = supabase
         .channel('profile-balance-updates')
         .on(
           'postgres_changes',
@@ -31,16 +32,52 @@ export function HeaderBalance() {
           },
           (payload) => {
             console.log('Profile update received in HeaderBalance:', payload);
-            // Add type checking to ensure payload.new has balance property
             if (payload.new && typeof payload.new === 'object' && 'balance' in payload.new) {
               setBalance(Number(payload.new.balance));
             }
           }
         )
         .subscribe();
+      
+      // Subscribe to portfolios table changes to ensure balance remains in sync
+      const portfoliosChannel = supabase
+        .channel('portfolio-balance-updates')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'portfolios',
+            filter: `user_id=eq.${user.id}`
+          },
+          async (payload) => {
+            console.log('Portfolio update received in HeaderBalance:', payload);
+            // When portfolio is updated, refresh the profile data to ensure consistency
+            if (payload.new && typeof payload.new === 'object' && 'balance' in payload.new) {
+              try {
+                // Get the latest profile data to ensure we have the most recent balance
+                const { data: latestProfile, error } = await supabase
+                  .from('profiles')
+                  .select('balance')
+                  .eq('id', user.id)
+                  .single();
+                
+                if (error) throw error;
+                
+                if (latestProfile) {
+                  setBalance(Number(latestProfile.balance));
+                }
+              } catch (error) {
+                console.error('Error fetching updated profile after portfolio change:', error);
+              }
+            }
+          }
+        )
+        .subscribe();
         
       return () => {
-        supabase.removeChannel(channel);
+        supabase.removeChannel(profilesChannel);
+        supabase.removeChannel(portfoliosChannel);
       };
     }
   }, [user, profile]);

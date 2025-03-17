@@ -41,6 +41,8 @@ serve(async (req) => {
       );
     }
     
+    console.log(`Processing chat request with model: ${model || "gpt-4o-mini"}`);
+    
     // Call OpenAI API
     const openAIResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -49,7 +51,7 @@ serve(async (req) => {
         "Authorization": `Bearer ${openAIApiKey}`
       },
       body: JSON.stringify({
-        model: model || "gpt-4o-mini", // Use one of the recommended models
+        model: model || "gpt-4o-mini", // Use specified model or default
         messages: [
           {
             role: "system",
@@ -68,11 +70,13 @@ serve(async (req) => {
     const data = await openAIResponse.json();
     
     if (data.error) {
+      console.error("OpenAI API error:", data.error);
       throw new Error(data.error.message || "Error from OpenAI API");
     }
     
     // Extract the response
     const aiResponse = data.choices[0].message.content;
+    console.log("Generated AI response successfully");
     
     return new Response(
       JSON.stringify({ response: aiResponse }),
