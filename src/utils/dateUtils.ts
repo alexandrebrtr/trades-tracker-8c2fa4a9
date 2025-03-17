@@ -1,10 +1,9 @@
-
 /**
  * Returns a date object for the start of a given timeframe
  */
-export const getStartDateFromTimeframe = (tf: string): Date => {
+export const getStartDateFromTimeframe = (timeframe: string): Date => {
   const now = new Date();
-  switch (tf) {
+  switch (timeframe) {
     case 'month':
       return new Date(now.setMonth(now.getMonth() - 1));
     case 'quarter':
