@@ -30,7 +30,6 @@ export function AppLayout({ children }: AppLayoutProps) {
     // Listen for sidebar toggle events from Sidebar component
     const handleSidebarToggle = (e: CustomEvent) => {
       setSidebarCollapsed(e.detail.collapsed);
-      localStorage.setItem('sidebarCollapsed', JSON.stringify(e.detail.collapsed));
     };
     
     window.addEventListener('resize', handleResize);

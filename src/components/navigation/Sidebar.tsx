@@ -151,6 +151,7 @@ export function Sidebar() {
             size="icon" 
             onClick={toggleSidebar}
             className={collapsed ? "w-full" : "ml-auto"}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
           </Button>

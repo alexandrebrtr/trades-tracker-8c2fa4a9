@@ -1,92 +1,87 @@
 
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { User, CreditCard, LogOut, Shield, Settings } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useAuth } from '@/context/AuthContext';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { LogOut, Settings, User } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function SidebarUserSection({ collapsed }: { collapsed: boolean }) {
-  const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
-  
-  // Admin IDs - hardcoded for simplicity
-  const adminIds = ['9ce47b0c-0d0a-4834-ae81-e103dff2e386'];
-  const isAdmin = user && adminIds.includes(user.id);
-  
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/login');
-  };
-  
+interface SidebarUserSectionProps {
+  collapsed: boolean;
+}
+
+export function SidebarUserSection({ collapsed }: SidebarUserSectionProps) {
+  const { user, signOut } = useAuth();
+  const [open, setOpen] = useState(false);
+
+  if (!user) return null;
+
+  // Format username for display
+  const username = user.email ? user.email.split('@')[0] : 'Utilisateur';
+  const avatarText = username.charAt(0).toUpperCase();
+
   return (
     <div className="border-t border-sidebar-border p-4">
-      <DropdownMenu>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
-          <div className={cn(
-            "flex items-center cursor-pointer rounded-md p-2 hover:bg-sidebar-accent/50",
-            collapsed ? "justify-center" : "space-x-3"
-          )}>
-            <Avatar className="w-9 h-9">
-              <AvatarImage src={profile?.avatar_url || ""} alt={profile?.username || (user?.email || "Trader")} />
-              <AvatarFallback className="bg-primary text-primary-foreground font-medium">
-                {profile?.username?.charAt(0).toUpperCase() || (user?.email?.charAt(0).toUpperCase() || "T")}
+          <Button 
+            variant="ghost" 
+            className={cn(
+              'relative w-full flex items-center p-2 rounded-md cursor-pointer',
+              collapsed ? 'justify-center' : 'justify-start gap-2'
+            )}
+          >
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user.avatar_url || ''} alt={username} />
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {avatarText}
               </AvatarFallback>
             </Avatar>
-            {!collapsed && user && (
-              <div className="flex-1">
-                <p className="text-sm font-medium">
-                  {profile?.username || user.email?.split('@')[0] || 'Trader'}
-                </p>
-                <p className="text-xs text-sidebar-foreground/70">
-                  {profile ? 'Solde: ' + (profile.balance || '0') + ' €' : 'Compte'}
-                </p>
+            
+            {!collapsed && (
+              <div className="flex flex-col text-left ml-2 overflow-hidden">
+                <span className="text-sm font-medium truncate">{username}</span>
+                <span className="text-xs text-sidebar-foreground/70 truncate">{user.email}</span>
               </div>
             )}
-          </div>
+          </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-56">
+        
+        <DropdownMenuContent 
+          className="w-56" 
+          align={collapsed ? "center" : "end"}
+          side="top"
+        >
           <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link to="/settings" className="flex items-center cursor-pointer">
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Paramètres</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link to="/profile" className="flex items-center cursor-pointer">
-              <User className="mr-2 h-4 w-4" />
-              <span>Profil</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link to="/premium" className="flex items-center cursor-pointer">
-              <CreditCard className="mr-2 h-4 w-4" />
-              <span>Abonnement Premium</span>
-            </Link>
-          </DropdownMenuItem>
-          {isAdmin && (
+          <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link to="/admin" className="flex items-center cursor-pointer">
-                <Shield className="mr-2 h-4 w-4" />
-                <span>Administration</span>
+              <Link to="/profile">
+                <User className="mr-2 h-4 w-4" />
+                <span>Profil</span>
               </Link>
             </DropdownMenuItem>
-          )}
+            <DropdownMenuItem asChild>
+              <Link to="/settings">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Paramètres</span>
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-destructive">
+          <DropdownMenuItem onClick={() => signOut()}>
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Se déconnecter</span>
+            <span>Déconnexion</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
