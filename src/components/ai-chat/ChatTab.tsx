@@ -5,8 +5,9 @@ import { useToast } from '@/components/ui/use-toast';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import { Message } from './Message';
-import { aiResponseGenerator } from '@/utils/aiResponseGenerator';
+import { supabase } from '@/integrations/supabase/client';
 import { usePremium } from '@/context/PremiumContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface ChatTabProps {
   analysisPrompt?: string;
@@ -15,6 +16,7 @@ interface ChatTabProps {
 export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
   const { toast } = useToast();
   const { isPremium } = usePremium();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -36,6 +38,15 @@ export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
   const handleSendMessage = async (inputValue: string) => {
     // Use analysis type or input value
     const messageContent = analysisType || inputValue;
+    
+    if (!user) {
+      toast({
+        title: "Non connecté",
+        description: "Vous devez être connecté pour utiliser l'assistant IA.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     // Add user message
     const userMessage: Message = {
@@ -61,18 +72,26 @@ export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
     setIsProcessing(true);
     
     try {
-      // Simulate AI processing with sophisticated trading responses
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log('Calling Supabase Edge Function chat-with-ai');
       
-      // Generate response based on message content
-      const response = aiResponseGenerator(messageContent);
+      // Call Supabase Edge Function instead of generating response locally
+      const { data, error } = await supabase.functions.invoke('chat-with-ai', {
+        body: { prompt: messageContent, model: 'gpt-4o-mini' }
+      });
+      
+      if (error) {
+        console.error('Error calling AI assistant:', error);
+        throw new Error(error.message);
+      }
+      
+      console.log('Response from AI assistant:', data);
       
       // Remove loading message and add response
       setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
       
       const botMessage: Message = {
         id: (Date.now() + 2).toString(),
-        content: response,
+        content: data.response || 'Désolé, je n\'ai pas pu générer une réponse.',
         sender: 'bot',
         timestamp: new Date(),
       };
