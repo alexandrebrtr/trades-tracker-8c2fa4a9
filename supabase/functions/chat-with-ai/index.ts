@@ -17,6 +17,7 @@ serve(async (req) => {
   const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
   
   if (!openAIApiKey) {
+    console.error("OpenAI API key is not configured");
     return new Response(
       JSON.stringify({
         error: "OpenAI API key is not configured. Please add it in the Supabase Edge Function Secrets."
@@ -29,9 +30,11 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, model } = await req.json();
+    const requestData = await req.json();
+    const { prompt, model } = requestData;
     
     if (!prompt) {
+      console.error("No prompt provided");
       return new Response(
         JSON.stringify({ error: "No prompt provided" }),
         { 
@@ -42,6 +45,7 @@ serve(async (req) => {
     }
     
     console.log(`Processing chat request with model: ${model || "gpt-4o-mini"}`);
+    console.log(`Prompt: ${prompt}`);
     
     // Call OpenAI API
     const openAIResponse = await fetch("https://api.openai.com/v1/chat/completions", {

@@ -10,14 +10,13 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 export default function AIChat() {
+  const [analysisPrompt, setAnalysisPrompt] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [analysisType, setAnalysisType] = useState<string | null>(null);
   const { isPremium } = usePremium();
   const navigate = useNavigate();
 
   const handleAnalysisRequest = (type: string) => {
-    setAnalysisType(type);
-    // This will be picked up by the ChatTab
+    setAnalysisPrompt(type);
   };
 
   const handleRedirectToPremium = () => {
@@ -45,7 +44,7 @@ export default function AIChat() {
           </TabsList>
           
           <TabsContent value="chat" className="space-y-4">
-            <ChatTab />
+            <ChatTab analysisPrompt={analysisPrompt} />
           </TabsContent>
           
           <TabsContent value="analysis" className="space-y-4">

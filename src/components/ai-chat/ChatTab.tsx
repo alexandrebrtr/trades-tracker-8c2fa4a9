@@ -75,9 +75,12 @@ export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
     try {
       console.log('Calling Supabase Edge Function chat-with-ai');
       
-      // Call Supabase Edge Function instead of generating response locally
+      // Call Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('chat-with-ai', {
-        body: { prompt: messageContent, model: modelType }
+        body: { 
+          prompt: messageContent, 
+          model: modelType 
+        }
       });
       
       if (error) {
@@ -100,14 +103,25 @@ export function ChatTab({ analysisPrompt }: ChatTabProps = {}) {
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       console.error('Error generating AI response:', error);
+      
+      // Remove loading message
+      setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
+      
+      // Add error message
+      const errorMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        content: 'Désolé, une erreur est survenue lors de la génération de la réponse. Veuillez réessayer.',
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+      
       toast({
         title: "Erreur",
         description: "Impossible de générer une réponse. Veuillez réessayer.",
         variant: "destructive",
       });
-      
-      // Remove loading message
-      setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
     } finally {
       setIsProcessing(false);
     }
