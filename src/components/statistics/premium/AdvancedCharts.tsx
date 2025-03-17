@@ -10,7 +10,6 @@ import {
   Line,
   LineChart,
   ResponsiveContainer,
-  Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
@@ -18,32 +17,32 @@ import {
 // Configuration des couleurs pour les graphiques
 const CHART_CONFIG = {
   primary: {
-    color: "#9b87f5",
     theme: {
       light: "#9b87f5",
       dark: "#9b87f5",
     },
+    label: "Performance"
   },
   secondary: {
-    color: "#34d399",
     theme: {
       light: "#34d399",
       dark: "#34d399",
     },
+    label: "Volatilité"
   },
   tertiary: {
-    color: "#f97316",
     theme: {
       light: "#f97316",
       dark: "#f97316",
     },
+    label: "Marché"
   },
   danger: {
-    color: "#ef4444",
     theme: {
       light: "#ef4444",
       dark: "#ef4444",
     },
+    label: "Risque"
   },
 };
 
@@ -105,14 +104,12 @@ export function PerformanceComparison() {
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="date" />
             <YAxis />
-            <ChartTooltip>
-              <ChartTooltipContent />
-            </ChartTooltip>
+            <ChartTooltip content={<ChartTooltipContent />} />
             <Line 
               type="monotone" 
               dataKey="value" 
               name="Portefeuille" 
-              stroke={CHART_CONFIG.primary.color}
+              stroke={CHART_CONFIG.primary.theme.light}
               strokeWidth={2} 
               dot={{ r: 4 }}
             />
@@ -120,7 +117,7 @@ export function PerformanceComparison() {
               type="monotone" 
               dataKey="benchmark" 
               name="S&P 500" 
-              stroke={CHART_CONFIG.tertiary.color}
+              stroke={CHART_CONFIG.tertiary.theme.light}
               strokeWidth={2} 
               dot={{ r: 4 }}
               strokeDasharray="5 5"
@@ -144,11 +141,9 @@ export function VolatilityAnalysis() {
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="month" />
             <YAxis />
-            <ChartTooltip>
-              <ChartTooltipContent />
-            </ChartTooltip>
-            <Bar dataKey="portfolio" name="Portefeuille" fill={CHART_CONFIG.secondary.color} radius={[4, 4, 0, 0]} />
-            <Bar dataKey="market" name="Marché" fill={CHART_CONFIG.danger.color} radius={[4, 4, 0, 0]} />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Bar dataKey="portfolio" name="Portefeuille" fill={CHART_CONFIG.secondary.theme.light} radius={[4, 4, 0, 0]} />
+            <Bar dataKey="market" name="Marché" fill={CHART_CONFIG.danger.theme.light} radius={[4, 4, 0, 0]} />
           </BarChart>
         </ChartContainer>
       </CardContent>
@@ -168,15 +163,13 @@ export function DrawdownChart() {
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="date" />
             <YAxis />
-            <ChartTooltip>
-              <ChartTooltipContent />
-            </ChartTooltip>
+            <ChartTooltip content={<ChartTooltipContent />} />
             <Area 
               type="monotone" 
               dataKey="value" 
               name="Drawdown" 
-              stroke={CHART_CONFIG.danger.color} 
-              fill={CHART_CONFIG.danger.color}
+              stroke={CHART_CONFIG.danger.theme.light} 
+              fill={CHART_CONFIG.danger.theme.light}
               fillOpacity={0.3}
             />
           </AreaChart>

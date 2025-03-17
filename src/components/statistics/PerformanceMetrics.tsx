@@ -1,6 +1,15 @@
 
+import { usePremium } from "@/context/PremiumContext";
 import PerformanceView from "./performance/PerformanceView";
+import AdvancedAnalytics from "./AdvancedAnalytics";
 
 export default function PerformanceMetrics() {
-  return <PerformanceView />;
+  const { isPremium } = usePremium();
+  
+  return (
+    <div className="space-y-8">
+      <PerformanceView />
+      {isPremium && <AdvancedAnalytics />}
+    </div>
+  );
 }

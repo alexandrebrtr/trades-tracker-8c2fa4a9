@@ -23,7 +23,7 @@ import { useAuth } from '@/context/AuthContext';
 import { usePremium } from '@/context/PremiumContext';
 
 export function SidebarUserSection({ collapsed }: { collapsed: boolean }) {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { isPremium } = usePremium();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -42,7 +42,7 @@ export function SidebarUserSection({ collapsed }: { collapsed: boolean }) {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={user?.avatar_url || ''} alt={user?.email || 'Guest User'} />
+                <AvatarImage src={profile?.avatar_url || ''} alt={user?.email || 'Guest User'} />
                 <AvatarFallback>{userInitials}</AvatarFallback>
               </Avatar>
             </Button>
@@ -86,7 +86,7 @@ export function SidebarUserSection({ collapsed }: { collapsed: boolean }) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="w-full justify-start px-2">
             <Avatar className="h-6 w-6 mr-2">
-              <AvatarImage src={user?.avatar_url || ''} alt={user?.email || 'Guest User'} />
+              <AvatarImage src={profile?.avatar_url || ''} alt={user?.email || 'Guest User'} />
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
             <span className="truncate">{user?.email || 'Guest User'}</span>
