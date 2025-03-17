@@ -45,9 +45,9 @@ serve(async (req) => {
     }
     
     console.log(`Processing chat request with model: ${model || "gpt-4o-mini"}`);
-    console.log(`Prompt: ${prompt}`);
+    console.log(`Prompt: ${prompt.substring(0, 100)}...`); // Log only the first 100 chars to avoid overflow
     
-    // Call OpenAI API
+    // Call OpenAI API with proper error handling
     const openAIResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -70,11 +70,17 @@ serve(async (req) => {
         max_tokens: 1500
       }),
     });
+
+    if (!openAIResponse.ok) {
+      const errorData = await openAIResponse.json().catch(() => ({}));
+      console.error("OpenAI API error:", errorData);
+      throw new Error(errorData.error?.message || `OpenAI API returned status ${openAIResponse.status}`);
+    }
     
     const data = await openAIResponse.json();
     
     if (data.error) {
-      console.error("OpenAI API error:", data.error);
+      console.error("OpenAI API error in response:", data.error);
       throw new Error(data.error.message || "Error from OpenAI API");
     }
     
@@ -93,7 +99,10 @@ serve(async (req) => {
     console.error("Error in chat-with-ai function:", error);
     
     return new Response(
-      JSON.stringify({ error: error.message || "An error occurred while processing your request" }),
+      JSON.stringify({ 
+        error: error.message || "An error occurred while processing your request",
+        details: "Please try again with a different prompt or contact support if the issue persists."
+      }),
       { 
         status: 500, 
         headers: { ...corsHeaders, "Content-Type": "application/json" } 

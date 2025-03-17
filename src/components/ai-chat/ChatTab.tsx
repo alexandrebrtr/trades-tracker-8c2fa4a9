@@ -70,7 +70,7 @@ export function ChatTab({ analysisPrompt }: ChatTabProps) {
     try {
       console.log('Calling Supabase Edge Function chat-with-ai');
       
-      // Call Supabase Edge Function
+      // Call Supabase Edge Function with better error handling
       const { data, error } = await supabase.functions.invoke('chat-with-ai', {
         body: { 
           prompt: inputValue, 
@@ -80,17 +80,22 @@ export function ChatTab({ analysisPrompt }: ChatTabProps) {
       
       if (error) {
         console.error('Error calling AI assistant:', error);
-        throw new Error(error.message);
+        throw new Error(error.message || "Une erreur est survenue lors de la communication avec l'assistant IA");
       }
       
-      console.log('Response from AI assistant:', data);
+      if (!data || !data.response) {
+        console.error('Invalid response from AI assistant:', data);
+        throw new Error("La réponse de l'assistant IA est invalide");
+      }
+      
+      console.log('Response from AI assistant received');
       
       // Remove loading message and add response
       setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
       
       const botMessage: Message = {
         id: (Date.now() + 2).toString(),
-        content: data.response || 'Désolé, je n\'ai pas pu générer une réponse.',
+        content: data.response,
         sender: 'bot',
         timestamp: new Date(),
       };
@@ -114,7 +119,7 @@ export function ChatTab({ analysisPrompt }: ChatTabProps) {
       
       toast({
         title: "Erreur",
-        description: "Impossible de générer une réponse. Veuillez réessayer.",
+        description: error.message || "Impossible de générer une réponse. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
