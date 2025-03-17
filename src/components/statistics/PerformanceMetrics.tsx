@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { usePremium } from "@/context/PremiumContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,10 +8,8 @@ import { usePerformanceData } from "@/hooks/usePerformanceData";
 import PerformanceView from "./performance/PerformanceView";
 import TradePerformanceTable from "./performance/TradePerformanceTable";
 import TradeAnalysisChart from "./performance/TradeAnalysisChart";
-import AdvancedAnalytics from "./AdvancedAnalytics";
 
 export default function PerformanceMetrics() {
-  const { isPremium } = usePremium();
   const { user } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState("all");
   const [selectedAnalysis, setSelectedAnalysis] = useState("general");
@@ -101,8 +98,6 @@ export default function PerformanceMetrics() {
           </Card>
         </TabsContent>
       </Tabs>
-      
-      {isPremium && <AdvancedAnalytics />}
     </div>
   );
 }
