@@ -1,13 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import { Message } from './Message';
 import { supabase } from '@/integrations/supabase/client';
 import { usePremium } from '@/context/PremiumContext';
 import { useAuth } from '@/context/AuthContext';
+import { AITradingAssistant } from '@/components/AITradingAssistant';
 
 interface ChatTabProps {
   analysisPrompt?: string | null;
@@ -36,6 +37,41 @@ export function ChatTab({ analysisPrompt }: ChatTabProps) {
       handleSendMessage(analysisPrompt);
     }
   }, [analysisPrompt]);
+
+  const callAssistantAPI = async (inputValue: string, attempt: number = 0): Promise<string> => {
+    try {
+      console.log(`Appel à l'API d'assistance IA (tentative ${attempt + 1}/${MAX_RETRIES + 1})`);
+      
+      const { data, error } = await supabase.functions.invoke('trade-assistant', {
+        body: { message: inputValue, model: modelType }
+      });
+      
+      if (error) {
+        console.error(`Erreur de la fonction edge (tentative ${attempt + 1}):`, error);
+        throw new Error(error.message || "Erreur lors de la communication avec l'assistant IA");
+      }
+      
+      if (!data || !data.response) {
+        console.error(`Réponse invalide (tentative ${attempt + 1}):`, data);
+        throw new Error("Réponse invalide de l'assistant IA");
+      }
+      
+      return data.response;
+    } catch (error) {
+      console.error(`Erreur lors de l'appel API (tentative ${attempt + 1}):`, error);
+      
+      // Si nous n'avons pas dépassé le nombre maximum de tentatives, réessayons
+      if (attempt < MAX_RETRIES) {
+        // Attendre un peu plus longtemps entre chaque tentative
+        const delay = 1000 * Math.pow(2, attempt);
+        console.log(`Nouvelle tentative dans ${delay/1000} secondes...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return callAssistantAPI(inputValue, attempt + 1);
+      }
+      
+      throw error;
+    }
+  };
 
   const handleSendMessage = async (inputValue: string) => {
     if (!user) {
@@ -70,50 +106,14 @@ export function ChatTab({ analysisPrompt }: ChatTabProps) {
     setIsProcessing(true);
     
     try {
-      console.log('Calling Supabase Edge Function chat-with-ai');
-      
-      // Call Supabase Edge Function with better error handling and retry logic
-      const callAPI = async (attempt: number) => {
-        try {
-          const { data, error } = await supabase.functions.invoke('chat-with-ai', {
-            body: { 
-              prompt: inputValue, 
-              model: modelType 
-            }
-          });
-          
-          if (error) {
-            console.error(`Error calling AI assistant (attempt ${attempt}):`, error);
-            throw new Error(error.message || "Une erreur est survenue lors de la communication avec l'assistant IA");
-          }
-          
-          if (!data || !data.response) {
-            console.error(`Invalid response from AI assistant (attempt ${attempt}):`, data);
-            throw new Error("La réponse de l'assistant IA est invalide");
-          }
-          
-          return data;
-        } catch (error) {
-          if (attempt < MAX_RETRIES) {
-            console.log(`Retrying API call, attempt ${attempt + 1} of ${MAX_RETRIES}`);
-            // Wait a bit before retrying
-            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-            return callAPI(attempt + 1);
-          }
-          throw error;
-        }
-      };
-      
-      const data = await callAPI(0);
-      
-      console.log('Response from AI assistant received successfully');
+      const aiResponse = await callAssistantAPI(inputValue);
       
       // Remove loading message and add response
       setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
       
       const botMessage: Message = {
         id: (Date.now() + 2).toString(),
-        content: data.response,
+        content: aiResponse,
         sender: 'bot',
         timestamp: new Date(),
       };
