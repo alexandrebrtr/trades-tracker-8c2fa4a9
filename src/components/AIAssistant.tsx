@@ -17,6 +17,8 @@ export function AIAssistant({ title = "Assistant IA", description = "Posez vos q
   const [prompt, setPrompt] = useState('');
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 2;
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -45,19 +47,45 @@ export function AIAssistant({ title = "Assistant IA", description = "Posez vos q
     setResponse('');
     
     try {
-      // Call Supabase Edge Function
-      const { data, error } = await supabase.functions.invoke('chat-with-ai', {
-        body: { prompt, model: 'gpt-4o-mini' }
-      });
+      // Call Supabase Edge Function with retry logic
+      const callAPI = async (attempt: number) => {
+        try {
+          console.log(`Calling AI assistant API (attempt ${attempt + 1})`);
+          const { data, error } = await supabase.functions.invoke('chat-with-ai', {
+            body: { prompt, model: 'gpt-4o-mini' }
+          });
+          
+          if (error) {
+            console.error(`Error from edge function (attempt ${attempt + 1}):`, error);
+            throw error;
+          }
+          
+          if (!data || !data.response) {
+            console.error(`Invalid response data (attempt ${attempt + 1}):`, data);
+            throw new Error("Réponse invalide de l'assistant IA");
+          }
+          
+          return data;
+        } catch (error) {
+          if (attempt < MAX_RETRIES) {
+            console.log(`Retrying API call, attempt ${attempt + 1} of ${MAX_RETRIES}`);
+            // Wait a bit before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            return callAPI(attempt + 1);
+          }
+          throw error;
+        }
+      };
       
-      if (error) throw error;
-      
+      const data = await callAPI(0);
       setResponse(data.response);
+      setRetryCount(0); // Reset retry count on success
+      
     } catch (error) {
       console.error('Error calling AI assistant:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la communication avec l'assistant IA.",
+        description: error.message || "Une erreur est survenue lors de la communication avec l'assistant IA.",
         variant: "destructive"
       });
     } finally {

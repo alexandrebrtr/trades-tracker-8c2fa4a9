@@ -27,6 +27,8 @@ export function ChatTab({ analysisPrompt }: ChatTabProps) {
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [modelType, setModelType] = useState<string>('gpt-4o-mini');
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 2;
 
   // Handle processing an analysis request that comes from the AnalysisTab
   useEffect(() => {
@@ -70,25 +72,41 @@ export function ChatTab({ analysisPrompt }: ChatTabProps) {
     try {
       console.log('Calling Supabase Edge Function chat-with-ai');
       
-      // Call Supabase Edge Function with better error handling
-      const { data, error } = await supabase.functions.invoke('chat-with-ai', {
-        body: { 
-          prompt: inputValue, 
-          model: modelType 
+      // Call Supabase Edge Function with better error handling and retry logic
+      const callAPI = async (attempt: number) => {
+        try {
+          const { data, error } = await supabase.functions.invoke('chat-with-ai', {
+            body: { 
+              prompt: inputValue, 
+              model: modelType 
+            }
+          });
+          
+          if (error) {
+            console.error(`Error calling AI assistant (attempt ${attempt}):`, error);
+            throw new Error(error.message || "Une erreur est survenue lors de la communication avec l'assistant IA");
+          }
+          
+          if (!data || !data.response) {
+            console.error(`Invalid response from AI assistant (attempt ${attempt}):`, data);
+            throw new Error("La réponse de l'assistant IA est invalide");
+          }
+          
+          return data;
+        } catch (error) {
+          if (attempt < MAX_RETRIES) {
+            console.log(`Retrying API call, attempt ${attempt + 1} of ${MAX_RETRIES}`);
+            // Wait a bit before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            return callAPI(attempt + 1);
+          }
+          throw error;
         }
-      });
+      };
       
-      if (error) {
-        console.error('Error calling AI assistant:', error);
-        throw new Error(error.message || "Une erreur est survenue lors de la communication avec l'assistant IA");
-      }
+      const data = await callAPI(0);
       
-      if (!data || !data.response) {
-        console.error('Invalid response from AI assistant:', data);
-        throw new Error("La réponse de l'assistant IA est invalide");
-      }
-      
-      console.log('Response from AI assistant received');
+      console.log('Response from AI assistant received successfully');
       
       // Remove loading message and add response
       setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
@@ -101,6 +119,7 @@ export function ChatTab({ analysisPrompt }: ChatTabProps) {
       };
       
       setMessages(prev => [...prev, botMessage]);
+      setRetryCount(0); // Reset retry count on success
     } catch (error) {
       console.error('Error generating AI response:', error);
       
