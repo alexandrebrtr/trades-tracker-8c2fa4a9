@@ -14,8 +14,7 @@ import TradeEntry from "./pages/TradeEntry";
 import Portfolio from "./pages/Portfolio";
 import Statistics from "./pages/Statistics";
 import Calendar from "./pages/Calendar";
-import Community from "./pages/Community";
-import AIChat from "./pages/AIChat";
+import Contact from "./pages/Contact";
 import Premium from "./pages/Premium";
 import Payment from "./pages/Payment";
 import Settings from "./pages/Settings";
@@ -43,6 +42,7 @@ function App() {
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/contact" element={<Contact />} />
           
           {/* Routes protégées */}
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
@@ -50,8 +50,6 @@ function App() {
           <Route path="/trade/:id" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
           <Route path="/trade-entry" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
-          <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
-          <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
           <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
           <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

@@ -8,12 +8,11 @@ import {
   PlusCircle, 
   BarChart3, 
   Book, 
-  Users,
   Menu,
   X,
-  Brain,
   Wallet,
-  Shield
+  Shield,
+  Contact
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -108,14 +107,9 @@ export function Sidebar() {
       icon: <Book className="w-5 h-5" />
     },
     {
-      name: 'Communauté',
-      path: '/community',
-      icon: <Users className="w-5 h-5" />
-    },
-    {
-      name: 'Assistant IA',
-      path: '/ai-chat',
-      icon: <Brain className="w-5 h-5" />
+      name: 'Contact',
+      path: '/contact',
+      icon: <Contact className="w-5 h-5" />
     }
   ];
 
