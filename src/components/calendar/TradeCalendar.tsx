@@ -110,6 +110,13 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
   const handleEventAdded = () => {
     if (onEventsUpdated) onEventsUpdated();
   };
+
+  // Check if a date is in the future
+  const isFutureDate = (day: number): boolean => {
+    const today = new Date();
+    const checkDate = new Date(year, month, day);
+    return checkDate > today;
+  };
   
   return (
     <div className="glass-card animate-fade-in">
@@ -156,15 +163,18 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
             const isToday = new Date().getDate() === day && 
                             new Date().getMonth() === month && 
                             new Date().getFullYear() === year;
+            const isFuture = isFutureDate(day);
             
-            // Determine background color based on PnL
+            // Determine background color based on PnL - but not for future dates
             let bgColorClass = "hover:bg-accent/10";
-            if (hasTrades) {
-              bgColorClass = dailyPnL > 0 
-                ? "bg-green-500/20 hover:bg-green-500/30" 
-                : (dailyPnL < 0 
-                  ? "bg-red-500/20 hover:bg-red-500/30" 
-                  : "bg-gray-500/10 hover:bg-gray-500/20");
+            if (!isFuture) {
+              if (hasTrades) {
+                bgColorClass = dailyPnL > 0 
+                  ? "bg-green-500/20 hover:bg-green-500/30" 
+                  : (dailyPnL < 0 
+                    ? "bg-red-500/20 hover:bg-red-500/30" 
+                    : "bg-gray-500/10 hover:bg-gray-500/20");
+              }
             }
             
             return (
@@ -186,21 +196,23 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
                   </span>
                 </div>
                 
-                {/* Daily PnL indicator - centered */}
-                <div className="flex-grow flex items-center justify-center">
-                  <div className={cn(
-                    "text-sm font-medium",
-                    dailyPnL > 0 
-                      ? "text-green-700 dark:text-green-400" 
-                      : dailyPnL < 0
-                        ? "text-red-700 dark:text-red-400"
-                        : "text-muted-foreground"
-                  )}>
-                    {dailyPnL > 0 ? "+" : ""}{dailyPnL.toLocaleString('fr-FR')} €
+                {/* Daily PnL indicator - centered - only for past/present dates */}
+                {!isFuture && (
+                  <div className="flex-grow flex items-center justify-center">
+                    <div className={cn(
+                      "text-sm font-medium",
+                      dailyPnL > 0 
+                        ? "text-green-700 dark:text-green-400" 
+                        : dailyPnL < 0
+                          ? "text-red-700 dark:text-red-400"
+                          : "text-muted-foreground"
+                    )}>
+                      {dailyPnL > 0 ? "+" : ""}{dailyPnL.toLocaleString('fr-FR')} €
+                    </div>
                   </div>
-                </div>
+                )}
                 
-                {/* Trade count badge */}
+                {/* Trade count badge - only for days with trades */}
                 {hasTrades && (
                   <div className="text-xs text-muted-foreground self-end">
                     {dayEvents.filter(e => e.type === 'trade').length} trade(s)

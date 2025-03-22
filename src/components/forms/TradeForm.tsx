@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, DollarSign, Clock, ArrowUp, ArrowDown, Info, UploadCloud, Calculator } from 'lucide-react';
+import { Calendar, DollarSign, Clock, ArrowUp, ArrowDown, Info, Calculator, Search } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,6 +33,7 @@ const assets = [
   { value: 'tsla', label: 'Tesla (TSLA)', type: 'Stock' },
   { value: 'gold', label: 'Or (GOLD)', type: 'Commodity' },
   { value: 'silver', label: 'Argent (SILVER)', type: 'Commodity' },
+  { value: 'custom', label: 'Rechercher...', type: 'Autre' },
 ];
 
 const orderTypes = [
@@ -52,6 +52,7 @@ export function TradeForm() {
   const [entryDate, setEntryDate] = useState('');
   const [exitDate, setExitDate] = useState('');
   const [asset, setAsset] = useState('');
+  const [customAsset, setCustomAsset] = useState('');
   const [orderType, setOrderType] = useState('');
   const [strategy, setStrategy] = useState('');
   const [entryPrice, setEntryPrice] = useState('');
@@ -64,6 +65,7 @@ export function TradeForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [manualPnL, setManualPnL] = useState('');
   const [useManualPnL, setUseManualPnL] = useState(false);
+  const [isCustomAsset, setIsCustomAsset] = useState(false);
 
   useEffect(() => {
     const now = new Date();
@@ -71,6 +73,14 @@ export function TradeForm() {
     setEntryDate(formattedDate);
     setExitDate(formattedDate);
   }, []);
+
+  useEffect(() => {
+    if (asset === 'custom') {
+      setIsCustomAsset(true);
+    } else {
+      setIsCustomAsset(false);
+    }
+  }, [asset]);
 
   const calculateResult = () => {
     if (entryPrice && exitPrice && size) {
@@ -106,10 +116,19 @@ export function TradeForm() {
       return;
     }
     
-    if (!asset || !orderType || !strategy || !entryPrice || !exitPrice || !size || !entryDate || !exitDate) {
+    if (!orderType || !strategy || !entryPrice || !exitPrice || !size || !entryDate || !exitDate) {
       toast({
         title: "Formulaire incomplet",
         description: "Veuillez remplir tous les champs obligatoires.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!asset || (asset === 'custom' && !customAsset)) {
+      toast({
+        title: "Actif manquant",
+        description: "Veuillez sélectionner un actif ou saisir un actif personnalisé.",
         variant: "destructive",
       });
       return;
@@ -135,10 +154,17 @@ export function TradeForm() {
     setIsSubmitting(true);
     
     try {
+      let symbolToUse;
+      if (asset === 'custom') {
+        symbolToUse = customAsset;
+      } else {
+        symbolToUse = assets.find(a => a.value === asset)?.label || asset;
+      }
+      
       const newTrade = {
         user_id: user.id,
         date: new Date(entryDate).toISOString(),
-        symbol: assets.find(a => a.value === asset)?.label || asset,
+        symbol: symbolToUse,
         type: direction,
         strategy,
         entry_price: parseFloat(entryPrice.replace(',', '.')),
@@ -264,11 +290,30 @@ export function TradeForm() {
               <SelectContent>
                 {assets.map((assetItem) => (
                   <SelectItem key={assetItem.value} value={assetItem.value}>
-                    {assetItem.label} ({assetItem.type})
+                    {assetItem.label} {assetItem.value !== 'custom' && `(${assetItem.type})`}
+                    {assetItem.value === 'custom' && <Search className="w-3.5 h-3.5 ml-1 inline" />}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            
+            {isCustomAsset && (
+              <div className="mt-2">
+                <Label htmlFor="customAsset" className="flex items-center gap-2">
+                  <Search className="w-4 h-4 text-muted-foreground" />
+                  Nom de l'actif
+                </Label>
+                <Input
+                  id="customAsset"
+                  type="text"
+                  placeholder="Saisir le nom de l'actif..."
+                  className="mt-1"
+                  value={customAsset}
+                  onChange={(e) => setCustomAsset(e.target.value)}
+                  required={isCustomAsset}
+                />
+              </div>
+            )}
           </div>
           
           <div>

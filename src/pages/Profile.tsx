@@ -137,15 +137,6 @@ export default function Profile() {
                 Premium
               </Badge>
             )}
-            {isOwnProfile && (
-              <Button 
-                variant={isEditing ? "outline" : "default"} 
-                onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-                disabled={loading}
-              >
-                {isEditing ? "Enregistrer" : "Modifier"}
-              </Button>
-            )}
           </div>
         </div>
 
