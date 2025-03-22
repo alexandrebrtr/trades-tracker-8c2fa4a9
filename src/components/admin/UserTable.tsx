@@ -6,6 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { usePremium } from '@/context/PremiumContext';
 import { UserTableRow } from './UserTableRow';
+import { UserSearch } from './UserSearch';
+import { Loader2 } from 'lucide-react';
 
 interface UserTableProps {
   users: any[];
@@ -14,9 +16,15 @@ interface UserTableProps {
 
 export function UserTable({ users, onRefresh }: UserTableProps) {
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { setPremiumStatus } = usePremium();
+  
+  // Filter users based on search term
+  const filteredUsers = users && users.length > 0 ? users.filter(user => 
+    (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase())) || 
+    (user.id && user.id.toLowerCase().includes(searchTerm.toLowerCase()))
+  ) : [];
   
   const togglePremium = async (userId: string, currentStatus: boolean) => {
     try {
@@ -75,39 +83,55 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
     });
   };
   
+  if (!users) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Chargement des utilisateurs...</span>
+      </div>
+    );
+  }
+  
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Utilisateur</TableHead>
-            <TableHead>Premium</TableHead>
-            <TableHead>Date d'expiration</TableHead>
-            <TableHead>Balance</TableHead>
-            <TableHead>Trades</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {users.length === 0 ? (
+    <div>
+      <UserSearch 
+        searchTerm={searchTerm} 
+        setSearchTerm={setSearchTerm} 
+      />
+      
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                Aucun utilisateur trouvé
-              </TableCell>
+              <TableHead>Utilisateur</TableHead>
+              <TableHead>Premium</TableHead>
+              <TableHead>Date d'expiration</TableHead>
+              <TableHead>Balance</TableHead>
+              <TableHead>Trades</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ) : (
-            users.map((user) => (
-              <UserTableRow
-                key={user.id}
-                user={user}
-                isProcessing={isProcessing}
-                onTogglePremium={togglePremium}
-                onViewUserData={viewUserData}
-              />
-            ))
-          )}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {filteredUsers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  {searchTerm ? "Aucun utilisateur ne correspond à votre recherche" : "Aucun utilisateur trouvé"}
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredUsers.map((user) => (
+                <UserTableRow
+                  key={user.id}
+                  user={user}
+                  isProcessing={isProcessing}
+                  onTogglePremium={togglePremium}
+                  onViewUserData={viewUserData}
+                />
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
