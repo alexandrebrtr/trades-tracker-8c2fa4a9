@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { OpenAI } from "https://esm.sh/openai@4.28.0";
+import OpenAI from "npm:openai@4.28.0";
 
 // Configuration des en-têtes CORS pour permettre l'accès depuis n'importe quelle origine
 const corsHeaders = {
@@ -63,7 +63,7 @@ serve(async (req) => {
     console.log(`Traitement de la requête de chat avec le modèle: ${model}`);
     console.log(`Message: ${message.substring(0, 100)}...`); // Log only the first 100 chars
     
-    // Initialisation du client OpenAI
+    // Initialisation du client OpenAI avec le package npm
     const openai = new OpenAI({
       apiKey: openAIApiKey
     });
