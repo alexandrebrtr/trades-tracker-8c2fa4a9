@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Mail, MapPin, Phone, Globe, Clock, Send } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Contact() {
   const [name, setName] = useState('');
@@ -15,12 +16,18 @@ export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simuler l'envoi du formulaire
-    setTimeout(() => {
+    try {
+      // Save message to Supabase
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert([{ name, email, message }]);
+      
+      if (error) throw error;
+      
       toast({
         title: "Message envoyé",
         description: "Nous avons bien reçu votre message et vous répondrons dans les plus brefs délais.",
@@ -30,8 +37,16 @@ export default function Contact() {
       setName('');
       setEmail('');
       setMessage('');
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du message. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (

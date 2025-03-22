@@ -36,7 +36,7 @@ function App() {
     <div className="app">
       <Router>
         <Routes>
-          {/* Routes accessibles sans authentification */}
+          {/* Public routes */}
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/statistics" element={<Statistics />} />
@@ -44,7 +44,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/contact" element={<Contact />} />
           
-          {/* Routes protégées */}
+          {/* Protected routes */}
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
           <Route path="/trade/:id" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
