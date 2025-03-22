@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { User, Star, Users, HandCoins, Crown } from 'lucide-react';
+import { User, Star } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,8 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // Imported components
 import { ProfileInfo } from '@/components/profile/ProfileInfo';
 import { AccountInfo } from '@/components/profile/AccountInfo';
-import { FinancesTab } from '@/components/profile/FinancesTab';
-import { SocialTab } from '@/components/profile/SocialTab';
 
 export default function Profile() {
   const { isPremium, premiumExpires } = usePremium();
@@ -116,10 +114,6 @@ export default function Profile() {
     }
   };
 
-  const handleRedirectToPremium = () => {
-    navigate('/premium');
-  };
-
   if (!user || (!profile && isOwnProfile) || (!viewingProfile && !isOwnProfile)) {
     return <div className="flex items-center justify-center h-screen">Chargement...</div>;
   }
@@ -161,19 +155,6 @@ export default function Profile() {
               <User className="h-4 w-4" />
               Profil
             </TabsTrigger>
-            <TabsTrigger 
-              value="social" 
-              className="flex gap-1 items-center"
-              disabled={!isPremium}
-            >
-              <Users className="h-4 w-4" />
-              Social
-              {!isPremium && <Crown className="h-3 w-3 ml-1 text-yellow-500" />}
-            </TabsTrigger>
-            <TabsTrigger value="finances" className="flex gap-1 items-center">
-              <HandCoins className="h-4 w-4" />
-              Finances
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="mt-6">
@@ -201,26 +182,6 @@ export default function Profile() {
                 premiumExpires={premiumExpires}
               />
             </div>
-          </TabsContent>
-
-          <TabsContent value="social" className="mt-6">
-            <SocialTab 
-              isPremium={isPremium}
-              isOwnProfile={isOwnProfile}
-              profile={profile}
-              viewingProfile={viewingProfile}
-              avatarUrl={avatarUrl}
-              name={name}
-              email={email}
-              handleRedirectToPremium={handleRedirectToPremium}
-            />
-          </TabsContent>
-
-          <TabsContent value="finances" className="mt-6">
-            <FinancesTab 
-              balance={balance}
-              tradesCount={isOwnProfile ? (profile.trades_count || 0) : (viewingProfile?.trades_count || 0)}
-            />
           </TabsContent>
         </Tabs>
       </div>

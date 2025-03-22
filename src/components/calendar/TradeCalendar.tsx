@@ -187,20 +187,18 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
                 </div>
                 
                 {/* Daily PnL indicator - centered */}
-                {hasTrades && (
-                  <div className="flex-grow flex items-center justify-center">
-                    <div className={cn(
-                      "text-sm font-medium",
-                      dailyPnL > 0 
-                        ? "text-green-700 dark:text-green-400" 
-                        : dailyPnL < 0
-                          ? "text-red-700 dark:text-red-400"
-                          : "text-muted-foreground"
-                    )}>
-                      {dailyPnL > 0 ? "+" : ""}{dailyPnL.toLocaleString('fr-FR')} €
-                    </div>
+                <div className="flex-grow flex items-center justify-center">
+                  <div className={cn(
+                    "text-sm font-medium",
+                    dailyPnL > 0 
+                      ? "text-green-700 dark:text-green-400" 
+                      : dailyPnL < 0
+                        ? "text-red-700 dark:text-red-400"
+                        : "text-muted-foreground"
+                  )}>
+                    {dailyPnL > 0 ? "+" : ""}{dailyPnL.toLocaleString('fr-FR')} €
                   </div>
-                )}
+                </div>
                 
                 {/* Trade count badge */}
                 {hasTrades && (
