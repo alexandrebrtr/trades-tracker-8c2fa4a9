@@ -7,5 +7,8 @@ interface AITradingAssistantProps {
 }
 
 export function AITradingAssistant({ title, description }: AITradingAssistantProps) {
-  return <AIAssistant title={title} description={description} />;
+  return <AIAssistant 
+    title={title || "Assistant Trading IA"} 
+    description={description || "Posez vos questions sur le trading et la finance"} 
+  />;
 }
