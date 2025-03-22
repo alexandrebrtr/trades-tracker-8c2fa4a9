@@ -102,6 +102,21 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
     });
   };
   
+  // Calculate daily PnL for a day
+  const calculateDailyPnL = (day: number): number => {
+    const dayTrades = events.filter(event => {
+      const eventDate = event.date;
+      return eventDate.getDate() === day && 
+             eventDate.getMonth() === month && 
+             eventDate.getFullYear() === year &&
+             event.type === 'trade';
+    });
+    
+    return dayTrades.reduce((total, event) => {
+      return total + (event.trade?.pnl || 0);
+    }, 0);
+  };
+  
   // Format month name
   const formatMonthName = (date: Date) => {
     return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
@@ -228,16 +243,29 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
           {/* Current month days */}
           {days.map((day) => {
             const dayEvents = getEventsForDay(day);
+            const dailyPnL = calculateDailyPnL(day);
+            const hasTrades = dayEvents.some(event => event.type === 'trade');
             const isToday = new Date().getDate() === day && 
                             new Date().getMonth() === month && 
                             new Date().getFullYear() === year;
+            
+            // Determine background color based on PnL
+            let bgColorClass = "";
+            if (hasTrades) {
+              bgColorClass = dailyPnL > 0 
+                ? "hover:bg-green-500/10 bg-green-500/5" 
+                : (dailyPnL < 0 
+                  ? "hover:bg-red-500/10 bg-red-500/5" 
+                  : "");
+            }
             
             return (
               <div 
                 key={`current-${day}`} 
                 className={cn(
                   "border-t border-r h-24 p-1 relative group transition-colors duration-150 hover:bg-accent/10 cursor-pointer",
-                  isToday ? "bg-primary/5" : ""
+                  isToday ? "bg-primary/5" : "",
+                  bgColorClass
                 )}
                 onClick={() => viewDayDetail(day)}
               >
@@ -262,6 +290,18 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
                     <Plus className="w-3 h-3" />
                   </Button>
                 </div>
+                
+                {/* Daily PnL indicator */}
+                {hasTrades && (
+                  <div className={cn(
+                    "text-xs px-1.5 py-0.5 rounded mt-1 inline-block",
+                    dailyPnL > 0 
+                      ? "bg-green-500/20 text-green-600" 
+                      : "bg-red-500/20 text-red-600"
+                  )}>
+                    {dailyPnL > 0 ? "+" : ""}{dailyPnL.toLocaleString('fr-FR')} €
+                  </div>
+                )}
                 
                 {/* Calendar content container */}
                 <div className="mt-1 space-y-1 max-h-[70px] overflow-y-auto">
