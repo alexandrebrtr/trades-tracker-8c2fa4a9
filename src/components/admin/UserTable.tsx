@@ -3,10 +3,12 @@ import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Loader2, Calendar, Star, Eye } from 'lucide-react';
+import { Loader2, Calendar, Star, Eye, Check, X } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { usePremium } from '@/context/PremiumContext';
+import { Badge } from '@/components/ui/badge';
 
 interface UserTableProps {
   users: any[];
@@ -17,11 +19,19 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { setPremiumStatus } = usePremium();
   
   // Format date function
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('fr-FR');
+  };
+  
+  const isExpired = (expiryDate: string | null): boolean => {
+    if (!expiryDate) return true;
+    const now = new Date();
+    const expiry = new Date(expiryDate);
+    return now > expiry;
   };
   
   const togglePremium = async (userId: string, currentStatus: boolean) => {
@@ -51,8 +61,8 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
       
       // Success notification
       toast({
-        title: !currentStatus ? "Premium subscription activated" : "Premium subscription deactivated",
-        description: `The user's premium status has been ${!currentStatus ? 'activated' : 'deactivated'} successfully.`,
+        title: !currentStatus ? "Premium activé" : "Premium désactivé",
+        description: `Le statut premium de l'utilisateur a été ${!currentStatus ? 'activé' : 'désactivé'} avec succès.`,
       });
       
       // Refresh the user list
@@ -61,8 +71,8 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
     } catch (error: any) {
       console.error('Error updating premium status:', error);
       toast({
-        title: "Error",
-        description: error.message || "An error occurred while updating premium status.",
+        title: "Erreur",
+        description: error.message || "Une erreur s'est produite lors de la mise à jour du statut premium.",
         variant: "destructive"
       });
     } finally {
@@ -77,7 +87,7 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
     
     toast({
       title: "Navigation",
-      description: `Redirecting to user profile: ${userId}`,
+      description: `Redirection vers le profil utilisateur: ${userId}`,
     });
   };
   
@@ -86,9 +96,9 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Username</TableHead>
+            <TableHead>Utilisateur</TableHead>
             <TableHead>Premium</TableHead>
-            <TableHead>Expiration Date</TableHead>
+            <TableHead>Date d'expiration</TableHead>
             <TableHead>Balance</TableHead>
             <TableHead>Trades</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -98,53 +108,82 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
           {users.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                No users found
+                Aucun utilisateur trouvé
               </TableCell>
             </TableRow>
           ) : (
-            users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">
-                  {user.username || 'Unnamed user'}
-                </TableCell>
-                <TableCell>
-                  {user.premium ? (
-                    <div className="flex items-center text-yellow-500">
-                      <Star className="h-4 w-4 mr-1 fill-yellow-500" />
-                      Premium
-                    </div>
-                  ) : 'Standard'}
-                </TableCell>
-                <TableCell>
-                  {user.premium ? formatDate(user.premium_expires) : 'N/A'}
-                </TableCell>
-                <TableCell>
-                  {user.balance ? `${Number(user.balance).toLocaleString('fr-FR')} €` : '0 €'}
-                </TableCell>
-                <TableCell>
-                  {user.trades_count || 0}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end items-center gap-2">
-                    {isProcessing === user.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            users.map((user) => {
+              const isPremiumExpired = isExpired(user.premium_expires);
+              const premiumStatus = user.premium && !isPremiumExpired;
+              
+              return (
+                <TableRow key={user.id} className={premiumStatus ? "bg-yellow-50/10" : ""}>
+                  <TableCell className="font-medium">
+                    {user.username || 'Utilisateur sans nom'}
+                  </TableCell>
+                  <TableCell>
+                    {premiumStatus ? (
+                      <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-yellow-500" />
+                        Premium
+                      </Badge>
                     ) : (
-                      <Switch
-                        checked={!!user.premium}
-                        onCheckedChange={() => togglePremium(user.id, !!user.premium)}
-                        disabled={isProcessing !== null}
-                      />
+                      <Badge variant="outline" className="bg-slate-500/10 text-slate-600 border-slate-500/20">
+                        Standard
+                      </Badge>
                     )}
-                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => viewUserData(user.id)}>
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                      <Calendar className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
+                  </TableCell>
+                  <TableCell>
+                    {user.premium_expires ? (
+                      <div className="flex items-center gap-1">
+                        {formatDate(user.premium_expires)}
+                        {isPremiumExpired ? (
+                          <Badge variant="outline" className="ml-2 bg-red-500/10 text-red-600 border-red-500/20">
+                            <X className="h-3 w-3 mr-1" />
+                            Expiré
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="ml-2 bg-green-500/10 text-green-600 border-green-500/20">
+                            <Check className="h-3 w-3 mr-1" />
+                            Actif
+                          </Badge>
+                        )}
+                      </div>
+                    ) : (
+                      'N/A'
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {user.balance ? `${Number(user.balance).toLocaleString('fr-FR')} €` : '0 €'}
+                  </TableCell>
+                  <TableCell>
+                    {user.trades_count || 0}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end items-center gap-2">
+                      {isProcessing === user.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground mr-1">{premiumStatus ? 'Actif' : 'Inactif'}</span>
+                          <Switch
+                            checked={premiumStatus}
+                            onCheckedChange={() => togglePremium(user.id, premiumStatus)}
+                            disabled={isProcessing !== null}
+                          />
+                        </div>
+                      )}
+                      <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => viewUserData(user.id)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                        <Calendar className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Users, CheckCircle, Code } from 'lucide-react';
+import { Loader2, Users, CheckCircle, Code, Crown } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -21,6 +21,7 @@ const AdminPanel = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isDeveloper, setIsDeveloper] = useState(false);
+  const [premiumCount, setPremiumCount] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -93,6 +94,11 @@ const AdminPanel = () => {
       
       console.log(`${data?.length || 0} profils d'utilisateurs récupérés`);
       setUsers(data || []);
+      
+      // Calculer le nombre d'utilisateurs premium
+      const premiumUsers = data?.filter(user => user.premium) || [];
+      setPremiumCount(premiumUsers.length);
+      
     } catch (error) {
       console.error('Erreur lors de la récupération des utilisateurs:', error);
       toast({
@@ -131,6 +137,10 @@ const AdminPanel = () => {
             <div className="flex items-center text-xs bg-blue-500/10 text-blue-500 px-2 py-1 rounded-full border border-blue-500/20">
               <Users className="h-3 w-3 mr-1" />
               {users.length} Utilisateurs
+            </div>
+            <div className="flex items-center text-xs bg-amber-500/10 text-amber-500 px-2 py-1 rounded-full border border-amber-500/20">
+              <Crown className="h-3 w-3 mr-1" />
+              {premiumCount} Premium
             </div>
             {isDeveloper && !isAdmin && (
               <div className="flex items-center text-xs bg-amber-500/10 text-amber-500 px-2 py-1 rounded-full border border-amber-500/20">
