@@ -33,7 +33,7 @@ export function ContactMessages() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setMessages(data || []);
+      setMessages(data as ContactMessage[] || []);
     } catch (error) {
       console.error('Error fetching contact messages:', error);
       toast({
