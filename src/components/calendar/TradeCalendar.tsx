@@ -1,23 +1,9 @@
 
 import { useState } from 'react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { DayDetailView } from './DayDetailView';
 
@@ -39,16 +25,8 @@ export interface TradeCalendarProps {
 }
 
 export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
-  const { user } = useAuth();
-  const { toast } = useToast();
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [showEventDialog, setShowEventDialog] = useState(false);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const [newEvent, setNewEvent] = useState({
-    title: '',
-    description: '',
-    date: new Date(),
-  });
   
   // Get current month info
   const year = currentMonth.getFullYear();
@@ -128,68 +106,6 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
     setSelectedDay(selectedDate);
   };
   
-  // Open event dialog for a specific day
-  const openEventDialog = (day: number) => {
-    const selectedDate = new Date(year, month, day);
-    setNewEvent({
-      title: '',
-      description: '',
-      date: selectedDate
-    });
-    setShowEventDialog(true);
-  };
-  
-  // Save new event
-  const saveEvent = async () => {
-    if (!user) {
-      toast({
-        title: "Erreur",
-        description: "Vous devez être connecté pour ajouter un événement.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!newEvent.title.trim()) {
-      toast({
-        title: "Erreur",
-        description: "Le titre de l'événement est requis.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .insert({
-          title: newEvent.title,
-          description: newEvent.description,
-          date: newEvent.date.toISOString(),
-          user_id: user.id
-        })
-        .select('*')
-        .single();
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Succès",
-        description: "Événement ajouté au calendrier."
-      });
-      
-      setShowEventDialog(false);
-      if (onEventsUpdated) onEventsUpdated();
-    } catch (error) {
-      console.error("Error adding event:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter l'événement.",
-        variant: "destructive"
-      });
-    }
-  };
-
   // Handle event added in day detail view
   const handleEventAdded = () => {
     if (onEventsUpdated) onEventsUpdated();
@@ -209,14 +125,6 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
           </Button>
           <Button variant="outline" size="sm" onClick={nextMonth}>
             <ChevronRight className="w-4 h-4" />
-          </Button>
-          <Button 
-            className="ml-4" 
-            size="sm" 
-            onClick={() => openEventDialog(new Date().getDate())}
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Ajouter un événement
           </Button>
         </div>
       </div>
@@ -250,20 +158,20 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
                             new Date().getFullYear() === year;
             
             // Determine background color based on PnL
-            let bgColorClass = "";
+            let bgColorClass = "hover:bg-accent/10";
             if (hasTrades) {
               bgColorClass = dailyPnL > 0 
-                ? "hover:bg-green-500/10 bg-green-500/5" 
+                ? "bg-green-500/20 hover:bg-green-500/30" 
                 : (dailyPnL < 0 
-                  ? "hover:bg-red-500/10 bg-red-500/5" 
-                  : "");
+                  ? "bg-red-500/20 hover:bg-red-500/30" 
+                  : "bg-gray-500/10 hover:bg-gray-500/20");
             }
             
             return (
               <div 
                 key={`current-${day}`} 
                 className={cn(
-                  "border-t border-r h-24 p-1 relative group transition-colors duration-150 hover:bg-accent/10 cursor-pointer",
+                  "border-t border-r h-24 p-2 relative transition-colors duration-150 cursor-pointer flex flex-col justify-between",
                   isToday ? "bg-primary/5" : "",
                   bgColorClass
                 )}
@@ -276,63 +184,30 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
                   )}>
                     {day}
                   </span>
-                  
-                  {/* Add button (visible on hover) */}
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="w-5 h-5 opacity-0 group-hover:opacity-100 hover:opacity-100 focus:opacity-100" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openEventDialog(day);
-                    }}
-                  >
-                    <Plus className="w-3 h-3" />
-                  </Button>
                 </div>
                 
-                {/* Daily PnL indicator */}
+                {/* Daily PnL indicator - centered */}
                 {hasTrades && (
-                  <div className={cn(
-                    "text-xs px-1.5 py-0.5 rounded mt-1 inline-block",
-                    dailyPnL > 0 
-                      ? "bg-green-500/20 text-green-600" 
-                      : "bg-red-500/20 text-red-600"
-                  )}>
-                    {dailyPnL > 0 ? "+" : ""}{dailyPnL.toLocaleString('fr-FR')} €
+                  <div className="flex-grow flex items-center justify-center">
+                    <div className={cn(
+                      "text-sm font-medium",
+                      dailyPnL > 0 
+                        ? "text-green-700 dark:text-green-400" 
+                        : dailyPnL < 0
+                          ? "text-red-700 dark:text-red-400"
+                          : "text-muted-foreground"
+                    )}>
+                      {dailyPnL > 0 ? "+" : ""}{dailyPnL.toLocaleString('fr-FR')} €
+                    </div>
                   </div>
                 )}
                 
-                {/* Calendar content container */}
-                <div className="mt-1 space-y-1 max-h-[70px] overflow-y-auto">
-                  {/* Event indicators */}
-                  {dayEvents.length > 0 && (
-                    <div className="space-y-1">
-                      {dayEvents.slice(0, 3).map((event) => (
-                        <div 
-                          key={event.id} 
-                          className={cn(
-                            "text-xs px-1.5 py-0.5 rounded truncate",
-                            event.type === 'trade' 
-                              ? ((event.trade?.pnl > 0) 
-                                ? "bg-green-500/10 text-green-500" 
-                                : "bg-red-500/10 text-red-500")
-                              : "bg-primary/10"
-                          )}
-                          title={event.title}
-                        >
-                          {event.title}
-                        </div>
-                      ))}
-                      
-                      {dayEvents.length > 3 && (
-                        <div className="text-xs text-center text-muted-foreground">
-                          +{dayEvents.length - 3} autres
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                {/* Trade count badge */}
+                {hasTrades && (
+                  <div className="text-xs text-muted-foreground self-end">
+                    {dayEvents.filter(e => e.type === 'trade').length} trade(s)
+                  </div>
+                )}
               </div>
             );
           })}
@@ -346,45 +221,6 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
         </div>
       </div>
       
-      {/* Add Event Dialog */}
-      <Dialog open={showEventDialog} onOpenChange={setShowEventDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Ajouter un événement</DialogTitle>
-            <DialogDescription>
-              Créez un nouvel événement pour {newEvent.date.toLocaleDateString('fr-FR')}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title">Titre</Label>
-              <Input 
-                id="title" 
-                value={newEvent.title}
-                onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
-                placeholder="Réunion, rappel, etc."
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description (optionnel)</Label>
-              <Textarea 
-                id="description" 
-                value={newEvent.description}
-                onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
-                placeholder="Détails supplémentaires..."
-                rows={3}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEventDialog(false)}>
-              Annuler
-            </Button>
-            <Button onClick={saveEvent}>Enregistrer</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
       {/* Day Detail View */}
       {selectedDay && (
         <DayDetailView 
@@ -396,7 +232,6 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
                    eventDate.getFullYear() === selectedDay.getFullYear();
           })}
           onClose={() => setSelectedDay(null)}
-          onEventAdded={handleEventAdded}
         />
       )}
     </div>

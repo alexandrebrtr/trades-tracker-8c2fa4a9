@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Eye, Trash, Check, MailOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 interface ContactMessage {
   id: string;
@@ -127,7 +127,12 @@ export function ContactMessages() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Messages de contact</h2>
-        <Badge variant="outline">{messages.length} message(s)</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">{messages.length} message(s)</Badge>
+          <Button variant="outline" size="sm" onClick={fetchMessages}>
+            Actualiser
+          </Button>
+        </div>
       </div>
       
       {loading ? (
