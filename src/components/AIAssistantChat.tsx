@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Bot, Loader2, Send, User, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -45,7 +44,10 @@ export function AIAssistantChat({
       console.log(`Appel à l'API d'assistance IA (tentative ${attempt + 1}/${MAX_RETRIES + 1})`);
       
       const { data, error } = await supabase.functions.invoke('trade-assistant', {
-        body: { message, model: 'gpt-4o-mini' }
+        body: { 
+          message, 
+          model: 'gpt-4o-mini' 
+        }
       });
       
       if (error) {
@@ -77,15 +79,6 @@ export function AIAssistantChat({
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
-    
-    if (!user) {
-      toast({
-        title: "Non connecté",
-        description: "Vous devez être connecté pour utiliser l'assistant IA.",
-        variant: "destructive"
-      });
-      return;
-    }
     
     // Add user message
     const userMessage: ChatMessage = {
