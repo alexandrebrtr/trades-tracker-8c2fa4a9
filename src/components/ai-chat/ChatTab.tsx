@@ -8,7 +8,7 @@ import { Message } from './Message';
 import { supabase } from '@/integrations/supabase/client';
 import { usePremium } from '@/context/PremiumContext';
 import { useAuth } from '@/context/AuthContext';
-import { AITradingAssistant } from '@/components/AITradingAssistant';
+import { AIAssistant } from '@/components/AIAssistant';
 
 interface ChatTabProps {
   analysisPrompt?: string | null;
