@@ -1,10 +1,9 @@
-
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Check, Star, Shield, ArrowRight, Calendar } from 'lucide-react';
+import { Check, Star, Shield, ArrowRight, Calendar, AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -32,20 +31,25 @@ export default function Premium() {
       return;
     }
     
-    setIsProcessing(true);
+    // Display the "not available" message
+    toast({
+      title: "Fonctionnalité non disponible",
+      description: "Cette fonctionnalité n'est pas disponible pour le moment.",
+      variant: "default",
+      duration: 5000
+    });
     
-    try {
-      // Navigate to payment page for complete checkout flow
-      navigate('/payment');
-    } catch (error) {
-      console.error('Error processing subscription:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la redirection vers le paiement. Veuillez réessayer.",
-        variant: "destructive"
-      });
-      setIsProcessing(false);
-    }
+    // Optional: You can add an icon to the toast
+    // Uncomment if you want to use it
+    /*
+    toast({
+      title: "Fonctionnalité non disponible",
+      description: "Cette fonctionnalité n'est pas disponible pour le moment.",
+      variant: "default",
+      duration: 5000,
+      icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />
+    });
+    */
   };
 
   // If user already has premium, redirect to premium dashboard
