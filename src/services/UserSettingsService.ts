@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
 import { UserSettings } from '@/context/PremiumContext';
+import { Json } from '@/integrations/supabase/types';
 
 // Define default theme settings
 const defaultTheme = {
@@ -50,8 +51,9 @@ export class UserSettingsService {
         const defaultSettings: UserSettings = {
           theme: defaultTheme,
           notifications: {
-            email: true,
-            push: false,
+            trades: true,
+            news: false,
+            alerts: false,
           },
         };
         
@@ -70,9 +72,12 @@ export class UserSettingsService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
       
+      // Convert UserSettings to Json type before storing
+      const settingsJson: Json = JSON.parse(JSON.stringify(settings));
+      
       const { error } = await supabase
         .from('profiles')
-        .update({ settings })
+        .update({ settings: settingsJson })
         .eq('id', user.id);
       
       if (error) {
