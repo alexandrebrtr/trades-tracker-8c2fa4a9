@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -93,12 +94,12 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
     if (!user) return;
     
     try {
-      const result = await UserSettingsService.updateUserSettings(user.id, newSettings);
+      const result = await UserSettingsService.updateUserSettings(newSettings);
       
       if (result.success) {
         setUserSettings(newSettings);
         
-        // Appliquer immédiatement les paramètres de thème
+        // Apply theme settings immediately
         if (newSettings.theme) {
           UserSettingsService.applyThemeSettings(newSettings.theme);
         }
@@ -205,12 +206,17 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
   useEffect(() => {
     if (!user) return;
     
-    const unsubscribe = RealtimeService.subscribeToUserSettings(user.id, (settings) => {
-      setUserSettings(settings);
-    });
+    const loadSettings = async () => {
+      const settings = await UserSettingsService.getUserSettings();
+      if (settings) {
+        setUserSettings(settings);
+      }
+    };
+    
+    loadSettings();
     
     return () => {
-      unsubscribe();
+      // Cleanup if needed
     };
   }, [user]);
 

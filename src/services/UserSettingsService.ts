@@ -1,74 +1,67 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
+import { UserSettings } from '@/context/PremiumContext';
 
-export interface UserSettings {
-  theme: {
-    primary: string;
-    background: string;
-    font: string;
-    borderRadius: string;
-    animation: string;
-    buttonStyle: string;
-  };
-  notifications: {
-    email: boolean;
-    push: boolean;
-  };
-}
+// Define default theme settings
+const defaultTheme = {
+  primary: 'blue',
+  background: 'light',
+  text: 'dark',
+  sidebar: 'dark',
+  font: 'sans',
+  borderRadius: 'medium',
+  animation: 'subtle',
+  buttonStyle: 'solid',
+};
 
 export class UserSettingsService {
-  static async getUserSettings(): Promise<{ data: UserSettings | null; error: any }> {
+  // Helper method to apply theme settings to document
+  static applyThemeSettings(theme: any) {
+    // Implementation would go here - applying CSS variables, etc.
+    console.log('Applying theme settings:', theme);
+    // This is a placeholder - actual implementation would update CSS variables
+  }
+  
+  static get defaultTheme() {
+    return defaultTheme;
+  }
+  
+  static async getUserSettings(): Promise<UserSettings | null> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
       
-      let { data: userSettings, error } = await supabase
-        .from('user_settings')
-        .select('*')
-        .eq('user_id', user.id)
+      // Use the profiles table which contains settings as a JSONB column
+      let { data: profile, error } = await supabase
+        .from('profiles')
+        .select('settings')
+        .eq('id', user.id)
         .single();
       
       if (error) {
         console.error('Error fetching user settings:', error);
-        return { data: null, error };
+        return null;
       }
       
-      // If user settings don't exist, create default settings
-      if (!userSettings) {
+      // If settings don't exist or are empty, create default settings
+      if (!profile || !profile.settings) {
         const defaultSettings: UserSettings = {
-          theme: {
-            primary: 'blue',
-            background: 'light',
-            font: 'sans',
-            borderRadius: 'medium',
-            animation: 'subtle',
-            buttonStyle: 'solid',
-          },
+          theme: defaultTheme,
           notifications: {
             email: true,
             push: false,
           },
         };
         
-        const { data, error: insertError } = await supabase
-          .from('user_settings')
-          .insert([{ user_id: user.id, settings: defaultSettings }])
-          .select('*')
-          .single();
-        
-        if (insertError) {
-          console.error('Error creating default user settings:', insertError);
-          return { data: null, error: insertError };
-        }
-        
-        userSettings = data;
+        return defaultSettings;
       }
       
-      return { data: userSettings?.settings as UserSettings, error: null };
+      return profile.settings as UserSettings;
     } catch (error) {
       console.error('Error in getUserSettings:', error);
-      return { data: null, error };
+      return null;
     }
   }
   
@@ -78,14 +71,19 @@ export class UserSettingsService {
       if (!user) throw new Error('User not authenticated');
       
       const { error } = await supabase
-        .from('user_settings')
+        .from('profiles')
         .update({ settings })
-        .eq('user_id', user.id);
+        .eq('id', user.id);
       
       if (error) {
         console.error('Error updating user settings:', error);
         toast.error('Erreur lors de la mise à jour des paramètres utilisateur');
         return { success: false, error };
+      }
+      
+      // Apply theme settings immediately if present
+      if (settings.theme) {
+        this.applyThemeSettings(settings.theme);
       }
       
       toast.success('Paramètres utilisateur mis à jour avec succès');
@@ -139,7 +137,7 @@ export class UserSettingsService {
     }
   }
 
-  static async exportUserData() {
+  static async exportUserData(): Promise<Blob | null> {
     try {
       // Fetch user profile data
       const { data: { user } } = await supabase.auth.getUser();
@@ -193,21 +191,12 @@ export class UserSettingsService {
       // Generate the Excel file
       const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
       
-      // Convert to Blob and download
+      // Convert to Blob and return
       const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `user_data_${new Date().toISOString().split('T')[0]}.xlsx`;
-      link.click();
-      
-      URL.revokeObjectURL(url);
-      
-      return { success: true };
+      return blob;
     } catch (error) {
       console.error('Error exporting user data:', error);
-      return { success: false, error };
+      return null;
     }
   }
 }

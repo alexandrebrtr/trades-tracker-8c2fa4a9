@@ -22,57 +22,18 @@ export function AppearanceSettings({
 }: AppearanceSettingsProps) {
   const [settings, setSettings] = useState<UserSettings>(userSettings);
   
+  // Make sure settings.theme is an object
+  const themeObject = typeof settings.theme === 'string' 
+    ? { primary: 'blue', background: 'light', text: 'dark', sidebar: 'dark' } 
+    : settings.theme || { primary: 'blue', background: 'light', text: 'dark', sidebar: 'dark' };
+  
   const handleThemeChange = (prop: string, value: string) => {
     const updatedSettings = { 
       ...settings,
       theme: { 
-        ...settings.theme, 
+        ...themeObject, 
         [prop]: value 
       } 
-    };
-    setSettings(updatedSettings);
-  };
-  
-  const handleFontChange = (value: string) => {
-    const updatedSettings = {
-      ...settings,
-      theme: {
-        ...settings.theme,
-        font: value
-      }
-    };
-    setSettings(updatedSettings);
-  };
-  
-  const handleBorderRadiusChange = (value: string) => {
-    const updatedSettings = {
-      ...settings,
-      theme: {
-        ...settings.theme,
-        borderRadius: value
-      }
-    };
-    setSettings(updatedSettings);
-  };
-  
-  const handleAnimationChange = (value: string) => {
-    const updatedSettings = {
-      ...settings,
-      theme: {
-        ...settings.theme,
-        animation: value
-      }
-    };
-    setSettings(updatedSettings);
-  };
-  
-  const handleButtonStyleChange = (value: string) => {
-    const updatedSettings = {
-      ...settings,
-      theme: {
-        ...settings.theme,
-        buttonStyle: value
-      }
     };
     setSettings(updatedSettings);
   };
@@ -94,7 +55,7 @@ export function AppearanceSettings({
           <div className="space-y-2">
             <Label htmlFor="primary-color">Couleur principale</Label>
             <Select 
-              value={settings.theme.primary} 
+              value={themeObject.primary} 
               onValueChange={(value) => handleThemeChange('primary', value)}
             >
               <SelectTrigger id="primary-color">
@@ -113,7 +74,7 @@ export function AppearanceSettings({
           <div className="space-y-2">
             <Label htmlFor="background-color">Couleur de fond</Label>
             <Select 
-              value={settings.theme.background} 
+              value={themeObject.background} 
               onValueChange={(value) => handleThemeChange('background', value)}
             >
               <SelectTrigger id="background-color">
@@ -130,8 +91,8 @@ export function AppearanceSettings({
           <div className="space-y-2">
             <Label htmlFor="font-family">Police de caractères</Label>
             <Select 
-              value={settings.theme.font} 
-              onValueChange={handleFontChange}
+              value={themeObject.font || 'sans'} 
+              onValueChange={(value) => handleThemeChange('font', value)}
             >
               <SelectTrigger id="font-family">
                 <SelectValue placeholder="Choisir une police" />
@@ -147,8 +108,8 @@ export function AppearanceSettings({
           <div className="space-y-2">
             <Label htmlFor="border-radius">Arrondi des bordures</Label>
             <Select 
-              value={settings.theme.borderRadius} 
-              onValueChange={handleBorderRadiusChange}
+              value={themeObject.borderRadius || 'medium'} 
+              onValueChange={(value) => handleThemeChange('borderRadius', value)}
             >
               <SelectTrigger id="border-radius">
                 <SelectValue placeholder="Choisir un style" />
@@ -165,8 +126,8 @@ export function AppearanceSettings({
           <div className="space-y-2">
             <Label htmlFor="animation">Animations</Label>
             <Select 
-              value={settings.theme.animation} 
-              onValueChange={handleAnimationChange}
+              value={themeObject.animation || 'subtle'} 
+              onValueChange={(value) => handleThemeChange('animation', value)}
             >
               <SelectTrigger id="animation">
                 <SelectValue placeholder="Choisir un niveau" />
@@ -183,8 +144,8 @@ export function AppearanceSettings({
           <div className="space-y-2">
             <Label htmlFor="button-style">Style des boutons</Label>
             <Select 
-              value={settings.theme.buttonStyle} 
-              onValueChange={handleButtonStyleChange}
+              value={themeObject.buttonStyle || 'solid'} 
+              onValueChange={(value) => handleThemeChange('buttonStyle', value)}
             >
               <SelectTrigger id="button-style">
                 <SelectValue placeholder="Choisir un style" />

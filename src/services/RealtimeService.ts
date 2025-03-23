@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { UserSettings } from '@/context/PremiumContext';
@@ -150,7 +149,7 @@ export const RealtimeService = {
             }
             
             // Sinon, récupérer les paramètres mis à jour
-            const settings = await UserSettingsService.getUserSettings(userId);
+            const settings = await UserSettingsService.getUserSettings();
             
             if (settings) {
               console.log('Paramètres utilisateur mis à jour (depuis API):', settings);

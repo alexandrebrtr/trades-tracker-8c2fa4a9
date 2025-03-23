@@ -39,10 +39,10 @@ export function AccountSection() {
     
     setIsExporting(true);
     try {
-      const blob = await UserSettingsService.exportUserData(user.id);
+      const blob = await UserSettingsService.exportUserData();
       
       if (blob) {
-        // Créer un lien pour télécharger le fichier
+        // Create a download link for the file
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
