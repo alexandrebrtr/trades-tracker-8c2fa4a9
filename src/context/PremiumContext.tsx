@@ -181,9 +181,12 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
       }
       
       // Appliquer les paramètres de thème immédiatement
-      if (data.settings && data.settings.theme) {
-        const themeSettings = data.settings.theme;
-        UserSettingsService.applyThemeSettings(themeSettings);
+      if (data.settings) {
+        // Safely cast settings to UserSettings and check if theme exists
+        const settings = data.settings as unknown as UserSettings;
+        if (settings && settings.theme) {
+          UserSettingsService.applyThemeSettings(settings.theme);
+        }
       }
     } catch (error) {
       console.error('Error loading premium status:', error);
