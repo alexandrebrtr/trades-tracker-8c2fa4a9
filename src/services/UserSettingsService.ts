@@ -13,7 +13,11 @@ export const UserSettingsService = {
     primary: '#0f172a',
     background: '#ffffff',
     text: '#1e293b',
-    sidebar: '#f8fafc'
+    sidebar: '#f8fafc',
+    font: 'Inter',
+    borderRadius: '8px',
+    animation: 'none',
+    buttonStyle: 'default'
   },
   
   // Options supplémentaires pour personnalisation

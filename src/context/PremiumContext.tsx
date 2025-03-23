@@ -11,6 +11,10 @@ interface UserSettings {
     background: string;
     text: string;
     sidebar: string;
+    font?: string;
+    borderRadius?: string;
+    animation?: string;
+    buttonStyle?: string;
   };
   notifications?: {
     trades?: boolean;
