@@ -25,6 +25,7 @@ export default function AdminPanel() {
   // Admin IDs - hardcoded for simplicity
   // For dev purposes, consider all users as admin temporarily
   const adminIds = ['9ce47b0c-0d0a-4834-ae81-e103dff2e386'];
+  const adminIds = ['253d045e-a791-4bc9-814d-8c07104731e3'];
   const isDev = true; // Toggle this for development mode
   
   // Fetch users data with real-time updates
