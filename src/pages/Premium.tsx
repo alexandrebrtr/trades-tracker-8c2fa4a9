@@ -1,23 +1,31 @@
+
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Check, Star } from 'lucide-react';
+import { Check, Star, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { usePremium } from '@/context/PremiumContext';
 
 export default function Premium() {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isPremium } = usePremium();
   
   // Redirect to payment page
   const handleSubscribe = () => {
-    // Redirect to payment page
     navigate('/payment');
   };
+
+  // If user already has premium, redirect to premium dashboard
+  if (isPremium) {
+    navigate('/premium-dashboard');
+    return null;
+  }
 
   return (
     <AppLayout>
@@ -71,6 +79,10 @@ export default function Premium() {
                     <li className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <span>Statistiques avancées et analyses de performance</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <span>Accès au calendrier économique personnalisé</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />

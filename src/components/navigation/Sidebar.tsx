@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   Wallet,
-  Contact
+  Contact,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -106,6 +107,11 @@ export function Sidebar() {
       name: 'Contact',
       path: '/contact',
       icon: <Contact className="w-5 h-5" />
+    },
+    {
+      name: 'Paramètres',
+      path: '/settings',
+      icon: <Settings className="w-5 h-5" />
     }
   ];
 
