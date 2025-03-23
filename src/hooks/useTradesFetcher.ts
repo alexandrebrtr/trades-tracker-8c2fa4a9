@@ -51,3 +51,32 @@ export const useTradesFetcher = (userId: any, selectedPeriod: string) => {
 
   return { isLoading, trades, error };
 };
+
+/**
+ * Function to update the trades count in the user profile
+ */
+export const updateTradesCount = async (userId: string): Promise<void> => {
+  if (!userId) return;
+  
+  try {
+    // First, get the current count of trades for this user
+    const { count, error: countError } = await supabase
+      .from('trades')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+    
+    if (countError) throw countError;
+    
+    // Then update the profile with the new count
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ trades_count: count })
+      .eq('id', userId);
+    
+    if (updateError) throw updateError;
+    
+    console.log('Trades count updated successfully:', count);
+  } catch (err) {
+    console.error('Error updating trades count:', err);
+  }
+};

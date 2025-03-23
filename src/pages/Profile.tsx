@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // Imported components
 import { ProfileInfo } from '@/components/profile/ProfileInfo';
 import { AccountInfo } from '@/components/profile/AccountInfo';
+import { SocialStats } from '@/components/profile/SocialStats';
 
 export default function Profile() {
   const { isPremium, premiumExpires } = usePremium();
@@ -122,6 +123,7 @@ export default function Profile() {
   const createdAt = isOwnProfile 
     ? profile.created_at 
     : viewingProfile?.created_at || new Date().toISOString();
+  const profileId = isOwnProfile ? user.id : viewingProfile.id;
 
   return (
     <AppLayout>
@@ -172,7 +174,36 @@ export default function Profile() {
                 premiumSince={profile?.premium_since || null}
                 premiumExpires={premiumExpires}
               />
+              
+              <SocialStats 
+                userId={profileId}
+                followersCount={12}
+                followingCount={34}
+                tradesCount={isOwnProfile ? profile.trades_count || 0 : viewingProfile.trades_count || 0}
+                winRate={68}
+                likesReceived={52}
+                commentsCount={19}
+              />
             </div>
+            
+            {isOwnProfile && (
+              <div className="flex justify-end mt-6">
+                {isEditing ? (
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setIsEditing(false)} disabled={loading}>
+                      Annuler
+                    </Button>
+                    <Button onClick={handleSave} disabled={loading}>
+                      {loading ? "Enregistrement..." : "Enregistrer"}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button onClick={() => setIsEditing(true)}>
+                    Modifier le profil
+                  </Button>
+                )}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

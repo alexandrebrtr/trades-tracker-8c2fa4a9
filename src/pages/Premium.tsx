@@ -9,16 +9,52 @@ import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { usePremium } from '@/context/PremiumContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Premium() {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { isPremium } = usePremium();
+  const { isPremium, setPremiumStatus } = usePremium();
+  const { user } = useAuth();
+  const [isProcessing, setIsProcessing] = useState(false);
   
-  // Redirect to payment page
-  const handleSubscribe = () => {
-    navigate('/payment');
+  // Function to handle subscription purchase
+  const handleSubscribe = async () => {
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour vous abonner.",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    try {
+      // In a real app, this would navigate to a payment processor
+      // For demo purposes, we'll directly set premium status
+      await setPremiumStatus(true);
+      
+      toast({
+        title: "Abonnement activé",
+        description: `Votre abonnement ${selectedPlan === 'monthly' ? 'mensuel' : 'annuel'} a été activé avec succès.`,
+      });
+      
+      // Redirect to premium dashboard
+      navigate('/premium-dashboard');
+    } catch (error) {
+      console.error('Error processing subscription:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'activation de votre abonnement. Veuillez réessayer.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // If user already has premium, redirect to premium dashboard
@@ -103,8 +139,13 @@ export default function Premium() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full" size="lg" onClick={handleSubscribe}>
-                    S'abonner maintenant
+                  <Button 
+                    className="w-full" 
+                    size="lg" 
+                    onClick={handleSubscribe}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? "Traitement en cours..." : "S'abonner maintenant"}
                   </Button>
                 </CardFooter>
               </Card>
@@ -143,8 +184,13 @@ export default function Premium() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full" size="lg" onClick={handleSubscribe}>
-                    S'abonner annuellement
+                  <Button 
+                    className="w-full" 
+                    size="lg" 
+                    onClick={handleSubscribe}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? "Traitement en cours..." : "S'abonner annuellement"}
                   </Button>
                 </CardFooter>
               </Card>
