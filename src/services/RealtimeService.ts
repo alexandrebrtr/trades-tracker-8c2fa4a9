@@ -171,3 +171,8 @@ export const RealtimeService = {
     }
   }
 };
+
+// Pour accorder le premium à un utilisateur spécifique
+const userId = "253d045e-a791-4bc9-814d-8c07104731e3";
+await RealtimeService.updateUserPremiumStatus(userId, true);
+
