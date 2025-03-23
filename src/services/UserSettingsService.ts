@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { UserSettings } from '@/context/PremiumContext';
 import { toast } from 'sonner';
@@ -8,6 +7,14 @@ import { Json } from '@/integrations/supabase/types';
  * Service pour gérer les paramètres utilisateur
  */
 export const UserSettingsService = {
+  // Thèmes par défaut
+  defaultTheme: {
+    primary: '#0f172a',
+    background: '#ffffff',
+    text: '#1e293b',
+    sidebar: '#f8fafc'
+  },
+  
   /**
    * Récupère les paramètres de l'utilisateur
    * @param userId ID de l'utilisateur
@@ -56,6 +63,38 @@ export const UserSettingsService = {
     } catch (error) {
       console.error('Erreur lors de la mise à jour des paramètres utilisateur:', error);
       toast.error('Erreur lors de l\'enregistrement des paramètres');
+      return { success: false, error };
+    }
+  },
+
+  /**
+   * Réinitialise le thème aux valeurs par défaut
+   * @param userId ID de l'utilisateur
+   * @param currentSettings Paramètres actuels
+   * @returns Paramètres mis à jour
+   */
+  async resetThemeToDefault(userId: string, currentSettings: UserSettings): Promise<{ success: boolean, settings?: UserSettings, error?: any }> {
+    try {
+      // Créer une copie des paramètres actuels
+      const updatedSettings: UserSettings = { ...currentSettings };
+      
+      // Appliquer le thème par défaut
+      updatedSettings.theme = this.defaultTheme;
+      
+      // Mettre à jour les paramètres
+      const result = await this.updateUserSettings(userId, updatedSettings);
+      
+      if (result.success) {
+        // Appliquer le thème
+        this.applyThemeSettings(this.defaultTheme);
+        toast.success('Thème réinitialisé avec succès');
+        return { success: true, settings: updatedSettings };
+      } else {
+        throw result.error;
+      }
+    } catch (error) {
+      console.error('Erreur lors de la réinitialisation du thème:', error);
+      toast.error('Erreur lors de la réinitialisation du thème');
       return { success: false, error };
     }
   },

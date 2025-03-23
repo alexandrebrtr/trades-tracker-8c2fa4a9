@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { useState, useEffect } from 'react';
 import { usePremium, UserSettings } from '@/context/PremiumContext';
 import { useTheme } from '@/context/ThemeContext';
-import { Bell, Layout, Palette, Shield, User, Key, Lock } from 'lucide-react';
+import { Bell, Layout, Palette, Shield, User, Key, Lock, RotateCcw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { UserSettingsService } from '@/services/UserSettingsService';
+import { useAuth } from '@/context/AuthContext';
 
 interface ThemeSettings {
   primary: string;
@@ -39,6 +40,7 @@ interface BrokerSettings {
 }
 
 export default function Settings() {
+  const { user } = useAuth();
   const { userSettings, updateUserSettings } = usePremium();
   const [themeSettings, setThemeSettings] = useState<ThemeSettings>({
     primary: '#0f172a',
@@ -150,6 +152,35 @@ export default function Settings() {
     UserSettingsService.applyThemeSettings(newThemeSettings);
   };
 
+  const resetThemeToDefault = async () => {
+    if (!user) return;
+    
+    try {
+      setIsSaving(true);
+      const result = await UserSettingsService.resetThemeToDefault(user.id, userSettings);
+      
+      if (result.success && result.settings) {
+        if (typeof result.settings.theme === 'object') {
+          setThemeSettings(result.settings.theme as ThemeSettings);
+        }
+        
+        toast({
+          title: "Thème réinitialisé",
+          description: "Les couleurs ont été réinitialisées aux valeurs par défaut.",
+        });
+      }
+    } catch (error) {
+      console.error("Impossible de réinitialiser le thème:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de réinitialiser le thème. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <AppLayout>
       <div className="container py-8 max-w-4xl mx-auto page-transition">
@@ -212,10 +243,24 @@ export default function Settings() {
                     <Separator />
                     
                     <div>
-                      <Label>Couleurs personnalisées</Label>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Personnalisez les couleurs principales de l'interface
-                      </p>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <Label>Couleurs personnalisées</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Personnalisez les couleurs principales de l'interface
+                          </p>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={resetThemeToDefault}
+                          disabled={isSaving}
+                          className="flex items-center gap-2"
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                          Réinitialiser
+                        </Button>
+                      </div>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">

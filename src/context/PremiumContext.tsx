@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -175,14 +174,17 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
         setIsPremium(isActive);
         setPremiumSince(data.premium_since);
         setPremiumExpires(data.premium_expires);
-        setUserSettings(data.settings as UserSettings || {});
+        
+        const userSettingsData = data.settings 
+          ? data.settings as unknown as UserSettings 
+          : { theme: UserSettingsService.defaultTheme };
+        
+        setUserSettings(userSettingsData);
 
         console.log('Premium status loaded:', isActive);
       }
       
-      // Appliquer les paramètres de thème immédiatement
       if (data.settings) {
-        // Safely cast settings to UserSettings and check if theme exists
         const settings = data.settings as unknown as UserSettings;
         if (settings && settings.theme) {
           UserSettingsService.applyThemeSettings(settings.theme);
@@ -196,7 +198,6 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
     }
   };
 
-  // Configurer l'abonnement aux changements de paramètres utilisateur
   useEffect(() => {
     if (!user) return;
     
