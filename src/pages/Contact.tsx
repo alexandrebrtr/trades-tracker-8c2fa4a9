@@ -1,165 +1,200 @@
 
-import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Mail, Phone, MapPin, Globe, Facebook, Twitter, Instagram, MessageCircle } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
-const formSchema = z.object({
-  name: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères" }),
-  email: z.string().email({ message: "Adresse email invalide" }),
-  message: z.string().min(10, { message: "Le message doit contenir au moins 10 caractères" }),
-});
 
 export default function Contact() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-  
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      message: "",
-    },
-  });
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase
-        .from('contact_messages')
-        .insert({
-          name: values.name,
-          email: values.email,
-          message: values.message
-        });
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Message envoyé",
-        description: "Nous vous répondrons dans les plus brefs délais.",
-      });
-      
-      form.reset();
-    } catch (error) {
-      console.error('Error submitting contact form:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue. Veuillez réessayer.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <AppLayout>
       <div className="container mx-auto py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-6">Contactez-nous</h1>
-            <p className="text-muted-foreground mb-4">
-              Vous avez des questions, des suggestions ou besoin d'assistance ? 
-              N'hésitez pas à nous contacter en remplissant le formulaire ci-dessous.
-            </p>
-            
-            <Card className="mt-8">
+        <h1 className="text-3xl font-bold mb-6">Contactez-nous</h1>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Coordonnées */}
+          <div className="lg:col-span-1">
+            <Card>
               <CardHeader>
                 <CardTitle>Nos coordonnées</CardTitle>
+                <CardDescription>
+                  N'hésitez pas à nous contacter par ces différents moyens
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-medium">Email</h3>
-                  <p className="text-muted-foreground">support@tradetracker.com</p>
+              <CardContent className="space-y-6">
+                <div className="flex items-start">
+                  <Mail className="w-5 h-5 mr-3 text-primary mt-1" />
+                  <div>
+                    <h3 className="font-medium">Email</h3>
+                    <a href="mailto:contact@tradetracker.com" className="text-muted-foreground hover:text-primary transition-colors">
+                      contact@tradetracker.com
+                    </a>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-medium">Téléphone</h3>
-                  <p className="text-muted-foreground">+33 (0)1 23 45 67 89</p>
+                
+                <div className="flex items-start">
+                  <Phone className="w-5 h-5 mr-3 text-primary mt-1" />
+                  <div>
+                    <h3 className="font-medium">Téléphone</h3>
+                    <a href="tel:+33123456789" className="text-muted-foreground hover:text-primary transition-colors">
+                      +33 (0)1 23 45 67 89
+                    </a>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-medium">Adresse</h3>
-                  <p className="text-muted-foreground">123 Avenue des Champs-Élysées<br />75008 Paris, France</p>
+                
+                <div className="flex items-start">
+                  <MessageCircle className="w-5 h-5 mr-3 text-primary mt-1" />
+                  <div>
+                    <h3 className="font-medium">WhatsApp</h3>
+                    <a href="https://wa.me/33123456789" className="text-muted-foreground hover:text-primary transition-colors">
+                      +33 (0)1 23 45 67 89
+                    </a>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <MapPin className="w-5 h-5 mr-3 text-primary mt-1" />
+                  <div>
+                    <h3 className="font-medium">Adresse</h3>
+                    <p className="text-muted-foreground">
+                      123 Avenue des Champs-Élysées<br />
+                      75008 Paris, France
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <Globe className="w-5 h-5 mr-3 text-primary mt-1" />
+                  <div>
+                    <h3 className="font-medium">Site Web</h3>
+                    <a href="https://tradetracker.com" className="text-muted-foreground hover:text-primary transition-colors">
+                      www.tradetracker.com
+                    </a>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Réseaux sociaux</CardTitle>
+                <CardDescription>
+                  Suivez-nous pour les dernières actualités
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-4">
+                  <Button variant="outline" size="icon" asChild>
+                    <a href="https://facebook.com/tradetracker" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                      <Facebook className="h-5 w-5" />
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="icon" asChild>
+                    <a href="https://twitter.com/tradetracker" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                      <Twitter className="h-5 w-5" />
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="icon" asChild>
+                    <a href="https://instagram.com/tradetracker" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                      <Instagram className="h-5 w-5" />
+                    </a>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
           
-          <div>
+          {/* FAQ */}
+          <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Formulaire de contact</CardTitle>
+                <CardTitle>Foire aux questions</CardTitle>
                 <CardDescription>
-                  Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais.
+                  Réponses aux questions les plus fréquemment posées
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nom</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Votre nom" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="votre.email@exemple.com" type="email" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="message"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Message</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Votre message..." 
-                              rows={5}
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Envoi en cours..." : "Envoyer le message"}
-                    </Button>
-                  </form>
-                </Form>
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger>Comment puis-je créer un compte ?</AccordionTrigger>
+                    <AccordionContent>
+                      Pour créer un compte, cliquez sur le bouton "Connexion" dans le coin supérieur droit, 
+                      puis choisissez "Créer un compte". Remplissez le formulaire avec vos informations et 
+                      suivez les instructions pour vérifier votre adresse e-mail.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-2">
+                    <AccordionTrigger>Quels sont les avantages du compte Premium ?</AccordionTrigger>
+                    <AccordionContent>
+                      Le compte Premium offre des fonctionnalités avancées telles que l'analyse approfondie 
+                      des performances, l'accès au calendrier des trades, des alertes personnalisées, 
+                      et bien plus encore. Consultez notre page Premium pour plus de détails.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-3">
+                    <AccordionTrigger>Comment puis-je suivre mes performances de trading ?</AccordionTrigger>
+                    <AccordionContent>
+                      Une fois connecté, vous pouvez ajouter vos trades via la page "Nouveau Trade". 
+                      Vos performances seront automatiquement calculées et affichées dans le tableau de bord 
+                      et la section Statistiques, avec des graphiques et des indicateurs clés.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-4">
+                    <AccordionTrigger>Est-il possible d'exporter mes données ?</AccordionTrigger>
+                    <AccordionContent>
+                      Oui, vous pouvez exporter vos données de trading au format CSV ou JSON depuis 
+                      la page Paramètres, section "Compte". Cette fonctionnalité vous permet de sauvegarder 
+                      vos données ou de les analyser dans d'autres logiciels.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-5">
+                    <AccordionTrigger>Comment puis-je réinitialiser mon mot de passe ?</AccordionTrigger>
+                    <AccordionContent>
+                      Si vous avez oublié votre mot de passe, cliquez sur "Connexion", puis sur 
+                      "Mot de passe oublié". Vous recevrez un e-mail avec un lien pour réinitialiser 
+                      votre mot de passe. Assurez-vous de vérifier également votre dossier spam.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-6">
+                    <AccordionTrigger>Comment puis-je annuler mon abonnement Premium ?</AccordionTrigger>
+                    <AccordionContent>
+                      Pour annuler votre abonnement Premium, accédez à la page Paramètres, 
+                      puis à la section "Abonnement". Cliquez sur "Gérer l'abonnement" et suivez 
+                      les instructions pour annuler. Vous conserverez l'accès Premium jusqu'à la fin 
+                      de votre période de facturation.
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </CardContent>
+            </Card>
+            
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Heures d'ouverture</CardTitle>
+                <CardDescription>
+                  Notre équipe de support est disponible aux horaires suivants
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Lundi - Vendredi</span>
+                    <span className="font-medium">9h00 - 18h00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Samedi</span>
+                    <span className="font-medium">10h00 - 14h00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Dimanche</span>
+                    <span className="font-medium">Fermé</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

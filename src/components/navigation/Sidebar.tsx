@@ -11,7 +11,6 @@ import {
   Menu,
   X,
   Wallet,
-  Shield,
   Contact
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,10 +33,6 @@ export function Sidebar() {
   const { user } = useAuth();
   const { isPremium } = usePremium();
   
-  // Admin IDs - hardcoded for simplicity
-  const adminIds = ['9ce47b0c-0d0a-4834-ae81-e103dff2e386'];
-  const isAdmin = user && adminIds.includes(user.id);
-
   // Handle screen resize
   useEffect(() => {
     const handleResize = () => {
@@ -84,7 +79,8 @@ export function Sidebar() {
     {
       name: 'Calendrier',
       path: '/calendar',
-      icon: <Calendar className="w-5 h-5" />
+      icon: <Calendar className="w-5 h-5" />,
+      requirePremium: true
     },
     {
       name: 'Nouveau Trade',
@@ -112,15 +108,6 @@ export function Sidebar() {
       icon: <Contact className="w-5 h-5" />
     }
   ];
-
-  // Add admin item conditionally
-  if (isAdmin) {
-    navItems.push({
-      name: 'Administration',
-      path: '/admin',
-      icon: <Shield className="w-5 h-5" />
-    });
-  }
 
   // Filter nav items based on premium status
   const filteredNavItems = navItems.filter(item => !item.requirePremium || isPremium);
