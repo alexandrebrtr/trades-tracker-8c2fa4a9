@@ -1,416 +1,184 @@
 
-import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Mail, Phone, MapPin, Globe, Instagram, Twitter, Facebook, Linkedin } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { Send, Check, Clock, RefreshCw, ChevronRight } from 'lucide-react';
-import { ContactMessages } from '@/components/admin/ContactMessages';
-
-type Message = {
-  id: string;
-  created_at: string;
-  name: string;
-  email: string;
-  message: string;
-  read: boolean;
-  response?: string;
-  response_at?: string;
-};
 
 const Contact = () => {
-  const { user, profile } = useAuth();
-  const { toast } = useToast();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [userMessages, setUserMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [tab, setTab] = useState('form');
-  
-  // Populate the form with user data if available
-  useEffect(() => {
-    if (user && profile) {
-      // Use the username from profile if available, otherwise use email from user
-      setName(profile.username || user.email?.split('@')[0] || '');
-      
-      // Use email from user auth
-      setEmail(user.email || '');
-    }
-  }, [user, profile]);
-
-  // Fetch user's messages if logged in
-  useEffect(() => {
-    if (user) {
-      fetchUserMessages();
-      
-      // Set up real-time subscription for updates to messages
-      const subscription = supabase
-        .channel('contact_messages_updates')
-        .on('postgres_changes', 
-          { 
-            event: '*', 
-            schema: 'public', 
-            table: 'contact_messages',
-            filter: `email=eq.${user.email}` 
-          }, 
-          (payload) => {
-            console.log('Message update received:', payload);
-            setUserMessages(prevMessages => {
-              // If it's an update, replace the message
-              if (payload.eventType === 'UPDATE') {
-                return prevMessages.map(msg => 
-                  msg.id === payload.new.id ? payload.new as Message : msg
-                );
-              }
-              // If it's a new message, add it
-              else if (payload.eventType === 'INSERT') {
-                return [payload.new as Message, ...prevMessages];
-              }
-              // If it's a delete, remove it
-              else if (payload.eventType === 'DELETE') {
-                return prevMessages.filter(msg => msg.id !== payload.old.id);
-              }
-              return prevMessages;
-            });
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(subscription);
-      };
-    }
-  }, [user]);
-
-  const fetchUserMessages = async () => {
-    if (!user?.email) return;
-    
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('contact_messages')
-        .select('*')
-        .eq('email', user.email)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      setUserMessages(data as Message[]);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de récupérer vos messages",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!name || !email || !message) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    try {
-      const { data, error } = await supabase
-        .from('contact_messages')
-        .insert([
-          { name, email, message }
-        ])
-        .select();
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Message envoyé",
-        description: "Votre message a été envoyé avec succès. Nous vous répondrons dans les plus brefs délais.",
-      });
-      
-      // Clear form
-      setMessage('');
-      
-      // If user is logged in, refresh messages
-      if (user) {
-        fetchUserMessages();
-        // Switch to messages tab
-        setTab('messages');
-      }
-      
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer votre message",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   return (
     <AppLayout>
       <div className="container max-w-4xl mx-auto py-8 px-4">
         <div className="space-y-4">
           <h1 className="text-3xl font-bold">Contactez-nous</h1>
           <p className="text-muted-foreground">
-            Vous avez une question ou besoin d'aide ? N'hésitez pas à nous contacter. Notre équipe vous répondra dans les plus brefs délais.
+            Vous avez une question ou besoin d'aide ? N'hésitez pas à nous contacter par l'un des moyens ci-dessous.
           </p>
           
-          {user ? (
-            <Tabs value={tab} onValueChange={setTab} className="w-full">
-              <TabsList className="mb-4">
-                <TabsTrigger value="form">Formulaire</TabsTrigger>
-                <TabsTrigger value="messages">
-                  Mes messages
-                  {userMessages.length > 0 && (
-                    <Badge variant="outline" className="ml-2">{userMessages.length}</Badge>
-                  )}
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="form">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Envoyer un message</CardTitle>
-                    <CardDescription>
-                      Nous vous répondrons dans les plus brefs délais.
-                    </CardDescription>
-                  </CardHeader>
-                  <form onSubmit={handleSubmit}>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Nom</Label>
-                        <Input
-                          id="name"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          placeholder="Votre nom"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="votreemail@exemple.com"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="message">Message</Label>
-                        <Textarea
-                          id="message"
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value)}
-                          placeholder="Votre message"
-                          rows={6}
-                          required
-                        />
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? (
-                          <>
-                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                            Envoi en cours...
-                          </>
-                        ) : (
-                          <>
-                            <Send className="mr-2 h-4 w-4" />
-                            Envoyer
-                          </>
-                        )}
-                      </Button>
-                    </CardFooter>
-                  </form>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="messages">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Historique de mes messages</CardTitle>
-                    <CardDescription>
-                      Retrouvez ici l'historique de vos échanges avec notre équipe.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {isLoading ? (
-                      <div className="flex justify-center p-4">
-                        <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
-                      </div>
-                    ) : userMessages.length === 0 ? (
-                      <div className="text-center p-4">
-                        <p className="text-muted-foreground">Vous n'avez pas encore envoyé de message.</p>
-                        <Button 
-                          variant="outline" 
-                          className="mt-2" 
-                          onClick={() => setTab('form')}
-                        >
-                          Envoyer un message <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {userMessages.map((msg) => (
-                          <Card key={msg.id} className="overflow-hidden">
-                            <CardHeader className="bg-muted/30 py-3 px-4">
-                              <div className="flex justify-between items-center">
-                                <div>
-                                  <CardTitle className="text-base">Votre message</CardTitle>
-                                  <p className="text-xs text-muted-foreground">
-                                    {formatDate(msg.created_at)}
-                                  </p>
-                                </div>
-                                <div>
-                                  {msg.response ? (
-                                    <Badge className="bg-green-500">Répondu</Badge>
-                                  ) : (
-                                    <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-200">
-                                      <Clock className="mr-1 h-3 w-3" /> En attente
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </CardHeader>
-                            <CardContent className="py-3 px-4">
-                              <p className="whitespace-pre-wrap">{msg.message}</p>
-                              
-                              {msg.response && (
-                                <>
-                                  <Separator className="my-4" />
-                                  <div className="bg-muted/20 p-4 rounded-md">
-                                    <div className="flex items-center mb-2">
-                                      <Badge variant="outline" className="bg-primary/10 text-primary">
-                                        <Check className="mr-1 h-3 w-3" /> Réponse de l'équipe
-                                      </Badge>
-                                      {msg.response_at && (
-                                        <span className="text-xs text-muted-foreground ml-2">
-                                          {formatDate(msg.response_at)}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <p className="whitespace-pre-wrap">{msg.response}</p>
-                                  </div>
-                                </>
-                              )}
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          ) : (
-            // Non-authenticated user only sees the form
+          <div className="grid md:grid-cols-2 gap-6 mt-8">
             <Card>
               <CardHeader>
-                <CardTitle>Envoyer un message</CardTitle>
-                <CardDescription>
-                  Nous vous répondrons dans les plus brefs délais.
-                </CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-primary" />
+                  Par email
+                </CardTitle>
+                <CardDescription>Envoyez-nous un email pour toute question</CardDescription>
               </CardHeader>
-              <form onSubmit={handleSubmit}>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nom</Label>
-                    <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Votre nom"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="votreemail@exemple.com"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea
-                      id="message"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Votre message"
-                      rows={6}
-                      required
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        Envoi en cours...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="mr-2 h-4 w-4" />
-                        Envoyer
-                      </>
-                    )}
-                  </Button>
-                </CardFooter>
-              </form>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">Email général :</span>
+                  <a href="mailto:contact@tradingjournal.fr" className="text-primary hover:underline">
+                    contact@tradingjournal.fr
+                  </a>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">Support technique :</span>
+                  <a href="mailto:support@tradingjournal.fr" className="text-primary hover:underline">
+                    support@tradingjournal.fr
+                  </a>
+                </div>
+                <Button variant="outline" asChild className="w-full mt-2">
+                  <a href="mailto:contact@tradingjournal.fr">
+                    <Mail className="mr-2 h-4 w-4" />
+                    Envoyer un email
+                  </a>
+                </Button>
+              </CardContent>
             </Card>
-          )}
-        </div>
-        
-        {/* Admin section only visible for admin users */}
-        {user && profile?.role === 'admin' && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-4">Administration des messages</h2>
-            <ContactMessages />
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Phone className="h-5 w-5 text-primary" />
+                  Par téléphone
+                </CardTitle>
+                <CardDescription>Contactez-nous par téléphone pour un service rapide</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">Service client :</span>
+                  <a href="tel:+33187654321" className="text-primary hover:underline">
+                    +33 1 87 65 43 21
+                  </a>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">Horaires d'ouverture :</span>
+                  <p className="text-muted-foreground">Lun-Ven : 9h - 18h</p>
+                </div>
+                <Button variant="outline" asChild className="w-full mt-2">
+                  <a href="tel:+33187654321">
+                    <Phone className="mr-2 h-4 w-4" />
+                    Nous appeler
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
-        )}
+          
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                Notre adresse
+              </CardTitle>
+              <CardDescription>Visitez nos bureaux</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-base">
+                123 Avenue des Champs-Élysées<br />
+                75008 Paris<br />
+                France
+              </p>
+              <Button variant="outline" asChild className="mt-2">
+                <a href="https://maps.google.com/?q=123+Avenue+des+Champs-Élysées,+75008+Paris,+France" target="_blank" rel="noopener noreferrer">
+                  <MapPin className="mr-2 h-4 w-4" />
+                  Voir sur Google Maps
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+          
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5 text-primary" />
+                Réseaux sociaux
+              </CardTitle>
+              <CardDescription>Suivez-nous pour rester informé</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <Button variant="outline" asChild className="flex items-center gap-2 h-auto py-3">
+                  <a href="https://twitter.com/tradingjournal" target="_blank" rel="noopener noreferrer">
+                    <Twitter className="h-5 w-5 text-[#1DA1F2]" />
+                    <span>Twitter</span>
+                  </a>
+                </Button>
+                <Button variant="outline" asChild className="flex items-center gap-2 h-auto py-3">
+                  <a href="https://linkedin.com/company/tradingjournal" target="_blank" rel="noopener noreferrer">
+                    <Linkedin className="h-5 w-5 text-[#0077B5]" />
+                    <span>LinkedIn</span>
+                  </a>
+                </Button>
+                <Button variant="outline" asChild className="flex items-center gap-2 h-auto py-3">
+                  <a href="https://facebook.com/tradingjournal" target="_blank" rel="noopener noreferrer">
+                    <Facebook className="h-5 w-5 text-[#1877F2]" />
+                    <span>Facebook</span>
+                  </a>
+                </Button>
+                <Button variant="outline" asChild className="flex items-center gap-2 h-auto py-3">
+                  <a href="https://instagram.com/tradingjournal" target="_blank" rel="noopener noreferrer">
+                    <Instagram className="h-5 w-5 text-[#E4405F]" />
+                    <span>Instagram</span>
+                  </a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Foire aux questions</CardTitle>
+              <CardDescription>Trouvez rapidement des réponses aux questions les plus fréquentes</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-medium">Comment créer un compte ?</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Cliquez sur "S'inscrire" en haut à droite de la page et suivez les instructions.
+                  </p>
+                </div>
+                <Separator />
+                <div>
+                  <h3 className="font-medium">Comment réinitialiser mon mot de passe ?</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Sur la page de connexion, cliquez sur "Mot de passe oublié" et suivez les instructions.
+                  </p>
+                </div>
+                <Separator />
+                <div>
+                  <h3 className="font-medium">Comment puis-je accéder aux fonctionnalités premium ?</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Rendez-vous sur la page Premium depuis le menu principal et sélectionnez l'abonnement qui vous convient.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="text-center mt-6">
+                <p className="text-muted-foreground text-sm mb-3">
+                  Vous ne trouvez pas la réponse à votre question ?
+                </p>
+                <Button asChild>
+                  <a href="mailto:contact@tradingjournal.fr">
+                    <Mail className="mr-2 h-4 w-4" />
+                    Contactez-nous directement
+                  </a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </AppLayout>
   );

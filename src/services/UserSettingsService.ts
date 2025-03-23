@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
@@ -22,6 +21,18 @@ export class UserSettingsService {
   static applyThemeSettings(theme: any) {
     // Implementation would go here - applying CSS variables, etc.
     console.log('Applying theme settings:', theme);
+    
+    // Apply custom color if available
+    if (theme.customPrimary) {
+      document.documentElement.style.setProperty('--primary-color', theme.customPrimary);
+      // Also set CSS variables for components using HSL values
+      try {
+        // For custom colors, we use them directly
+        document.documentElement.style.setProperty('--primary', theme.customPrimary);
+      } catch (error) {
+        console.error('Error applying custom color:', error);
+      }
+    }
     // This is a placeholder - actual implementation would update CSS variables
   }
   

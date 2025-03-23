@@ -109,6 +109,19 @@ body {
   background-color: var(--primary-color, #0f172a);
 }
 
+/* Les éléments qui utilisent des couleurs personnalisées */
+.text-custom-primary {
+  color: var(--primary-color);
+}
+
+.bg-custom-primary {
+  background-color: var(--primary-color);
+}
+
+.border-custom-primary {
+  border-color: var(--primary-color);
+}
+
 @layer base {
   * {
     @apply border-border;
