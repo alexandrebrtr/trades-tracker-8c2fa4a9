@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { UserSettings } from '@/context/PremiumContext';
 import { toast } from 'sonner';
+import { Json } from '@/integrations/supabase/types';
 
 /**
  * Service pour gérer les paramètres utilisateur
@@ -37,10 +38,13 @@ export const UserSettingsService = {
    */
   async updateUserSettings(userId: string, settings: UserSettings): Promise<{ success: boolean, error?: any }> {
     try {
+      // Convert UserSettings to Json type to satisfy TypeScript
+      const settingsJson: Json = settings as unknown as Json;
+      
       const { error } = await supabase
         .from('profiles')
         .update({ 
-          settings,
+          settings: settingsJson,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);
@@ -61,7 +65,14 @@ export const UserSettingsService = {
    * @param themeSettings Paramètres de thème
    */
   applyThemeSettings(themeSettings: UserSettings['theme']) {
-    if (!themeSettings || typeof themeSettings === 'string') return;
+    if (!themeSettings) return;
+    
+    // Check if themeSettings is a string (theme name) or an object (custom theme)
+    if (typeof themeSettings === 'string') {
+      console.log('Applying theme by name:', themeSettings);
+      // Handle string theme (e.g., "dark", "light", etc.)
+      return;
+    }
     
     // Applique les couleurs personnalisées via CSS variables
     const root = document.documentElement;

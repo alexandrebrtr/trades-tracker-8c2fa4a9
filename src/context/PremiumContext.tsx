@@ -182,7 +182,8 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
       
       // Appliquer les paramètres de thème immédiatement
       if (data.settings && data.settings.theme) {
-        UserSettingsService.applyThemeSettings(data.settings.theme);
+        const themeSettings = data.settings.theme;
+        UserSettingsService.applyThemeSettings(themeSettings);
       }
     } catch (error) {
       console.error('Error loading premium status:', error);
