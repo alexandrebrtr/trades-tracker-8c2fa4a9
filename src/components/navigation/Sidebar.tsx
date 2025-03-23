@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -11,7 +10,8 @@ import {
   Menu,
   X,
   Wallet,
-  Contact
+  Contact,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -33,7 +33,6 @@ export function Sidebar() {
   const { user } = useAuth();
   const { isPremium } = usePremium();
   
-  // Handle screen resize
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 1024;
@@ -45,7 +44,6 @@ export function Sidebar() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Check localStorage for saved state on mount
   useEffect(() => {
     const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState) {
@@ -55,15 +53,12 @@ export function Sidebar() {
     }
   }, []);
 
-  // Toggle sidebar state and dispatch event for AppLayout
   const toggleSidebar = () => {
     const newState = !collapsed;
     setCollapsed(newState);
     
-    // Save to localStorage
     localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
     
-    // Dispatch custom event for AppLayout
     const event = new CustomEvent('sidebar-toggle', { 
       detail: { collapsed: newState } 
     });
@@ -106,10 +101,14 @@ export function Sidebar() {
       name: 'Contact',
       path: '/contact',
       icon: <Contact className="w-5 h-5" />
+    },
+    {
+      name: 'Paramètres',
+      path: '/settings',
+      icon: <Settings className="w-5 h-5" />
     }
   ];
 
-  // Filter nav items based on premium status
   const filteredNavItems = navItems.filter(item => !item.requirePremium || isPremium);
 
   return (
@@ -120,7 +119,6 @@ export function Sidebar() {
       )}
     >
       <div className="flex h-full flex-col">
-        {/* Sidebar header */}
         <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
           {!collapsed && (
             <Link to="/dashboard" className="flex items-center">
@@ -138,7 +136,6 @@ export function Sidebar() {
           </Button>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 py-4 overflow-y-auto">
           <ul className="space-y-1 px-3">
             {filteredNavItems.map((item) => (
@@ -153,7 +150,6 @@ export function Sidebar() {
           </ul>
         </nav>
 
-        {/* User section with dropdown */}
         <SidebarUserSection collapsed={collapsed} />
       </div>
     </aside>
