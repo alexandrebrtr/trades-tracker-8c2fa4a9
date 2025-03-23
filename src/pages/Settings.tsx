@@ -14,6 +14,17 @@ export default function Settings() {
   const { user, profile } = useAuth();
   const { userSettings, updateUserSettings } = usePremium();
   const [currentTab, setCurrentTab] = useState('profile');
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Handle saving settings
+  const handleSaveSettings = async (settings) => {
+    setIsSaving(true);
+    try {
+      await updateUserSettings(settings);
+    } finally {
+      setIsSaving(false);
+    }
+  };
   
   // Définir les onglets disponibles
   const tabs = [
@@ -75,6 +86,8 @@ export default function Settings() {
                 <AppearanceSettings 
                   userSettings={userSettings} 
                   onSettingsChange={updateUserSettings}
+                  onSaveSettings={handleSaveSettings}
+                  isSaving={isSaving}
                 />
               )}
             </TabsContent>

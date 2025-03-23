@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { AlertCircle, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export function PasswordSection() {
   const { user } = useAuth();
@@ -26,7 +26,6 @@ export function PasswordSection() {
   const [emailSent, setEmailSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Fonction pour réinitialiser le mot de passe
   const handleResetPassword = async () => {
     if (!email) {
       toast.error('Veuillez saisir votre adresse email');
@@ -44,14 +43,12 @@ export function PasswordSection() {
     }
   };
 
-  // État pour la mise à jour directe du mot de passe
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [updateLoading, setUpdateLoading] = useState(false);
   
-  // Fonction pour mettre à jour le mot de passe
   const handleUpdatePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast.error('Veuillez remplir tous les champs');
@@ -70,7 +67,6 @@ export function PasswordSection() {
     
     setUpdateLoading(true);
     try {
-      // Vérifier le mot de passe actuel
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: user!.email!,
         password: currentPassword,
@@ -112,7 +108,6 @@ export function PasswordSection() {
           </h3>
           
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {/* Option 1: Réinitialisation par email */}
             <div className="bg-muted/50 p-4 rounded-lg border">
               <h4 className="font-medium mb-2">Réinitialisation par email</h4>
               <p className="text-muted-foreground text-sm mb-4">
@@ -188,7 +183,6 @@ export function PasswordSection() {
               </Dialog>
             </div>
             
-            {/* Option 2: Mise à jour directe */}
             <div className="bg-muted/50 p-4 rounded-lg border">
               <h4 className="font-medium mb-2">Modification directe</h4>
               <p className="text-muted-foreground text-sm mb-4">

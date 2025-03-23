@@ -18,7 +18,7 @@ import AdminPanel from './pages/AdminPanel';
 import Profile from './pages/Profile';
 import ResetPassword from './pages/ResetPassword';
 import NotFound from './pages/NotFound';
-import ProtectedRoute from './components/auth/ProtectedRoute';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import Payment from './pages/Payment';
 import { Toaster } from '@/components/ui/sonner';
 
