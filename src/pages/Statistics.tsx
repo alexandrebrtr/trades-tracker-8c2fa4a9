@@ -75,11 +75,18 @@ const Statistics = () => {
             <p className="text-muted-foreground mt-1">Analysez vos performances et optimisez vos stratégies</p>
           </div>
           <div className="flex gap-4">
-            {isPremium && (
+            {isPremium ? (
               <Button asChild>
                 <Link to="/premium-dashboard" className="flex items-center gap-2">
                   <Badge variant="outline" className="bg-primary/20 text-primary hover:bg-primary/30 mr-1">PREMIUM</Badge>
                   <span>Dashboard Avancé</span>
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link to="/premium" className="flex items-center gap-2">
+                  <span>Passer au Premium</span>
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Link>
               </Button>
