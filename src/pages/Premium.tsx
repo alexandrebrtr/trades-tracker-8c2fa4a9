@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Check, Star, Shield } from 'lucide-react';
+import { Check, Star, Shield, ArrowRight, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { usePremium } from '@/context/PremiumContext';
 import { useAuth } from '@/context/AuthContext';
+import { Link } from 'react-router-dom';
 
 export default function Premium() {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
@@ -34,25 +35,15 @@ export default function Premium() {
     setIsProcessing(true);
     
     try {
-      // In a real app, this would navigate to a payment processor
-      // For demo purposes, we'll directly set premium status
-      await setPremiumStatus(true);
-      
-      toast({
-        title: "Abonnement activé",
-        description: `Votre abonnement ${selectedPlan === 'monthly' ? 'mensuel' : 'annuel'} a été activé avec succès.`,
-      });
-      
-      // Redirect to premium dashboard
-      navigate('/premium-dashboard');
+      // Navigate to payment page for complete checkout flow
+      navigate('/payment');
     } catch (error) {
       console.error('Error processing subscription:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'activation de votre abonnement. Veuillez réessayer.",
+        description: "Une erreur est survenue lors de la redirection vers le paiement. Veuillez réessayer.",
         variant: "destructive"
       });
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -197,7 +188,82 @@ export default function Premium() {
             </TabsContent>
           </Tabs>
 
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="space-y-8 mt-12">
+            <h3 className="text-xl font-bold text-center">Découvrez nos fonctionnalités premium</h3>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Feature cards with better integration to site features */}
+              <Card className="transition-all hover:shadow-md">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Calendar className="h-5 w-5 text-primary" />
+                    Calendrier économique
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Suivez les événements économiques importants et organisez vos trades en conséquence.
+                  </p>
+                  <Link 
+                    to="/calendar" 
+                    className="text-primary text-sm font-medium flex items-center"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toast({
+                        title: "Fonctionnalité Premium",
+                        description: "Abonnez-vous pour accéder au calendrier économique",
+                      });
+                    }}
+                  >
+                    Voir un aperçu <ArrowRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </CardContent>
+              </Card>
+              
+              <Card className="transition-all hover:shadow-md">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Shield className="h-5 w-5 text-primary" />
+                    Analyses avancées
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Obtenez des analyses détaillées de vos performances avec des métriques professionnelles.
+                  </p>
+                  <Link 
+                    to="/premium-analytics" 
+                    className="text-primary text-sm font-medium flex items-center"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toast({
+                        title: "Fonctionnalité Premium",
+                        description: "Abonnez-vous pour accéder aux analyses avancées",
+                      });
+                    }}
+                  >
+                    Voir un aperçu <ArrowRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <Card className="bg-muted/40 border-primary/20">
+              <CardContent className="pt-6 pb-6">
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold">Prêt à améliorer votre expérience de trading?</h3>
+                    <p className="text-muted-foreground mt-1">Rejoignez notre communauté de traders premium aujourd'hui.</p>
+                  </div>
+                  <Button onClick={handleSubscribe}>
+                    Commencer maintenant
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center text-sm text-muted-foreground mt-8">
             <p>Sans engagement. Annulez à tout moment.</p>
             <p className="mt-1">
               En vous abonnant, vous acceptez nos{" "}
