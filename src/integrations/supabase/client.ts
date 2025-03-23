@@ -30,6 +30,15 @@ export const supabase = createClient<Database>(
   }
 );
 
-// The setRelTime method doesn't exist in the current Supabase JS client
-// Instead, we're using the proper configuration options above
-// No need to call additional methods to configure realtime subscriptions
+// Enable realtime subscriptions on the profiles table
+supabase.channel('db-changes')
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'profiles'
+  }, (payload) => {
+    console.log('Changement détecté:', payload);
+  })
+  .subscribe((status) => {
+    console.log('Statut de l\'abonnement Supabase:', status);
+  });

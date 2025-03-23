@@ -5,6 +5,8 @@ import { ExpirationDateDisplay } from './ExpirationDateDisplay';
 import { UserTableActions } from './UserTableActions';
 import { isExpired } from './utils/dateUtils';
 import { useNavigate } from 'react-router-dom';
+import { RealtimeService } from '@/services/RealtimeService';
+import { toast } from 'sonner';
 
 interface UserTableRowProps {
   user: any;
@@ -28,6 +30,38 @@ export function UserTableRow({
   
   const handleViewCalendar = () => {
     navigate(`/admin/calendar/${user.id}`);
+  };
+
+  const handleTogglePremium = async () => {
+    // Appel direct à la méthode du service pour mise à jour immédiate
+    try {
+      const result = await RealtimeService.updateUserPremiumStatus(user.id, !premiumStatus);
+      if (!result.success) {
+        toast.error("Erreur lors de la mise à jour du statut premium");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du statut premium:", error);
+      toast.error("Erreur lors de la mise à jour du statut premium");
+    }
+
+    // Appel à la fonction de rappel pour gestion locale de l'état
+    onTogglePremium(user.id, premiumStatus);
+  };
+
+  const handleToggleBan = async () => {
+    // Appel direct à la méthode du service pour mise à jour immédiate
+    try {
+      const result = await RealtimeService.updateUserBanStatus(user.id, !isBanned);
+      if (!result.success) {
+        toast.error("Erreur lors de la mise à jour du statut de bannissement");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du statut de bannissement:", error);
+      toast.error("Erreur lors de la mise à jour du statut de bannissement");
+    }
+
+    // Appel à la fonction de rappel pour gestion locale de l'état
+    onToggleBan(user.id, isBanned);
   };
   
   return (
@@ -57,9 +91,9 @@ export function UserTableRow({
           isPremium={premiumStatus}
           isBanned={isBanned}
           isProcessing={isProcessing === user.id}
-          onTogglePremium={() => onTogglePremium(user.id, premiumStatus)}
+          onTogglePremium={handleTogglePremium}
           onViewUserData={() => onViewUserData(user.id)}
-          onToggleBan={() => onToggleBan(user.id, isBanned)}
+          onToggleBan={handleToggleBan}
           onViewCalendar={handleViewCalendar}
         />
       </TableCell>
