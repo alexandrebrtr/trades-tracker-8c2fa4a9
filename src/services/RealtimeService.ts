@@ -28,7 +28,16 @@ export const RealtimeService = {
           
           // Notification à l'utilisateur
           const eventType = payload.eventType;
-          const username = payload.new?.username || payload.old?.username || 'Utilisateur';
+          
+          // Safely access username with type checking and defaults
+          const newUsername = payload.new && typeof payload.new === 'object' ? 
+            (payload.new as Record<string, any>).username || 'Utilisateur' : 'Utilisateur';
+            
+          const oldUsername = payload.old && typeof payload.old === 'object' ? 
+            (payload.old as Record<string, any>).username || 'Utilisateur' : 'Utilisateur';
+          
+          // Use the appropriate username based on the event type
+          const username = eventType === 'DELETE' ? oldUsername : newUsername;
           
           switch(eventType) {
             case 'INSERT':
