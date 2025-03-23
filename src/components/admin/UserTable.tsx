@@ -7,7 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { usePremium } from '@/context/PremiumContext';
 import { UserTableRow } from './UserTableRow';
 import { UserSearch } from './UserSearch';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface UserTableProps {
   users: any[];
@@ -83,6 +84,45 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
     });
   };
   
+  // Export users to CSV for dev purposes
+  const exportUsersToCSV = () => {
+    if (!users || users.length === 0) return;
+    
+    // Create CSV content
+    const headers = ["ID", "Username", "Premium", "Premium Expires", "Balance", "Trades"];
+    const rows = users.map(user => [
+      user.id,
+      user.username || "N/A",
+      user.premium ? "Yes" : "No",
+      user.premium_expires ? new Date(user.premium_expires).toLocaleDateString() : "N/A",
+      user.balance || "0",
+      user.trades_count || "0"
+    ]);
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+    
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", `users_export_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Export réussi",
+      description: `${users.length} utilisateurs exportés au format CSV.`,
+    });
+  };
+  
   if (!users) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -94,10 +134,21 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
   
   return (
     <div>
-      <UserSearch 
-        searchTerm={searchTerm} 
-        setSearchTerm={setSearchTerm} 
-      />
+      <div className="flex justify-between items-center mb-4">
+        <UserSearch 
+          searchTerm={searchTerm} 
+          setSearchTerm={setSearchTerm} 
+        />
+        
+        <Button 
+          variant="outline" 
+          onClick={exportUsersToCSV}
+          className="flex items-center gap-2"
+        >
+          <Download className="h-4 w-4" />
+          Exporter CSV (Dev)
+        </Button>
+      </div>
       
       <div className="rounded-md border">
         <Table>
@@ -131,6 +182,10 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
             )}
           </TableBody>
         </Table>
+      </div>
+      
+      <div className="mt-4 text-xs text-muted-foreground">
+        Nombre total d'utilisateurs: {users.length}
       </div>
     </div>
   );
