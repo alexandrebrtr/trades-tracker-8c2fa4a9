@@ -4,7 +4,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { usePremium } from '@/context/PremiumContext';
 import { UserTableRow } from './UserTableRow';
 import { UserSearch } from './UserSearch';
 import { Loader2, Download } from 'lucide-react';
@@ -73,6 +72,49 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
     }
   };
 
+  const toggleBan = async (userId: string, currentStatus: boolean) => {
+    try {
+      // Prevent multiple simultaneous operations
+      if (isProcessing) return;
+      setIsProcessing(userId);
+      
+      const now = new Date();
+      
+      console.log(`Toggling ban status for user ${userId} from ${currentStatus} to ${!currentStatus}`);
+      
+      // Update ban status in the database
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          banned: !currentStatus,
+          banned_at: !currentStatus ? now.toISOString() : null,
+          updated_at: now.toISOString()
+        })
+        .eq('id', userId);
+        
+      if (error) throw error;
+      
+      // Success notification
+      toast({
+        title: !currentStatus ? "Utilisateur banni" : "Utilisateur débloqué",
+        description: `L'utilisateur a été ${!currentStatus ? 'banni' : 'débloqué'} avec succès.`,
+      });
+      
+      // Refresh the user list
+      onRefresh();
+        
+    } catch (error: any) {
+      console.error('Error updating ban status:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur s'est produite lors de la mise à jour du statut de bannissement.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(null);
+    }
+  };
+
   // View user profile (redirect to profile page)
   const viewUserData = (userId: string) => {
     // Navigate to a detailed view or user profile
@@ -89,14 +131,15 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
     if (!users || users.length === 0) return;
     
     // Create CSV content
-    const headers = ["ID", "Username", "Premium", "Premium Expires", "Balance", "Trades"];
+    const headers = ["ID", "Username", "Premium", "Premium Expires", "Balance", "Trades", "Banned"];
     const rows = users.map(user => [
       user.id,
       user.username || "N/A",
       user.premium ? "Yes" : "No",
       user.premium_expires ? new Date(user.premium_expires).toLocaleDateString() : "N/A",
       user.balance || "0",
-      user.trades_count || "0"
+      user.trades_count || "0",
+      user.banned ? "Yes" : "No"
     ]);
     
     const csvContent = [
@@ -177,6 +220,7 @@ export function UserTable({ users, onRefresh }: UserTableProps) {
                   isProcessing={isProcessing}
                   onTogglePremium={togglePremium}
                   onViewUserData={viewUserData}
+                  onToggleBan={toggleBan}
                 />
               ))
             )}

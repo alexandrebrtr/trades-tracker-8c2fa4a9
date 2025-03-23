@@ -27,7 +27,7 @@ export default function AdminPanel() {
   const adminIds = ['9ce47b0c-0d0a-4834-ae81-e103dff2e386'];
   const isDev = true; // Toggle this for development mode
   
-  // Fetch users data
+  // Fetch users data with real-time updates
   const fetchUsers = async () => {
     setRefreshing(true);
     try {
@@ -53,6 +53,25 @@ export default function AdminPanel() {
       setRefreshing(false);
     }
   };
+
+  // Set up real-time listener for profile changes
+  useEffect(() => {
+    const subscription = supabase
+      .channel('profiles-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'profiles'
+      }, (payload) => {
+        console.log('Profiles changed:', payload);
+        fetchUsers();
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
   
   useEffect(() => {
     if (user) {

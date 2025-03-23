@@ -10,16 +10,28 @@ interface UserTableRowProps {
   isProcessing: string | null;
   onTogglePremium: (userId: string, currentStatus: boolean) => void;
   onViewUserData: (userId: string) => void;
+  onToggleBan: (userId: string, currentStatus: boolean) => void;
 }
 
-export function UserTableRow({ user, isProcessing, onTogglePremium, onViewUserData }: UserTableRowProps) {
+export function UserTableRow({ 
+  user, 
+  isProcessing, 
+  onTogglePremium, 
+  onViewUserData,
+  onToggleBan
+}: UserTableRowProps) {
   const isPremiumExpired = isExpired(user.premium_expires);
   const premiumStatus = user.premium && !isPremiumExpired;
+  const isBanned = user.banned || false;
   
   return (
-    <TableRow key={user.id} className={premiumStatus ? "bg-yellow-50/10" : ""}>
+    <TableRow 
+      key={user.id} 
+      className={`${premiumStatus ? "bg-yellow-50/10" : ""} ${isBanned ? "bg-red-50/10" : ""}`}
+    >
       <TableCell className="font-medium">
         {user.username || 'Utilisateur sans nom'}
+        {isBanned && <span className="ml-2 text-xs text-red-500 font-semibold">(Banni)</span>}
       </TableCell>
       <TableCell>
         <PremiumStatusBadge isPremium={premiumStatus} />
@@ -37,9 +49,11 @@ export function UserTableRow({ user, isProcessing, onTogglePremium, onViewUserDa
         <UserTableActions
           userId={user.id}
           isPremium={premiumStatus}
+          isBanned={isBanned}
           isProcessing={isProcessing === user.id}
           onTogglePremium={() => onTogglePremium(user.id, premiumStatus)}
           onViewUserData={() => onViewUserData(user.id)}
+          onToggleBan={() => onToggleBan(user.id, isBanned)}
         />
       </TableCell>
     </TableRow>
