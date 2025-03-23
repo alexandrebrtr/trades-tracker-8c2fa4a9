@@ -38,7 +38,6 @@ function App() {
           {/* Public routes */}
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/statistics" element={<Statistics />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/login" element={<Login />} />
           <Route path="/contact" element={<Contact />} />
@@ -52,6 +51,7 @@ function App() {
           <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
           <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/statistics" element={<ProtectedRoute requirePremium={true}><Statistics /></ProtectedRoute>} />
           <Route path="/premium-analytics" element={<ProtectedRoute requirePremium={true}><PremiumAnalytics /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>

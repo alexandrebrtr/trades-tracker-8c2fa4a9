@@ -1,3 +1,4 @@
+
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,10 @@ import { usePremium, UserSettings } from '@/context/PremiumContext';
 import { useTheme } from '@/context/ThemeContext';
 import { Bell, Layout, Palette, Shield, User, Key, Lock } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useNavigate } from 'react-router-dom';
 
 interface ThemeSettings {
   primary: string;
@@ -38,6 +43,8 @@ interface BrokerSettings {
 }
 
 export default function Settings() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const { userSettings, updateUserSettings } = usePremium();
   const [themeSettings, setThemeSettings] = useState<ThemeSettings>({
     primary: '#0f172a',
@@ -63,6 +70,12 @@ export default function Settings() {
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     if (userSettings) {
@@ -139,6 +152,96 @@ export default function Settings() {
       ...prev,
       [key]: value
     }));
+  };
+
+  const changePassword = async () => {
+    setPasswordError('');
+    setIsChangingPassword(true);
+    
+    try {
+      if (newPassword !== confirmNewPassword) {
+        setPasswordError('Les mots de passe ne correspondent pas');
+        return;
+      }
+      
+      if (newPassword.length < 6) {
+        setPasswordError('Le mot de passe doit contenir au moins 6 caractères');
+        return;
+      }
+      
+      // First verify the current password by trying to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: currentPassword,
+      });
+      
+      if (signInError) {
+        setPasswordError('Mot de passe actuel incorrect');
+        return;
+      }
+      
+      // Now update the password
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Mot de passe modifié",
+        description: "Votre mot de passe a été modifié avec succès.",
+      });
+      
+      // Reset the form
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      setPasswordError(error.message || 'Une erreur est survenue');
+      
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier votre mot de passe. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    setIsDeleting(true);
+    
+    try {
+      // Delete the user's account
+      const { error } = await supabase.auth.admin.deleteUser(user?.id || '');
+      
+      if (error) throw error;
+      
+      // Sign out after account deletion
+      await signOut();
+      
+      toast({
+        title: "Compte supprimé",
+        description: "Votre compte et toutes vos données ont été supprimés.",
+      });
+      
+      // Redirect to home page
+      navigate('/');
+      
+    } catch (error: any) {
+      console.error("Error deleting account:", error);
+      
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer votre compte. Veuillez réessayer ultérieurement.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -497,16 +600,51 @@ export default function Settings() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <h3 className="text-sm font-medium">Mot de passe</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Dernière modification il y a 3 mois
-                        </p>
+                    <div>
+                      <h3 className="text-sm font-medium mb-3">Changer votre mot de passe</h3>
+                      
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          <Label htmlFor="current-password">Mot de passe actuel</Label>
+                          <Input 
+                            id="current-password" 
+                            type="password" 
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                          />
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <Label htmlFor="new-password">Nouveau mot de passe</Label>
+                          <Input 
+                            id="new-password" 
+                            type="password" 
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                          />
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+                          <Input 
+                            id="confirm-password" 
+                            type="password" 
+                            value={confirmNewPassword}
+                            onChange={(e) => setConfirmNewPassword(e.target.value)}
+                          />
+                        </div>
+                        
+                        {passwordError && (
+                          <p className="text-sm text-destructive mt-2">{passwordError}</p>
+                        )}
+                        
+                        <Button 
+                          onClick={changePassword}
+                          disabled={isChangingPassword || !currentPassword || !newPassword || !confirmNewPassword}
+                        >
+                          {isChangingPassword ? "Modification en cours..." : "Changer le mot de passe"}
+                        </Button>
                       </div>
-                      <Button variant="outline" size="sm">
-                        Modifier
-                      </Button>
                     </div>
                     
                     <Separator />
@@ -546,9 +684,31 @@ export default function Settings() {
                           Supprimer définitivement votre compte et toutes vos données
                         </p>
                       </div>
-                      <Button variant="destructive" size="sm">
-                        Supprimer
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="sm">
+                            Supprimer
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer votre compte ?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Cette action est irréversible. Toutes vos données, y compris vos trades, statistiques et paramètres, seront définitivement supprimées.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction 
+                              className="bg-destructive hover:bg-destructive/90"
+                              onClick={deleteAccount}
+                              disabled={isDeleting}
+                            >
+                              {isDeleting ? "Suppression..." : "Supprimer définitivement"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </CardContent>

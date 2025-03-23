@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -90,7 +91,8 @@ export function Sidebar() {
     {
       name: 'Statistiques',
       path: '/statistics',
-      icon: <BarChart3 className="w-5 h-5" />
+      icon: <BarChart3 className="w-5 h-5" />,
+      requirePremium: true
     },
     {
       name: 'Journal',
