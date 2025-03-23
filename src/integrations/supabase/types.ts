@@ -172,6 +172,8 @@ export type Database = {
           address: string | null
           avatar_url: string | null
           balance: number | null
+          banned: boolean | null
+          banned_at: string | null
           bio: string | null
           created_at: string | null
           id: string
@@ -188,6 +190,8 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           balance?: number | null
+          banned?: boolean | null
+          banned_at?: string | null
           bio?: string | null
           created_at?: string | null
           id: string
@@ -204,6 +208,8 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           balance?: number | null
+          banned?: boolean | null
+          banned_at?: string | null
           bio?: string | null
           created_at?: string | null
           id?: string

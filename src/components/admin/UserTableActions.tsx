@@ -11,6 +11,7 @@ interface UserTableActionsProps {
   onTogglePremium: () => void;
   onViewUserData: () => void;
   onToggleBan: () => void;
+  onViewCalendar: () => void;
 }
 
 export function UserTableActions({ 
@@ -20,7 +21,8 @@ export function UserTableActions({
   isProcessing, 
   onTogglePremium, 
   onViewUserData,
-  onToggleBan 
+  onToggleBan,
+  onViewCalendar
 }: UserTableActionsProps) {
   return (
     <div className="flex justify-end items-center gap-2">
@@ -45,10 +47,10 @@ export function UserTableActions({
       >
         <Ban className="h-4 w-4" />
       </Button>
-      <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={onViewUserData}>
+      <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={onViewUserData} title="Voir le profil">
         <Eye className="h-4 w-4" />
       </Button>
-      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+      <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={onViewCalendar} title="Voir le calendrier">
         <Calendar className="h-4 w-4" />
       </Button>
     </div>

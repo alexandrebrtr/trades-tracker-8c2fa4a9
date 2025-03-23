@@ -4,6 +4,7 @@ import { PremiumStatusBadge } from './PremiumStatusBadge';
 import { ExpirationDateDisplay } from './ExpirationDateDisplay';
 import { UserTableActions } from './UserTableActions';
 import { isExpired } from './utils/dateUtils';
+import { useNavigate } from 'react-router-dom';
 
 interface UserTableRowProps {
   user: any;
@@ -20,9 +21,14 @@ export function UserTableRow({
   onViewUserData,
   onToggleBan
 }: UserTableRowProps) {
+  const navigate = useNavigate();
   const isPremiumExpired = isExpired(user.premium_expires);
   const premiumStatus = user.premium && !isPremiumExpired;
   const isBanned = user.banned || false;
+  
+  const handleViewCalendar = () => {
+    navigate(`/admin/calendar/${user.id}`);
+  };
   
   return (
     <TableRow 
@@ -54,6 +60,7 @@ export function UserTableRow({
           onTogglePremium={() => onTogglePremium(user.id, premiumStatus)}
           onViewUserData={() => onViewUserData(user.id)}
           onToggleBan={() => onToggleBan(user.id, isBanned)}
+          onViewCalendar={handleViewCalendar}
         />
       </TableCell>
     </TableRow>
