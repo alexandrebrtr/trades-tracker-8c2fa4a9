@@ -80,15 +80,15 @@ export default function Contact() {
               <CardContent className="space-y-4">
                 <div>
                   <h3 className="font-medium">Email</h3>
-                  <p className="text-muted-foreground">support@tradetracker.com</p>
+                  <p className="text-muted-foreground">trades.tracker.officiel@gmail.com</p>
+                <div>
+                  <h3 className="font-medium">WhatsApp</h3>
+                  <p className="text-muted-foreground">+33 (0)7 78 40 67 10</p>
                 </div>
                 <div>
-                  <h3 className="font-medium">Téléphone</h3>
-                  <p className="text-muted-foreground">+33 (0)1 23 45 67 89</p>
-                </div>
-                <div>
-                  <h3 className="font-medium">Adresse</h3>
-                  <p className="text-muted-foreground">123 Avenue des Champs-Élysées<br />75008 Paris, France</p>
+                  <h3 className="font-medium">Réseaux sociaux</h3>
+                  <h4 className="font-medium">Instagram</h4>
+                  <p className="text-muted-foreground">@trades.tracker_official</p>
                 </div>
               </CardContent>
             </Card>
