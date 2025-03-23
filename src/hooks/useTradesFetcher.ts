@@ -2,13 +2,39 @@
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { getStartDateFromTimeframe } from '@/utils/dateUtils';
+import { toast } from 'sonner';
+
+export interface Trade {
+  id: string;
+  user_id: string;
+  symbol: string;
+  type: string;
+  direction: 'long' | 'short';
+  entry_price: number;
+  exit_price: number;
+  quantity: number;
+  date: string;
+  entry_date?: string;
+  exit_date?: string;
+  pnl: number;
+  fees?: number;
+  strategy?: string;
+  notes?: string;
+  tags?: string[];
+  status: 'open' | 'closed';
+  risk_reward_ratio?: number;
+  stop_loss?: number;
+  take_profit?: number;
+  trade_duration?: number;
+  created_at: string;
+}
 
 /**
- * Hook to fetch trade data from Supabase
+ * Hook to fetch trade data from Supabase with enhanced filtering options
  */
 export const useTradesFetcher = (userId: any, selectedPeriod: string) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [trades, setTrades] = useState<any[]>([]);
+  const [trades, setTrades] = useState<Trade[]>([]);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
@@ -26,7 +52,7 @@ export const useTradesFetcher = (userId: any, selectedPeriod: string) => {
         // Calculate start date based on selected timeframe
         const startDate = getStartDateFromTimeframe(selectedPeriod);
         
-        // Fetch user trades
+        // Fetch user trades with enhanced query parameters
         const { data, error } = await supabase
           .from('trades')
           .select('*')
@@ -78,5 +104,70 @@ export const updateTradesCount = async (userId: string): Promise<void> => {
     console.log('Trades count updated successfully:', count);
   } catch (err) {
     console.error('Error updating trades count:', err);
+    toast.error("Impossible de mettre à jour le nombre de trades.");
   }
+};
+
+/**
+ * Function to fetch trade statistics grouped by a specific field
+ */
+export const fetchTradeStatsByField = async (userId: string, field: string, period: string) => {
+  if (!userId) return [];
+  
+  try {
+    const startDate = getStartDateFromTimeframe(period);
+    
+    const { data, error } = await supabase
+      .from('trades')
+      .select(`${field}, pnl, quantity, entry_price, exit_price`)
+      .eq('user_id', userId)
+      .gte('date', startDate.toISOString());
+    
+    if (error) throw error;
+    
+    // Group and process data by the specified field
+    const result = processTradeStats(data || [], field);
+    return result;
+  } catch (err) {
+    console.error(`Error fetching trade stats by ${field}:`, err);
+    return [];
+  }
+};
+
+// Helper function to process trade statistics
+const processTradeStats = (trades: any[], field: string) => {
+  const stats: Record<string, any> = {};
+  
+  // Group trades by the specified field
+  trades.forEach(trade => {
+    const key = trade[field] || 'Non défini';
+    
+    if (!stats[key]) {
+      stats[key] = {
+        name: key,
+        totalPnL: 0,
+        tradeCount: 0,
+        winCount: 0,
+        lossCount: 0,
+        volume: 0,
+      };
+    }
+    
+    stats[key].totalPnL += (trade.pnl || 0);
+    stats[key].tradeCount += 1;
+    stats[key].volume += (trade.quantity * trade.entry_price) || 0;
+    
+    if (trade.pnl > 0) {
+      stats[key].winCount += 1;
+    } else if (trade.pnl < 0) {
+      stats[key].lossCount += 1;
+    }
+  });
+  
+  // Convert to array and calculate additional metrics
+  return Object.values(stats).map(item => ({
+    ...item,
+    winRate: item.tradeCount > 0 ? (item.winCount / item.tradeCount) * 100 : 0,
+    avgPnL: item.tradeCount > 0 ? item.totalPnL / item.tradeCount : 0,
+  }));
 };

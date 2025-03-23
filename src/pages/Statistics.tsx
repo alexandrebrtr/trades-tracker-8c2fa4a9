@@ -2,7 +2,7 @@
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Wallet, Lock, Database } from 'lucide-react';
+import { Wallet, Lock, Database, ArrowRight } from 'lucide-react';
 import { usePremium } from '@/context/PremiumContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTradesFetcher } from '@/hooks/useTradesFetcher';
+import { Badge } from '@/components/ui/badge';
 
 const NoDataView = ({ tabName }: { tabName: string }) => {
   return (
@@ -69,10 +70,20 @@ const Statistics = () => {
     <AppLayout>
       <div className="page-transition">
         <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-3">
+          <div>
             <h1 className="text-3xl font-bold tracking-tight">Statistiques & Analyse</h1>
+            <p className="text-muted-foreground mt-1">Analysez vos performances et optimisez vos stratégies</p>
           </div>
           <div className="flex gap-4">
+            {isPremium && (
+              <Button asChild>
+                <Link to="/premium-dashboard" className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-primary/20 text-primary hover:bg-primary/30 mr-1">PREMIUM</Badge>
+                  <span>Dashboard Avancé</span>
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            )}
             <Button variant="outline" asChild>
               <Link to="/portfolio" className="flex items-center gap-2">
                 <Wallet className="h-4 w-4" />
@@ -95,7 +106,7 @@ const Statistics = () => {
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="general" className="mt-6">
+          <TabsContent value="general" className="mt-6 animate-fade-in">
             {isLoading ? (
               <div className="flex justify-center items-center py-24">
                 <div className="animate-spin h-8 w-8 border-4 border-primary border-r-transparent rounded-full"></div>
@@ -107,7 +118,7 @@ const Statistics = () => {
             )}
           </TabsContent>
           
-          <TabsContent value="strategy" className="mt-6">
+          <TabsContent value="strategy" className="mt-6 animate-fade-in">
             {isLoading ? (
               <div className="flex justify-center items-center py-24">
                 <div className="animate-spin h-8 w-8 border-4 border-primary border-r-transparent rounded-full"></div>
@@ -119,7 +130,7 @@ const Statistics = () => {
             )}
           </TabsContent>
           
-          <TabsContent value="performance" className="mt-6">
+          <TabsContent value="performance" className="mt-6 animate-fade-in">
             {isLoading ? (
               <div className="flex justify-center items-center py-24">
                 <div className="animate-spin h-8 w-8 border-4 border-primary border-r-transparent rounded-full"></div>
@@ -131,7 +142,7 @@ const Statistics = () => {
             )}
           </TabsContent>
           
-          <TabsContent value="advanced" className="mt-6">
+          <TabsContent value="advanced" className="mt-6 animate-fade-in">
             {isPremium ? (
               isLoading ? (
                 <div className="flex justify-center items-center py-24">
