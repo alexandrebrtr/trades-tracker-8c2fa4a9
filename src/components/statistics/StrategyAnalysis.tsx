@@ -20,7 +20,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchTradeStatsByField } from '@/hooks/useTradesFetcher';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -41,37 +40,25 @@ const StrategyAnalysis = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Récupérer les statistiques par stratégie
-        const strategyStats = await fetchTradeStatsByField(user.id, 'strategy', selectedPeriod);
+        // Calculate start date based on selected timeframe
+        const startDate = getStartDateFromTimeframe(selectedPeriod);
         
-        if (!strategyStats || strategyStats.length === 0) {
-          useDefaultData();
-          return;
-        }
-        
-        // Formater les données pour les graphiques
-        const performanceData = strategyStats.map(stat => ({
-          name: stat.name,
-          winRate: Math.round(stat.winRate || 0),
-          totalTrades: stat.tradeCount,
-          averagePnL: Math.round(stat.avgPnL || 0)
-        }));
-        
-        setStrategyPerformanceData(performanceData);
-        
-        // Données pour le graphique en camembert
-        const categoryData = strategyStats.map(stat => ({
-          name: stat.name,
-          value: stat.tradeCount
-        }));
-        
-        setStrategyCategoryData(categoryData);
-        
-        // Créer des données mensuelles pour chaque stratégie
-        createMonthlyPerformanceData(user.id);
+        // Fetch user trades
+        const { data: trades, error: tradesError } = await supabase
+          .from('trades')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('date', startDate.toISOString())
+          .order('date', { ascending: true });
+
+        if (tradesError) throw tradesError;
+
+        // Process trades data for analysis
+        processTradesData(trades || []);
         
       } catch (error: any) {
         console.error('Error fetching analytics data:', error.message);
+        // Use default data if we couldn't fetch user data
         useDefaultData();
       } finally {
         setLoading(false);
@@ -80,76 +67,6 @@ const StrategyAnalysis = () => {
 
     fetchData();
   }, [user, selectedPeriod]);
-
-  const createMonthlyPerformanceData = async (userId: string) => {
-    try {
-      const startDate = getStartDateFromTimeframe(selectedPeriod);
-      
-      const { data: trades, error } = await supabase
-        .from('trades')
-        .select('strategy, pnl, date')
-        .eq('user_id', userId)
-        .gte('date', startDate.toISOString())
-        .order('date', { ascending: true });
-      
-      if (error) throw error;
-      
-      if (!trades || trades.length === 0) {
-        setTimePerformanceData(getDefaultTimePerformanceData());
-        return;
-      }
-      
-      // Grouper par mois et par stratégie
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const monthlyData: Record<string, Record<string, number>> = {};
-      
-      // Initialiser les mois
-      months.forEach(month => {
-        monthlyData[month] = {};
-      });
-      
-      // Extraire toutes les stratégies uniques
-      const uniqueStrategies = new Set<string>();
-      trades.forEach(trade => {
-        if (trade.strategy) uniqueStrategies.add(trade.strategy);
-      });
-      
-      // Remplir les données
-      trades.forEach(trade => {
-        if (!trade.strategy) return;
-        
-        const date = new Date(trade.date);
-        const month = months[date.getMonth()];
-        
-        if (!monthlyData[month][trade.strategy]) {
-          monthlyData[month][trade.strategy] = 0;
-        }
-        
-        monthlyData[month][trade.strategy] += (trade.pnl || 0);
-      });
-      
-      // Convertir en format pour le graphique
-      const formattedTimeData = months.map(month => {
-        const monthData: any = { month };
-        
-        uniqueStrategies.forEach(strategy => {
-          monthData[strategy] = Math.round(monthlyData[month][strategy] || 0);
-        });
-        
-        return monthData;
-      });
-      
-      if (formattedTimeData.some(month => Object.keys(month).length > 1)) {
-        setTimePerformanceData(formattedTimeData);
-      } else {
-        setTimePerformanceData(getDefaultTimePerformanceData());
-      }
-      
-    } catch (error) {
-      console.error('Error creating monthly performance data:', error);
-      setTimePerformanceData(getDefaultTimePerformanceData());
-    }
-  };
 
   const getStartDateFromTimeframe = (tf: string): Date => {
     const now = new Date();
@@ -164,6 +81,90 @@ const StrategyAnalysis = () => {
       default:
         return new Date(2000, 0, 1); // A date far in the past
     }
+  };
+
+  const processTradesData = (trades: any[]) => {
+    if (!trades || trades.length === 0) {
+      useDefaultData();
+      return;
+    }
+
+    // Process strategy performance data
+    const strategies: Record<string, { wins: number, losses: number, totalTrades: number, totalPnL: number }> = {};
+    
+    trades.forEach(trade => {
+      const strategyName = trade.strategy || 'Non définie';
+      
+      if (!strategies[strategyName]) {
+        strategies[strategyName] = { wins: 0, losses: 0, totalTrades: 0, totalPnL: 0 };
+      }
+      
+      strategies[strategyName].totalTrades += 1;
+      strategies[strategyName].totalPnL += (trade.pnl || 0);
+      
+      if (trade.pnl > 0) {
+        strategies[strategyName].wins += 1;
+      } else if (trade.pnl < 0) {
+        strategies[strategyName].losses += 1;
+      }
+    });
+    
+    // Convert to array format for charts
+    const performanceData = Object.entries(strategies).map(([name, data]) => ({
+      name,
+      winRate: data.totalTrades > 0 ? Math.round((data.wins / data.totalTrades) * 100) : 0,
+      totalTrades: data.totalTrades,
+      averagePnL: data.totalTrades > 0 ? Math.round(data.totalPnL / data.totalTrades) : 0
+    }));
+    
+    setStrategyPerformanceData(performanceData.length > 0 ? performanceData : getDefaultPerformanceData());
+    
+    // Process strategy category data
+    const categoryData = Object.entries(strategies).map(([name, data]) => ({
+      name,
+      value: data.totalTrades
+    }));
+    
+    setStrategyCategoryData(categoryData.length > 0 ? categoryData : getDefaultCategoryData());
+    
+    // Process time performance data
+    const monthlyPerformance: Record<string, Record<string, number>> = {};
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    // Initialize data structure
+    months.forEach(month => {
+      monthlyPerformance[month] = {};
+      Object.keys(strategies).forEach(strategy => {
+        monthlyPerformance[month][strategy] = 0;
+      });
+    });
+    
+    // Fill with actual data
+    trades.forEach(trade => {
+      if (!trade.strategy) return;
+      
+      const date = new Date(trade.date);
+      const month = months[date.getMonth()];
+      
+      monthlyPerformance[month][trade.strategy] = 
+        (monthlyPerformance[month][trade.strategy] || 0) + (trade.pnl || 0);
+    });
+    
+    // Convert to array format for charts
+    const timeData = months.map(month => {
+      const monthData: any = { month };
+      
+      Object.entries(strategies).forEach(([strategy]) => {
+        monthData[strategy] = Math.round(monthlyPerformance[month][strategy] || 0);
+      });
+      
+      return monthData;
+    });
+    
+    setTimePerformanceData(
+      timeData.some(month => Object.keys(month).length > 1) ? 
+      timeData : getDefaultTimePerformanceData()
+    );
   };
 
   const useDefaultData = () => {

@@ -122,7 +122,6 @@ export default function Profile() {
   const createdAt = isOwnProfile 
     ? profile.created_at 
     : viewingProfile?.created_at || new Date().toISOString();
-  const profileId = isOwnProfile ? user.id : viewingProfile.id;
 
   return (
     <AppLayout>
@@ -174,25 +173,6 @@ export default function Profile() {
                 premiumExpires={premiumExpires}
               />
             </div>
-            
-            {isOwnProfile && (
-              <div className="flex justify-end mt-6">
-                {isEditing ? (
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setIsEditing(false)} disabled={loading}>
-                      Annuler
-                    </Button>
-                    <Button onClick={handleSave} disabled={loading}>
-                      {loading ? "Enregistrement..." : "Enregistrer"}
-                    </Button>
-                  </div>
-                ) : (
-                  <Button onClick={() => setIsEditing(true)}>
-                    Modifier le profil
-                  </Button>
-                )}
-              </div>
-            )}
           </TabsContent>
         </Tabs>
       </div>
