@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +13,6 @@ type AuthContextType = {
   signIn: (email: string, password: string, stayLoggedIn: boolean) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
-  updateProfile: (profileData: { username?: string; bio?: string }) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -237,39 +237,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Add the updateProfile function
-  const updateProfile = async (profileData: { username?: string; bio?: string }) => {
-    if (!user) return;
-    
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          username: profileData.username,
-          bio: profileData.bio,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-        
-      if (error) {
-        throw error;
-      }
-      
-      await refreshProfile();
-      
-      toast({
-        title: "Profil mis à jour",
-        description: "Vos informations ont été mises à jour avec succès.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erreur de mise à jour",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
   const value = {
     user,
     session,
@@ -279,7 +246,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signOut,
     refreshProfile,
-    updateProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

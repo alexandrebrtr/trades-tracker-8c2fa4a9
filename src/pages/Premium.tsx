@@ -1,85 +1,23 @@
-
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Check, Star, Calendar, BarChart3, ArrowRight, Zap } from 'lucide-react';
+import { Check, Star } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { usePremium } from '@/context/PremiumContext';
 
 export default function Premium() {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { isPremium, setPremiumStatus } = usePremium();
   
   // Redirect to payment page
   const handleSubscribe = () => {
-    if (selectedPlan === 'yearly') {
-      // Navigate to payment page with yearly plan selected
-      navigate('/payment?plan=yearly');
-    } else {
-      // Navigate to payment page with monthly plan selected
-      navigate('/payment?plan=monthly');
-    }
+    // Redirect to payment page
+    navigate('/payment');
   };
-
-  // For demo purposes only - allow instant premium activation
-  const handleDemoActivate = async () => {
-    try {
-      await setPremiumStatus(true);
-      toast({
-        title: "Premium activé",
-        description: "Vous avez maintenant accès à toutes les fonctionnalités premium"
-      });
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Error activating premium:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'activer le mode premium",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // If user is already premium, show different content
-  if (isPremium) {
-    return (
-      <AppLayout>
-        <div className="page-transition space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h1 className="text-3xl font-bold tracking-tight">Abonnement Premium</h1>
-          </div>
-
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="bg-primary/10 text-primary rounded-full px-4 py-1 inline-flex items-center gap-1 mb-6">
-              <Star className="h-4 w-4 fill-primary" />
-              <span className="text-sm font-medium">Abonnement Actif</span>
-            </div>
-            
-            <h2 className="text-2xl font-bold mb-4">Vous êtes déjà abonné à Premium !</h2>
-            <p className="text-muted-foreground mb-8">
-              Profitez de toutes les fonctionnalités premium de Trades Tracker pour améliorer votre expérience de trading.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="outline" onClick={() => navigate('/dashboard')}>
-                Retour au tableau de bord
-              </Button>
-              <Button onClick={() => navigate('/calendar')}>
-                <Calendar className="h-4 w-4 mr-2" />
-                Accéder au Calendrier
-              </Button>
-            </div>
-          </div>
-        </div>
-      </AppLayout>
-    );
-  }
 
   return (
     <AppLayout>
@@ -128,11 +66,7 @@ export default function Premium() {
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                      <span>Accès au calendrier de trading</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                      <span>Personnalisation avancée du profil</span>
+                      <span>Accès à la communauté de traders</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -144,7 +78,11 @@ export default function Premium() {
                     </li>
                     <li className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                      <span>Fonctionnalités sociales et communauté</span>
+                      <span>Intégrations API complètes</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <span>Thèmes et personnalisation avancée</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -152,12 +90,9 @@ export default function Premium() {
                     </li>
                   </ul>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-3">
+                <CardFooter>
                   <Button className="w-full" size="lg" onClick={handleSubscribe}>
                     S'abonner maintenant
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={handleDemoActivate} className="text-xs">
-                    Activer Premium (Démo)
                   </Button>
                 </CardFooter>
               </Card>
@@ -183,18 +118,6 @@ export default function Premium() {
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                      <span>Accès au calendrier de trading</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                      <span>Personnalisation avancée du profil</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                      <span>Statistiques avancées et analyses de performance</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <span>Tous les avantages du plan mensuel</span>
                     </li>
                     <li className="flex items-start gap-3">
@@ -207,109 +130,16 @@ export default function Premium() {
                     </li>
                   </ul>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-3">
+                <CardFooter>
                   <Button className="w-full" size="lg" onClick={handleSubscribe}>
                     S'abonner annuellement
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={handleDemoActivate} className="text-xs">
-                    Activer Premium (Démo)
                   </Button>
                 </CardFooter>
               </Card>
             </TabsContent>
           </Tabs>
 
-          <div className="mt-12 space-y-8">
-            <h3 className="text-xl font-bold text-center">Fonctionnalités Premium</h3>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      <Calendar className="h-5 w-5 text-primary" />
-                    </div>
-                    <CardTitle className="text-lg">Calendrier de Trading</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Visualisez vos trades sur un calendrier interactif et planifiez vos activités de trading à l'avance.
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full" onClick={() => navigate('/premium')}>
-                    Débloquer <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </CardFooter>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      <BarChart3 className="h-5 w-5 text-primary" />
-                    </div>
-                    <CardTitle className="text-lg">Analyses Avancées</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Accédez à des analyses détaillées de vos performances, des graphiques avancés et des métriques personnalisées.
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full" onClick={() => navigate('/premium')}>
-                    Débloquer <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </CardFooter>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      <Zap className="h-5 w-5 text-primary" />
-                    </div>
-                    <CardTitle className="text-lg">Fonctionnalités Sociales</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Connectez-vous avec d'autres traders, partagez vos analyses et apprenez des meilleurs.
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full" onClick={() => navigate('/premium')}>
-                    Débloquer <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </CardFooter>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      <Star className="h-5 w-5 text-primary" />
-                    </div>
-                    <CardTitle className="text-lg">Thèmes Personnalisés</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Personnalisez l'apparence de l'application avec des thèmes exclusifs et des options de couleur avancées.
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full" onClick={() => navigate('/premium')}>
-                    Débloquer <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
-          </div>
-
-          <div className="text-center text-sm text-muted-foreground mt-10">
+          <div className="text-center text-sm text-muted-foreground">
             <p>Sans engagement. Annulez à tout moment.</p>
             <p className="mt-1">
               En vous abonnant, vous acceptez nos{" "}

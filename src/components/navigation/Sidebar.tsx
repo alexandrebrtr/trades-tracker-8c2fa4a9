@@ -11,16 +11,14 @@ import {
   Menu,
   X,
   Wallet,
-  Contact,
-  Star,
-  Settings
+  Shield,
+  Contact
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { usePremium } from '@/context/PremiumContext';
 import { SidebarNavItem } from './SidebarNavItem';
 import { SidebarUserSection } from './SidebarUserSection';
-import { Badge } from '@/components/ui/badge';
 
 interface NavItem {
   name: string;
@@ -35,6 +33,10 @@ export function Sidebar() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const { user } = useAuth();
   const { isPremium } = usePremium();
+  
+  // Admin IDs - hardcoded for simplicity
+  const adminIds = ['9ce47b0c-0d0a-4834-ae81-e103dff2e386'];
+  const isAdmin = user && adminIds.includes(user.id);
 
   // Handle screen resize
   useEffect(() => {
@@ -82,8 +84,7 @@ export function Sidebar() {
     {
       name: 'Calendrier',
       path: '/calendar',
-      icon: <Calendar className="w-5 h-5" />,
-      requirePremium: true
+      icon: <Calendar className="w-5 h-5" />
     },
     {
       name: 'Nouveau Trade',
@@ -109,13 +110,20 @@ export function Sidebar() {
       name: 'Contact',
       path: '/contact',
       icon: <Contact className="w-5 h-5" />
-    },
-    {
-      name: 'Paramètres',
-      path: '/settings',
-      icon: <Settings className="w-5 h-5" />
     }
   ];
+
+  // Add admin item conditionally
+  if (isAdmin) {
+    navItems.push({
+      name: 'Administration',
+      path: '/admin',
+      icon: <Shield className="w-5 h-5" />
+    });
+  }
+
+  // Filter nav items based on premium status
+  const filteredNavItems = navItems.filter(item => !item.requirePremium || isPremium);
 
   return (
     <aside 
@@ -129,7 +137,7 @@ export function Sidebar() {
         <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
           {!collapsed && (
             <Link to="/dashboard" className="flex items-center">
-              <span className="text-[#1EAEDB] font-bold text-xl">Trades Tracker</span>
+              <span className="text-primary font-bold text-xl">Trades Tracker</span>
             </Link>
           )}
           <Button 
@@ -146,45 +154,14 @@ export function Sidebar() {
         {/* Navigation */}
         <nav className="flex-1 py-4 overflow-y-auto">
           <ul className="space-y-1 px-3">
-            {navItems.map((item) => (
-              <li key={item.path}>
-                <Link
-                  to={isPremium || !item.requirePremium ? item.path : "/premium"}
-                  className={cn(
-                    'flex items-center p-3 rounded-md transition-colors',
-                    collapsed ? 'justify-center' : 'justify-between',
-                    location.pathname === item.path 
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
-                      : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-                  )}
-                >
-                  <div className="flex items-center">
-                    {item.icon}
-                    {!collapsed && <span className="ml-3 font-medium">{item.name}</span>}
-                  </div>
-                  
-                  {!collapsed && item.requirePremium && (
-                    <Badge 
-                      variant="outline" 
-                      className={cn(
-                        "ml-2 text-xs",
-                        isPremium 
-                          ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" 
-                          : "bg-slate-500/10 text-slate-500 border-slate-500/20"
-                      )}
-                    >
-                      {isPremium ? (
-                        <span className="flex items-center">
-                          <Star className="h-3 w-3 mr-1 fill-yellow-500" />
-                          Premium
-                        </span>
-                      ) : (
-                        "Premium"
-                      )}
-                    </Badge>
-                  )}
-                </Link>
-              </li>
+            {filteredNavItems.map((item) => (
+              <SidebarNavItem 
+                key={item.path}
+                name={item.name}
+                path={item.path}
+                icon={item.icon}
+                collapsed={collapsed}
+              />
             ))}
           </ul>
         </nav>

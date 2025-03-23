@@ -22,19 +22,6 @@ export const DashboardData = {
     let strategyAllocation: any[] = [];
 
     try {
-      // Récupérer le profil utilisateur pour obtenir la balance
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('balance')
-        .eq('id', userId)
-        .single();
-      
-      if (profileError) throw profileError;
-      
-      if (profile) {
-        portfolioBalance = profile.balance || 0;
-      }
-      
       // Récupérer les données du portfolio
       const { data: portfolios, error: portfolioError } = await supabase
         .from('portfolios')
@@ -45,19 +32,7 @@ export const DashboardData = {
       if (portfolioError) throw portfolioError;
       
       if (portfolios && portfolios.length > 0) {
-        // Si le portefeuille existe, mettre à jour le solde pour garantir la cohérence
-        // entre le profil et le portefeuille
-        if (portfolioBalance !== portfolios[0].balance) {
-          try {
-            // Mettre à jour le portefeuille avec la valeur du profil
-            await supabase
-              .from('portfolios')
-              .update({ balance: portfolioBalance })
-              .eq('id', portfolios[0].id);
-          } catch (error) {
-            console.error('Erreur lors de la synchronisation du solde:', error);
-          }
-        }
+        portfolioBalance = portfolios[0].balance;
         
         // Récupérer les allocations d'actifs
         const { data: allocations, error: allocationsError } = await supabase

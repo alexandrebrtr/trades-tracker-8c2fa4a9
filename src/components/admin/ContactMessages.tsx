@@ -1,303 +1,223 @@
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Textarea } from '@/components/ui/textarea';
-import { useContactMessages, ContactMessage } from '@/hooks/useContactMessages';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Check, X, Send, Trash2, Mail, Eye } from 'lucide-react';
+import { Eye, Trash, Check, MailOpen } from 'lucide-react';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { useToast } from '@/components/ui/use-toast';
+
+interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  read: boolean;
+  created_at: string;
+}
 
 export function ContactMessages() {
-  const { messages, loading, markAsRead, respondToMessage, deleteMessage } = useContactMessages();
-  const [openMessageId, setOpenMessageId] = useState<string | null>(null);
-  const [responseText, setResponseText] = useState('');
-  const [responding, setResponding] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('all');
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const { toast } = useToast();
 
-  const handleRespondToMessage = async (id: string) => {
-    if (!responseText.trim()) return;
-    
-    setResponding(true);
+  const fetchMessages = async () => {
+    setLoading(true);
     try {
-      await respondToMessage(id, responseText);
-      setOpenMessageId(null);
-      setResponseText('');
+      const { data, error } = await supabase
+        .from('contact_messages')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setMessages(data as ContactMessage[] || []);
+    } catch (error) {
+      console.error('Error fetching contact messages:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de récupérer les messages",
+        variant: "destructive",
+      });
     } finally {
-      setResponding(false);
+      setLoading(false);
     }
   };
 
-  const handleConfirmDelete = async (id: string) => {
-    await deleteMessage(id);
-    setConfirmDelete(null);
+  useEffect(() => {
+    fetchMessages();
+    
+    // Set up realtime subscription for new messages
+    const subscription = supabase
+      .channel('contact_messages_changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contact_messages' }, (payload) => {
+        setMessages((prevMessages) => [payload.new as ContactMessage, ...prevMessages]);
+        toast({
+          title: "Nouveau message",
+          description: `Message reçu de ${(payload.new as ContactMessage).name}`,
+        });
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const markAsRead = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('contact_messages')
+        .update({ read: true })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setMessages(messages.map(msg => 
+        msg.id === id ? { ...msg, read: true } : msg
+      ));
+      
+      if (selectedMessage?.id === id) {
+        setSelectedMessage({ ...selectedMessage, read: true });
+      }
+    } catch (error) {
+      console.error('Error marking message as read:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de marquer le message comme lu",
+        variant: "destructive",
+      });
+    }
   };
 
-  const getCurrentMessage = () => {
-    if (!openMessageId) return null;
-    return messages.find(m => m.id === openMessageId);
+  const deleteMessage = async (id: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce message ?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('contact_messages')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setMessages(messages.filter(msg => msg.id !== id));
+      
+      if (selectedMessage?.id === id) {
+        setSelectedMessage(null);
+      }
+      
+      toast({
+        title: "Message supprimé",
+        description: "Le message a été supprimé avec succès",
+      });
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le message",
+        variant: "destructive",
+      });
+    }
   };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const filterMessages = () => {
-    if (activeTab === 'all') return messages;
-    if (activeTab === 'unread') return messages.filter(msg => !msg.read);
-    if (activeTab === 'responded') return messages.filter(msg => msg.response);
-    if (activeTab === 'pending') return messages.filter(msg => !msg.response);
-    return messages;
-  };
-
-  const filteredMessages = filterMessages();
-
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Chargement des messages...
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (messages.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Messages de contact</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center py-8">
-          <p className="text-muted-foreground">Aucun message de contact pour le moment.</p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex justify-between items-center">
-            <span>Messages de contact</span>
-            <Badge variant="outline" className="ml-2">
-              {messages.length} messages
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">
-                Tous
-                <Badge variant="outline" className="ml-2 bg-slate-100">{messages.length}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="unread">
-                Non lus
-                <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-800">{messages.filter(m => !m.read).length}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="pending">
-                En attente
-                <Badge variant="outline" className="ml-2 bg-yellow-100 text-yellow-800">{messages.filter(m => !m.response).length}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="responded">
-                Répondus
-                <Badge variant="outline" className="ml-2 bg-green-100 text-green-800">{messages.filter(m => m.response).length}</Badge>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          <div className="space-y-4">
-            {filteredMessages.length > 0 ? (
-              filteredMessages.map((message) => (
-                <Card key={message.id} className="overflow-hidden">
-                  <CardHeader className={`${!message.read ? 'bg-blue-50/50' : 'bg-muted/50'} py-3 px-4`}>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-base flex items-center gap-2">
-                          {!message.read && <Badge variant="default" className="bg-blue-500">Nouveau</Badge>}
-                          {message.name}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Mail className="h-3 w-3" />
-                          {message.email}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="h-8"
-                          onClick={() => {
-                            if (!message.read) markAsRead(message.id);
-                            setOpenMessageId(message.id);
-                          }}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Voir
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="h-8"
-                          onClick={() => setConfirmDelete(message.id)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-1 text-destructive" />
-                          Supprimer
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="py-3 px-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(message.created_at)}
-                      </p>
-                      {message.response ? (
-                        <Badge className="bg-green-500">Répondu</Badge>
-                      ) : (
-                        <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
-                          En attente
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm line-clamp-2">
-                      {message.message}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Aucun message ne correspond à ce filtre.</p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Message Detail Dialog */}
-      <Dialog open={!!openMessageId} onOpenChange={(open) => !open && setOpenMessageId(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Message de {getCurrentMessage()?.name}</DialogTitle>
-            <DialogDescription>
-              <span className="flex items-center gap-1">
-                <Mail className="h-3 w-3" />
-                {getCurrentMessage()?.email}
-              </span>
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 my-2">
-            <div>
-              <h4 className="text-sm font-medium mb-1">Message reçu le {getCurrentMessage() && formatDate(getCurrentMessage()!.created_at)}</h4>
-              <div className="bg-muted/30 p-4 rounded-md whitespace-pre-wrap">
-                {getCurrentMessage()?.message}
-              </div>
-            </div>
-
-            {getCurrentMessage()?.response && (
-              <>
-                <Separator />
-                <div>
-                  <h4 className="text-sm font-medium mb-1">Votre réponse</h4>
-                  <div className="bg-muted/30 p-4 rounded-md whitespace-pre-wrap">
-                    {getCurrentMessage()?.response}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Envoyée le {getCurrentMessage()?.response_at && formatDate(getCurrentMessage()?.response_at)}
-                  </p>
-                </div>
-              </>
-            )}
-
-            {!getCurrentMessage()?.response && (
-              <>
-                <Separator />
-                <div>
-                  <h4 className="text-sm font-medium mb-1">Répondre</h4>
-                  <Textarea 
-                    value={responseText}
-                    onChange={(e) => setResponseText(e.target.value)}
-                    placeholder="Votre réponse..."
-                    rows={5}
-                  />
-                </div>
-              </>
-            )}
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setOpenMessageId(null)}>
-              Fermer
-            </Button>
-            
-            {!getCurrentMessage()?.response && (
-              <Button 
-                onClick={() => openMessageId && handleRespondToMessage(openMessageId)}
-                disabled={responding || !responseText.trim()}
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Messages de contact</h2>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">{messages.length} message(s)</Badge>
+          <Button variant="outline" size="sm" onClick={fetchMessages}>
+            Actualiser
+          </Button>
+        </div>
+      </div>
+      
+      {loading ? (
+        <div className="text-center py-8">Chargement des messages...</div>
+      ) : messages.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">Aucun message reçu</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-1 space-y-2">
+            {messages.map((msg) => (
+              <Card 
+                key={msg.id} 
+                className={`cursor-pointer hover:bg-accent/50 transition-colors ${!msg.read ? 'border-primary' : ''}`}
+                onClick={() => setSelectedMessage(msg)}
               >
-                {responding ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Envoi en cours...
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Envoyer la réponse
-                  </>
-                )}
-              </Button>
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium">{msg.name}</h3>
+                      <p className="text-sm text-muted-foreground truncate">{msg.email}</p>
+                    </div>
+                    {!msg.read && (
+                      <Badge className="ml-2">Nouveau</Badge>
+                    )}
+                  </div>
+                  <p className="text-sm mt-2 truncate">{msg.message}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {format(new Date(msg.created_at), 'PPp', { locale: fr })}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <div className="md:col-span-2">
+            {selectedMessage ? (
+              <Card>
+                <CardHeader className="flex flex-row items-start justify-between gap-4">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      {selectedMessage.name}
+                      {!selectedMessage.read && <Badge>Nouveau</Badge>}
+                    </CardTitle>
+                    <CardDescription>
+                      {selectedMessage.email} - {format(new Date(selectedMessage.created_at), 'PPp', { locale: fr })}
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    {!selectedMessage.read && (
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => markAsRead(selectedMessage.id)}
+                        title="Marquer comme lu"
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <Button 
+                      variant="destructive" 
+                      size="icon"
+                      onClick={() => deleteMessage(selectedMessage.id)}
+                      title="Supprimer"
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="whitespace-pre-wrap">
+                    {selectedMessage.message}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="text-center p-8 text-muted-foreground">
+                  <MailOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Sélectionnez un message pour le lire</p>
+                </CardContent>
+              </Card>
             )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Confirm Delete Dialog */}
-      <Dialog open={!!confirmDelete} onOpenChange={(open) => !open && setConfirmDelete(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
-            <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce message ? Cette action est irréversible.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setConfirmDelete(null)}>
-              <X className="mr-2 h-4 w-4" />
-              Annuler
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={() => confirmDelete && handleConfirmDelete(confirmDelete)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

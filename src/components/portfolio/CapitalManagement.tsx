@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,6 @@ import { Plus, Minus, Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 import { DataCard } from '@/components/ui/data-card';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { RealtimeService } from '@/services/RealtimeService';
 
 interface CapitalManagementProps {
   portfolioId: string | null;
@@ -21,38 +19,15 @@ interface CapitalManagementProps {
 
 export function CapitalManagement({ 
   portfolioId, 
-  portfolioSize: initialPortfolioSize, 
+  portfolioSize, 
   setPortfolioSize, 
   trades,
   formatCurrency 
 }: CapitalManagementProps) {
   const { toast } = useToast();
   const { user, refreshProfile } = useAuth();
-  const [portfolioSize, setLocalPortfolioSize] = useState(initialPortfolioSize);
   const [depositAmount, setDepositAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
-
-  // Update state when props change
-  useEffect(() => {
-    setLocalPortfolioSize(initialPortfolioSize);
-  }, [initialPortfolioSize]);
-
-  // Subscribe to real-time balance updates
-  useEffect(() => {
-    if (!user) return;
-
-    const unsubscribe = RealtimeService.subscribeToTradesBalanceUpdates(
-      user.id, 
-      (newBalance) => {
-        setLocalPortfolioSize(newBalance);
-        setPortfolioSize(newBalance);
-      }
-    );
-
-    return () => {
-      unsubscribe();
-    };
-  }, [user, setPortfolioSize]);
 
   const handleDeposit = async () => {
     if (!user || !portfolioId) return;
@@ -84,8 +59,6 @@ export function CapitalManagement({
       
       if (profileError) throw profileError;
       
-      // Update local state (the subscription will also update this)
-      setLocalPortfolioSize(newBalance);
       setPortfolioSize(newBalance);
       setDepositAmount('');
       
@@ -144,8 +117,6 @@ export function CapitalManagement({
       
       if (profileError) throw profileError;
       
-      // Update local state (the subscription will also update this)
-      setLocalPortfolioSize(newBalance);
       setPortfolioSize(newBalance);
       setWithdrawAmount('');
       

@@ -82,8 +82,6 @@ export type Database = {
           message: string
           name: string
           read: boolean
-          response: string | null
-          response_at: string | null
         }
         Insert: {
           created_at?: string
@@ -92,8 +90,6 @@ export type Database = {
           message: string
           name: string
           read?: boolean
-          response?: string | null
-          response_at?: string | null
         }
         Update: {
           created_at?: string
@@ -102,8 +98,6 @@ export type Database = {
           message?: string
           name?: string
           read?: boolean
-          response?: string | null
-          response_at?: string | null
         }
         Relationships: []
       }

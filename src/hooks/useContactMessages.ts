@@ -10,8 +10,6 @@ export type ContactMessage = {
   message: string;
   created_at: string;
   read: boolean;
-  response?: string;
-  response_at?: string;
 };
 
 export function useContactMessages() {
@@ -44,7 +42,7 @@ export function useContactMessages() {
   useEffect(() => {
     fetchMessages();
     
-    // Configure real-time subscription for new messages
+    // Configurer l'abonnement en temps réel pour les nouveaux messages
     const subscription = supabase
       .channel('contact_messages_changes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contact_messages' }, (payload) => {
@@ -53,11 +51,6 @@ export function useContactMessages() {
           title: "Nouveau message",
           description: `Message reçu de ${(payload.new as ContactMessage).name}`,
         });
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'contact_messages' }, (payload) => {
-        setMessages((prevMessages) => 
-          prevMessages.map(msg => msg.id === payload.new.id ? payload.new as ContactMessage : msg)
-        );
       })
       .subscribe();
 
@@ -83,42 +76,6 @@ export function useContactMessages() {
       toast({
         title: "Erreur",
         description: "Impossible de marquer le message comme lu",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const respondToMessage = async (id: string, response: string) => {
-    try {
-      const { error } = await supabase
-        .from('contact_messages')
-        .update({ 
-          response: response,
-          response_at: new Date().toISOString(),
-          read: true 
-        })
-        .eq('id', id);
-      
-      if (error) throw error;
-      
-      setMessages(messages.map(msg => 
-        msg.id === id ? { 
-          ...msg, 
-          response: response,
-          response_at: new Date().toISOString(),
-          read: true 
-        } : msg
-      ));
-      
-      toast({
-        title: "Réponse envoyée",
-        description: "La réponse a été envoyée avec succès",
-      });
-    } catch (error) {
-      console.error('Error responding to message:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer la réponse",
         variant: "destructive",
       });
     }
@@ -154,7 +111,6 @@ export function useContactMessages() {
     loading,
     fetchMessages,
     markAsRead,
-    respondToMessage,
     deleteMessage
   };
 }

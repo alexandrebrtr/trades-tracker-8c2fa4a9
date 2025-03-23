@@ -1,187 +1,170 @@
 
+import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Mail, Phone, MapPin, Globe, Instagram, Twitter, Facebook, Linkedin } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-const Contact = () => {
+const formSchema = z.object({
+  name: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères" }),
+  email: z.string().email({ message: "Adresse email invalide" }),
+  message: z.string().min(10, { message: "Le message doit contenir au moins 10 caractères" }),
+});
+
+export default function Contact() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      message: "",
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: values.name,
+          email: values.email,
+          message: values.message
+        });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Message envoyé",
+        description: "Nous vous répondrons dans les plus brefs délais.",
+      });
+      
+      form.reset();
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <AppLayout>
-      <div className="container max-w-4xl mx-auto py-8 px-4">
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold">Contactez-nous</h1>
-          <p className="text-muted-foreground">
-            Vous avez une question ou besoin d'aide ? N'hésitez pas à nous contacter par l'un des moyens ci-dessous.
-          </p>
-          
-          <div className="grid md:grid-cols-2 gap-6 mt-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-primary" />
-                  Par email
-                </CardTitle>
-                <CardDescription>Envoyez-nous un email pour toute question</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-col gap-1">
-                  <span className="font-medium">Email général :</span>
-                  <a href="mailto:contact@tradingjournal.fr" className="text-primary hover:underline">
-                    contact@tradingjournal.fr
-                  </a>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="font-medium">Support technique :</span>
-                  <a href="mailto:support@tradingjournal.fr" className="text-primary hover:underline">
-                    support@tradingjournal.fr
-                  </a>
-                </div>
-                <Button variant="outline" asChild className="w-full mt-2">
-                  <a href="mailto:contact@tradingjournal.fr">
-                    <Mail className="mr-2 h-4 w-4" />
-                    Envoyer un email
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
+      <div className="container mx-auto py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-6">Contactez-nous</h1>
+            <p className="text-muted-foreground mb-4">
+              Vous avez des questions, des suggestions ou besoin d'assistance ? 
+              N'hésitez pas à nous contacter en remplissant le formulaire ci-dessous.
+            </p>
             
-            <Card>
+            <Card className="mt-8">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Phone className="h-5 w-5 text-primary" />
-                  Par téléphone
-                </CardTitle>
-                <CardDescription>Contactez-nous par téléphone pour un service rapide</CardDescription>
+                <CardTitle>Nos coordonnées</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex flex-col gap-1">
-                  <span className="font-medium">Service client :</span>
-                  <a href="tel:+33187654321" className="text-primary hover:underline">
-                    +33 1 87 65 43 21
-                  </a>
+                <div>
+                  <h3 className="font-medium">Email</h3>
+                  <p className="text-muted-foreground">support@tradetracker.com</p>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <span className="font-medium">Horaires d'ouverture :</span>
-                  <p className="text-muted-foreground">Lun-Ven : 9h - 18h</p>
+                <div>
+                  <h3 className="font-medium">Téléphone</h3>
+                  <p className="text-muted-foreground">+33 (0)1 23 45 67 89</p>
                 </div>
-                <Button variant="outline" asChild className="w-full mt-2">
-                  <a href="tel:+33187654321">
-                    <Phone className="mr-2 h-4 w-4" />
-                    Nous appeler
-                  </a>
-                </Button>
+                <div>
+                  <h3 className="font-medium">Adresse</h3>
+                  <p className="text-muted-foreground">123 Avenue des Champs-Élysées<br />75008 Paris, France</p>
+                </div>
               </CardContent>
             </Card>
           </div>
           
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                Notre adresse
-              </CardTitle>
-              <CardDescription>Visitez nos bureaux</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-base">
-                123 Avenue des Champs-Élysées<br />
-                75008 Paris<br />
-                France
-              </p>
-              <Button variant="outline" asChild className="mt-2">
-                <a href="https://maps.google.com/?q=123+Avenue+des+Champs-Élysées,+75008+Paris,+France" target="_blank" rel="noopener noreferrer">
-                  <MapPin className="mr-2 h-4 w-4" />
-                  Voir sur Google Maps
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
-          
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5 text-primary" />
-                Réseaux sociaux
-              </CardTitle>
-              <CardDescription>Suivez-nous pour rester informé</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <Button variant="outline" asChild className="flex items-center gap-2 h-auto py-3">
-                  <a href="https://twitter.com/tradingjournal" target="_blank" rel="noopener noreferrer">
-                    <Twitter className="h-5 w-5 text-[#1DA1F2]" />
-                    <span>Twitter</span>
-                  </a>
-                </Button>
-                <Button variant="outline" asChild className="flex items-center gap-2 h-auto py-3">
-                  <a href="https://linkedin.com/company/tradingjournal" target="_blank" rel="noopener noreferrer">
-                    <Linkedin className="h-5 w-5 text-[#0077B5]" />
-                    <span>LinkedIn</span>
-                  </a>
-                </Button>
-                <Button variant="outline" asChild className="flex items-center gap-2 h-auto py-3">
-                  <a href="https://facebook.com/tradingjournal" target="_blank" rel="noopener noreferrer">
-                    <Facebook className="h-5 w-5 text-[#1877F2]" />
-                    <span>Facebook</span>
-                  </a>
-                </Button>
-                <Button variant="outline" asChild className="flex items-center gap-2 h-auto py-3">
-                  <a href="https://instagram.com/tradingjournal" target="_blank" rel="noopener noreferrer">
-                    <Instagram className="h-5 w-5 text-[#E4405F]" />
-                    <span>Instagram</span>
-                  </a>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Foire aux questions</CardTitle>
-              <CardDescription>Trouvez rapidement des réponses aux questions les plus fréquentes</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-medium">Comment créer un compte ?</h3>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    Cliquez sur "S'inscrire" en haut à droite de la page et suivez les instructions.
-                  </p>
-                </div>
-                <Separator />
-                <div>
-                  <h3 className="font-medium">Comment réinitialiser mon mot de passe ?</h3>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    Sur la page de connexion, cliquez sur "Mot de passe oublié" et suivez les instructions.
-                  </p>
-                </div>
-                <Separator />
-                <div>
-                  <h3 className="font-medium">Comment puis-je accéder aux fonctionnalités premium ?</h3>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    Rendez-vous sur la page Premium depuis le menu principal et sélectionnez l'abonnement qui vous convient.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="text-center mt-6">
-                <p className="text-muted-foreground text-sm mb-3">
-                  Vous ne trouvez pas la réponse à votre question ?
-                </p>
-                <Button asChild>
-                  <a href="mailto:contact@tradingjournal.fr">
-                    <Mail className="mr-2 h-4 w-4" />
-                    Contactez-nous directement
-                  </a>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Formulaire de contact</CardTitle>
+                <CardDescription>
+                  Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nom</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Votre nom" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="votre.email@exemple.com" type="email" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="message"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Message</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Votre message..." 
+                              rows={5}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Envoi en cours..." : "Envoyer le message"}
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </AppLayout>
   );
-};
-
-export default Contact;
+}

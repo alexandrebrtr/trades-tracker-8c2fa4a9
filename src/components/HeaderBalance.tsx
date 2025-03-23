@@ -39,35 +39,37 @@ export function HeaderBalance() {
         )
         .subscribe();
       
-      // Subscribe to trades table changes to ensure balance remains in sync
-      const tradesChannel = supabase
-        .channel('trades-balance-updates')
+      // Subscribe to portfolios table changes to ensure balance remains in sync
+      const portfoliosChannel = supabase
+        .channel('portfolio-balance-updates')
         .on(
           'postgres_changes',
           {
             event: '*',
             schema: 'public',
-            table: 'trades',
+            table: 'portfolios',
             filter: `user_id=eq.${user.id}`
           },
           async (payload) => {
-            console.log('Trade update received in HeaderBalance:', payload);
-            // When a trade is modified, refresh the profile data to ensure consistency
-            try {
-              // Get the latest profile data to ensure we have the most recent balance
-              const { data: latestProfile, error } = await supabase
-                .from('profiles')
-                .select('balance')
-                .eq('id', user.id)
-                .single();
-              
-              if (error) throw error;
-              
-              if (latestProfile) {
-                setBalance(Number(latestProfile.balance));
+            console.log('Portfolio update received in HeaderBalance:', payload);
+            // When portfolio is updated, refresh the profile data to ensure consistency
+            if (payload.new && typeof payload.new === 'object') {
+              try {
+                // Get the latest profile data to ensure we have the most recent balance
+                const { data: latestProfile, error } = await supabase
+                  .from('profiles')
+                  .select('balance')
+                  .eq('id', user.id)
+                  .single();
+                
+                if (error) throw error;
+                
+                if (latestProfile) {
+                  setBalance(Number(latestProfile.balance));
+                }
+              } catch (error) {
+                console.error('Error fetching updated profile after portfolio change:', error);
               }
-            } catch (error) {
-              console.error('Error fetching updated profile after trade change:', error);
             }
           }
         )
@@ -75,7 +77,7 @@ export function HeaderBalance() {
         
       return () => {
         supabase.removeChannel(profilesChannel);
-        supabase.removeChannel(tradesChannel);
+        supabase.removeChannel(portfoliosChannel);
       };
     }
   }, [user, profile]);
