@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -173,10 +172,13 @@ export function SocialTab({
     );
   }
 
+  const userId = isOwnProfile ? profile?.id : viewingProfile?.id;
+
   return (
     <div className="grid gap-6 md:grid-cols-3">
       <div className="md:col-span-3">
         <SocialStats 
+          userId={userId}
           followersCount={mockFollowers.length} 
           followingCount={mockFollowing.length}
           tradesCount={isOwnProfile ? (profile.trades_count || 0) : (viewingProfile?.trades_count || 0)}
