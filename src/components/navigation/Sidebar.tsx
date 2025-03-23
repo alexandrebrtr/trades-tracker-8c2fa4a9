@@ -11,9 +11,9 @@ import {
   Menu,
   X,
   Wallet,
-  Shield,
   Contact,
-  Star
+  Star,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -109,6 +109,11 @@ export function Sidebar() {
       name: 'Contact',
       path: '/contact',
       icon: <Contact className="w-5 h-5" />
+    },
+    {
+      name: 'Paramètres',
+      path: '/settings',
+      icon: <Settings className="w-5 h-5" />
     }
   ];
 
@@ -124,7 +129,7 @@ export function Sidebar() {
         <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
           {!collapsed && (
             <Link to="/dashboard" className="flex items-center">
-              <span className="text-primary font-bold text-xl">Trades Tracker</span>
+              <span className="text-[#1EAEDB] font-bold text-xl">Trades Tracker</span>
             </Link>
           )}
           <Button 

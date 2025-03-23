@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { UserSettings } from '@/context/PremiumContext';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
+import * as XLSX from 'xlsx';
 
 /**
  * Service pour gérer les paramètres utilisateur
@@ -171,5 +172,114 @@ export const UserSettingsService = {
     'outline', 
     'gradient',
     'rounded'
-  ]
+  ],
+
+  /**
+   * Exporte les données de l'utilisateur au format Excel
+   * @param userId ID de l'utilisateur
+   */
+  async exportUserData(userId: string): Promise<Blob | null> {
+    try {
+      // Récupérer les données du profil
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Récupérer les trades de l'utilisateur
+      const { data: tradesData, error: tradesError } = await supabase
+        .from('trades')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (tradesError) throw tradesError;
+
+      // Créer un nouveau classeur Excel
+      const workbook = XLSX.utils.book_new();
+
+      // Créer une feuille pour les informations de profil
+      const profileSheet = XLSX.utils.json_to_sheet([{
+        ID: profileData.id,
+        Username: profileData.username,
+        Email: profileData.email,
+        FullName: profileData.full_name,
+        Balance: profileData.balance,
+        Premium: profileData.premium ? 'Oui' : 'Non',
+        PremiumSince: profileData.premium_since,
+        PremiumExpires: profileData.premium_expires,
+        CreatedAt: profileData.created_at,
+        UpdatedAt: profileData.updated_at
+      }]);
+
+      // Ajouter la feuille de profil au classeur
+      XLSX.utils.book_append_sheet(workbook, profileSheet, 'Profil');
+
+      // Créer une feuille pour les trades
+      if (tradesData && tradesData.length > 0) {
+        const tradesSheet = XLSX.utils.json_to_sheet(tradesData);
+        XLSX.utils.book_append_sheet(workbook, tradesSheet, 'Trades');
+      }
+
+      // Créer une feuille pour les paramètres
+      if (profileData.settings) {
+        const settingsSheet = XLSX.utils.json_to_sheet([profileData.settings]);
+        XLSX.utils.book_append_sheet(workbook, settingsSheet, 'Paramètres');
+      }
+
+      // Convertir le classeur en blob
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      return blob;
+    } catch (error) {
+      console.error('Erreur lors de l\'exportation des données:', error);
+      toast.error('Erreur lors de l\'exportation des données');
+      return null;
+    }
+  },
+
+  /**
+   * Démarrer le processus de réinitialisation du mot de passe
+   * @param email Email de l'utilisateur
+   */
+  async resetPassword(email: string): Promise<{ success: boolean, error?: any }> {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      
+      if (error) throw error;
+      
+      toast.success('Email de réinitialisation envoyé avec succès');
+      return { success: true };
+    } catch (error) {
+      console.error('Erreur lors de la réinitialisation du mot de passe:', error);
+      toast.error('Erreur lors de l\'envoi de l\'email de réinitialisation');
+      return { success: false, error };
+    }
+  },
+  
+  /**
+   * Met à jour le mot de passe de l'utilisateur
+   * @param newPassword Nouveau mot de passe
+   */
+  async updatePassword(newPassword: string): Promise<{ success: boolean, error?: any }> {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (error) throw error;
+      
+      toast.success('Mot de passe mis à jour avec succès');
+      return { success: true };
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du mot de passe:', error);
+      toast.error('Erreur lors de la mise à jour du mot de passe');
+      return { success: false, error };
+    }
+  }
 };

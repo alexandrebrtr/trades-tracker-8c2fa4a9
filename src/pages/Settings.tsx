@@ -1,204 +1,102 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/context/AuthContext';
 import { usePremium } from '@/context/PremiumContext';
 import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
-import { RefreshCw, Save } from 'lucide-react';
-import { UserSettingsService } from '@/services/UserSettingsService';
+import { AccountSection } from '@/components/settings/AccountSection';
+import { PasswordSection } from '@/components/settings/PasswordSection';
+import { SecuritySection } from '@/components/settings/SecuritySection';
+import { LayoutDashboard, Palette, Bell, Key, Shield } from 'lucide-react';
 
 export default function Settings() {
-  const { user, profile, updateProfile } = useAuth();
+  const { user, profile } = useAuth();
   const { userSettings, updateUserSettings } = usePremium();
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [bio, setBio] = useState('');
   const [currentTab, setCurrentTab] = useState('profile');
-  const [isSaving, setIsSaving] = useState(false);
   
-  useEffect(() => {
-    if (profile) {
-      setUsername(profile.username || '');
-      setBio(profile.bio || '');
+  // Définir les onglets disponibles
+  const tabs = [
+    {
+      id: 'profile',
+      label: 'Profil',
+      icon: <LayoutDashboard className="h-4 w-4" />
+    },
+    {
+      id: 'appearance',
+      label: 'Apparence',
+      icon: <Palette className="h-4 w-4" />
+    },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: <Bell className="h-4 w-4" />
+    },
+    {
+      id: 'password',
+      label: 'Mot de passe',
+      icon: <Key className="h-4 w-4" />
+    },
+    {
+      id: 'security',
+      label: 'Sécurité',
+      icon: <Shield className="h-4 w-4" />
     }
-    
-    if (user) {
-      setEmail(user.email || '');
-    }
-  }, [user, profile]);
-
-  const handleSaveProfile = async () => {
-    if (!user) return;
-    
-    setIsSaving(true);
-    try {
-      await updateProfile({
-        username,
-        bio
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-  
-  const handleSaveSettings = async () => {
-    if (!user || !userSettings) return;
-    
-    setIsSaving(true);
-    try {
-      await UserSettingsService.updateUserSettings(user.id, userSettings);
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  ];
 
   return (
     <AppLayout>
-      <div className="container max-w-4xl mx-auto py-8 px-4">
+      <div className="container max-w-5xl mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-6">Paramètres</h1>
         
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="profile">Profil</TabsTrigger>
-            <TabsTrigger value="appearance">Apparence</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="account">Compte</TabsTrigger>
-          </TabsList>
+          <div className="mb-6 bg-muted/40 p-1 rounded-lg inline-block">
+            <TabsList className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              {tabs.map(tab => (
+                <TabsTrigger 
+                  key={tab.id} 
+                  value={tab.id}
+                  className="flex items-center gap-2 whitespace-nowrap"
+                >
+                  {tab.icon}
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
           
-          <TabsContent value="profile">
-            <Card>
-              <CardHeader>
-                <CardTitle>Informations du profil</CardTitle>
-                <CardDescription>
-                  Modifiez vos informations personnelles qui seront visibles par les autres utilisateurs.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">Nom d'utilisateur</Label>
-                  <Input
-                    id="username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Votre nom d'utilisateur"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    readOnly
-                    disabled
-                    className="bg-muted/50"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    L'email ne peut pas être modifié ici. Contactez l'administrateur pour le changer.
-                  </p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <textarea
-                    id="bio"
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    placeholder="Quelques mots à propos de vous"
-                    className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button onClick={handleSaveProfile} disabled={isSaving}>
-                  {isSaving ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Enregistrement...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Enregistrer les modifications
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="appearance">
-            {userSettings && (
-              <AppearanceSettings 
-                userSettings={userSettings} 
-                onSettingsChange={updateUserSettings}
-                onSaveSettings={handleSaveSettings}
-                isSaving={isSaving}
-              />
-            )}
-          </TabsContent>
-          
-          <TabsContent value="notifications">
-            <Card>
-              <CardHeader>
-                <CardTitle>Préférences de notifications</CardTitle>
-                <CardDescription>
-                  Gérez comment et quand vous souhaitez être notifié.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground text-center py-8">
+          <div className="mt-6 space-y-6">
+            <TabsContent value="profile" className="mt-0">
+              <AccountSection />
+            </TabsContent>
+            
+            <TabsContent value="appearance" className="mt-0">
+              {userSettings && (
+                <AppearanceSettings 
+                  userSettings={userSettings} 
+                  onSettingsChange={updateUserSettings}
+                />
+              )}
+            </TabsContent>
+            
+            <TabsContent value="notifications" className="mt-0">
+              <div className="bg-muted/30 rounded-lg p-8 text-center">
+                <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <h3 className="text-lg font-medium mb-2">Préférences de notifications</h3>
+                <p className="text-muted-foreground">
                   Les préférences de notifications seront disponibles dans une prochaine mise à jour.
                 </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="account">
-            <Card>
-              <CardHeader>
-                <CardTitle>Sécurité du compte</CardTitle>
-                <CardDescription>
-                  Gérez les paramètres de sécurité de votre compte et vos données personnelles.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <h3 className="text-lg font-medium">Modifier le mot de passe</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Pour des raisons de sécurité, cette fonctionnalité nécessite une vérification par email.
-                    Utilisez l'option "Mot de passe oublié" sur la page de connexion pour changer votre mot de passe.
-                  </p>
-                </div>
-                
-                <div className="space-y-2 pt-4">
-                  <h3 className="text-lg font-medium">Télécharger mes données</h3>
-                  <p className="text-muted-foreground text-sm mb-2">
-                    Téléchargez une copie de vos données personnelles et de votre historique de trading.
-                  </p>
-                  <Button variant="outline">
-                    Demander mes données
-                  </Button>
-                </div>
-                
-                <div className="space-y-2 pt-4">
-                  <h3 className="text-lg font-medium text-destructive">Supprimer mon compte</h3>
-                  <p className="text-muted-foreground text-sm mb-2">
-                    La suppression de votre compte est irréversible et entraînera la perte de toutes vos données.
-                  </p>
-                  <Button variant="destructive">
-                    Supprimer mon compte
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="password" className="mt-0">
+              <PasswordSection />
+            </TabsContent>
+            
+            <TabsContent value="security" className="mt-0">
+              <SecuritySection />
+            </TabsContent>
+          </div>
         </Tabs>
       </div>
     </AppLayout>
