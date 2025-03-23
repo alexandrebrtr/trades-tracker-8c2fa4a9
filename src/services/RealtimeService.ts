@@ -62,6 +62,54 @@ export const RealtimeService = {
       supabase.removeChannel(subscription);
     };
   },
+  
+  /**
+   * S'abonne aux changements dans les trades pour mettre à jour le solde du portefeuille
+   * @param userId ID de l'utilisateur
+   * @param onBalanceChange Callback appelé lors d'un changement de solde
+   * @returns Fonction pour se désabonner
+   */
+  subscribeToTradesBalanceUpdates(userId: string, onBalanceChange: (newBalance: number) => void) {
+    console.log('Initialisation de l\'abonnement aux trades pour le solde...');
+    
+    const subscription = supabase
+      .channel('trades-balance-updates')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'trades',
+          filter: `user_id=eq.${userId}`
+        }, 
+        async () => {
+          try {
+            // Récupérer le solde mis à jour
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('balance')
+              .eq('id', userId)
+              .single();
+            
+            if (error) throw error;
+            
+            if (data && typeof data.balance === 'number') {
+              onBalanceChange(data.balance);
+            }
+          } catch (error) {
+            console.error('Erreur lors de la récupération du solde mis à jour:', error);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Statut de l\'abonnement aux trades:', status);
+      });
+
+    // Retourne une fonction pour se désabonner
+    return () => {
+      console.log('Désabonnement des trades...');
+      supabase.removeChannel(subscription);
+    };
+  },
 
   /**
    * Met à jour le statut premium d'un utilisateur dans la base de données
