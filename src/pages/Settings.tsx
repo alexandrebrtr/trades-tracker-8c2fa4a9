@@ -1,181 +1,57 @@
+
+import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input';
-import { useState, useEffect } from 'react';
-import { usePremium, UserSettings } from '@/context/PremiumContext';
-import { useTheme } from '@/context/ThemeContext';
-import { Bell, Layout, Palette, Shield, User, Key, Lock, RotateCcw } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import { UserSettingsService } from '@/services/UserSettingsService';
 import { useAuth } from '@/context/AuthContext';
-
-interface ThemeSettings {
-  primary: string;
-  background: string;
-  text: string;
-  sidebar: string;
-}
-
-interface LayoutSettings {
-  compactMode?: boolean;
-  showBalances?: boolean;
-}
-
-interface NotificationSettings {
-  trades?: boolean;
-  news?: boolean;
-  alerts?: boolean;
-}
-
-interface BrokerSettings {
-  name?: string;
-  apiKey?: string;
-  secretKey?: string;
-  isConnected?: boolean;
-}
+import { usePremium } from '@/context/PremiumContext';
+import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
+import { RefreshCw, Save } from 'lucide-react';
+import { UserSettingsService } from '@/services/UserSettingsService';
 
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   const { userSettings, updateUserSettings } = usePremium();
-  const [themeSettings, setThemeSettings] = useState<ThemeSettings>({
-    primary: '#0f172a',
-    background: '#ffffff',
-    text: '#1e293b',
-    sidebar: '#f8fafc'
-  });
-  const [layoutSettings, setLayoutSettings] = useState<LayoutSettings>({
-    compactMode: false,
-    showBalances: true
-  });
-  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
-    trades: true,
-    news: true,
-    alerts: true
-  });
-  const [brokerSettings, setBrokerSettings] = useState<BrokerSettings>({
-    name: '',
-    apiKey: '',
-    secretKey: '',
-    isConnected: false
-  });
-  const { theme, toggleTheme } = useTheme();
-  const { toast } = useToast();
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [bio, setBio] = useState('');
+  const [currentTab, setCurrentTab] = useState('profile');
   const [isSaving, setIsSaving] = useState(false);
-
+  
   useEffect(() => {
-    if (userSettings) {
-      if (userSettings.theme) {
-        if (typeof userSettings.theme === 'string') {
-          setThemeSettings({
-            primary: '#0f172a',
-            background: '#ffffff',
-            text: '#1e293b',
-            sidebar: '#f8fafc'
-          });
-        } else if (typeof userSettings.theme === 'object') {
-          setThemeSettings(userSettings.theme as ThemeSettings);
-          UserSettingsService.applyThemeSettings(userSettings.theme);
-        }
-      }
-      
-      if (userSettings.layout) {
-        setLayoutSettings(userSettings.layout);
-      }
-      
-      if (userSettings.notifications) {
-        setNotificationSettings(userSettings.notifications);
-      }
-
-      if (userSettings.broker) {
-        setBrokerSettings(userSettings.broker);
-      }
+    if (profile) {
+      setUsername(profile.username || '');
+      setBio(profile.bio || '');
     }
-  }, [userSettings]);
+    
+    if (user) {
+      setEmail(user.email || '');
+    }
+  }, [user, profile]);
 
-  const saveSettings = async () => {
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    
+    setIsSaving(true);
     try {
-      setIsSaving(true);
-      const newSettings: UserSettings = {
-        theme: themeSettings,
-        layout: layoutSettings,
-        notifications: notificationSettings,
-        broker: brokerSettings
-      };
-      
-      await updateUserSettings(newSettings);
-      UserSettingsService.applyThemeSettings(themeSettings);
-      toast({
-        title: "Paramètres enregistrés",
-        description: "Vos préférences ont été mises à jour avec succès.",
-      });
-    } catch (error) {
-      console.error("Failed to save settings:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer vos paramètres. Veuillez réessayer.",
-        variant: "destructive",
+      await updateProfile({
+        username,
+        bio
       });
     } finally {
       setIsSaving(false);
     }
   };
-
-  const handleLayoutChange = (key: keyof LayoutSettings, value: boolean) => {
-    setLayoutSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
-
-  const handleNotificationChange = (key: keyof NotificationSettings, value: boolean) => {
-    setNotificationSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
-
-  const handleBrokerChange = (key: keyof BrokerSettings, value: string | boolean) => {
-    setBrokerSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
-
-  const handleColorChange = (key: keyof ThemeSettings, value: string) => {
-    const newThemeSettings = { ...themeSettings, [key]: value };
-    setThemeSettings(newThemeSettings);
-    UserSettingsService.applyThemeSettings(newThemeSettings);
-  };
-
-  const resetThemeToDefault = async () => {
-    if (!user) return;
+  
+  const handleSaveSettings = async () => {
+    if (!user || !userSettings) return;
     
+    setIsSaving(true);
     try {
-      setIsSaving(true);
-      const result = await UserSettingsService.resetThemeToDefault(user.id, userSettings);
-      
-      if (result.success && result.settings) {
-        if (typeof result.settings.theme === 'object') {
-          setThemeSettings(result.settings.theme as ThemeSettings);
-        }
-        
-        toast({
-          title: "Thème réinitialisé",
-          description: "Les couleurs ont été réinitialisées aux valeurs par défaut.",
-        });
-      }
-    } catch (error) {
-      console.error("Impossible de réinitialiser le thème:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de réinitialiser le thème. Veuillez réessayer.",
-        variant: "destructive",
-      });
+      await UserSettingsService.updateUserSettings(user.id, userSettings);
     } finally {
       setIsSaving(false);
     }
@@ -183,439 +59,147 @@ export default function Settings() {
 
   return (
     <AppLayout>
-      <div className="container py-8 max-w-4xl mx-auto page-transition">
-        <div className="space-y-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
-            <p className="text-muted-foreground mt-2">
-              Gérez vos préférences et personnalisez votre expérience
-            </p>
-          </div>
-
-          <Tabs defaultValue="appearance" className="space-y-6">
-            <TabsList className="grid grid-cols-5 w-full max-w-lg">
-              <TabsTrigger value="appearance" className="flex items-center gap-2">
-                <Palette className="h-4 w-4" />
-                <span className="hidden sm:inline">Apparence</span>
-              </TabsTrigger>
-              <TabsTrigger value="layout" className="flex items-center gap-2">
-                <Layout className="h-4 w-4" />
-                <span className="hidden sm:inline">Interface</span>
-              </TabsTrigger>
-              <TabsTrigger value="notifications" className="flex items-center gap-2">
-                <Bell className="h-4 w-4" />
-                <span className="hidden sm:inline">Notifications</span>
-              </TabsTrigger>
-              <TabsTrigger value="brokers" className="flex items-center gap-2">
-                <Key className="h-4 w-4" />
-                <span className="hidden sm:inline">Brokers</span>
-              </TabsTrigger>
-              <TabsTrigger value="account" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Compte</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="appearance">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Apparence</CardTitle>
-                  <CardDescription>
-                    Personnalisez l'apparence de l'application
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="theme-mode">Mode sombre</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Basculer entre le mode clair et sombre
-                        </p>
-                      </div>
-                      <Switch 
-                        id="theme-mode" 
-                        checked={theme === 'dark'} 
-                        onCheckedChange={toggleTheme} 
-                      />
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <Label>Couleurs personnalisées</Label>
-                          <p className="text-sm text-muted-foreground">
-                            Personnalisez les couleurs principales de l'interface
-                          </p>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={resetThemeToDefault}
-                          disabled={isSaving}
-                          className="flex items-center gap-2"
-                        >
-                          <RotateCcw className="h-4 w-4" />
-                          Réinitialiser
-                        </Button>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="primary-color">Couleur principale</Label>
-                          <div className="flex items-center gap-2">
-                            <input 
-                              type="color" 
-                              id="primary-color" 
-                              value={themeSettings.primary}
-                              onChange={(e) => handleColorChange('primary', e.target.value)}
-                              className="w-10 h-10 rounded cursor-pointer"
-                            />
-                            <span className="text-sm font-mono">{themeSettings.primary}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="background-color">Arrière-plan</Label>
-                          <div className="flex items-center gap-2">
-                            <input 
-                              type="color" 
-                              id="background-color" 
-                              value={themeSettings.background}
-                              onChange={(e) => handleColorChange('background', e.target.value)}
-                              className="w-10 h-10 rounded cursor-pointer"
-                            />
-                            <span className="text-sm font-mono">{themeSettings.background}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="text-color">Texte</Label>
-                          <div className="flex items-center gap-2">
-                            <input 
-                              type="color" 
-                              id="text-color" 
-                              value={themeSettings.text}
-                              onChange={(e) => handleColorChange('text', e.target.value)}
-                              className="w-10 h-10 rounded cursor-pointer"
-                            />
-                            <span className="text-sm font-mono">{themeSettings.text}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="sidebar-color">Barre latérale</Label>
-                          <div className="flex items-center gap-2">
-                            <input 
-                              type="color" 
-                              id="sidebar-color" 
-                              value={themeSettings.sidebar}
-                              onChange={(e) => handleColorChange('sidebar', e.target.value)}
-                              className="w-10 h-10 rounded cursor-pointer"
-                            />
-                            <span className="text-sm font-mono">{themeSettings.sidebar}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="layout">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Interface</CardTitle>
-                  <CardDescription>
-                    Personnalisez la disposition et l'affichage de l'interface
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="compact-mode">Mode compact</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Réduire l'espacement pour afficher plus de contenu
-                        </p>
-                      </div>
-                      <Switch 
-                        id="compact-mode" 
-                        checked={layoutSettings.compactMode} 
-                        onCheckedChange={(checked) => handleLayoutChange('compactMode', checked)} 
-                      />
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="show-balances">Afficher les soldes</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Afficher les montants et soldes dans l'interface
-                        </p>
-                      </div>
-                      <Switch 
-                        id="show-balances" 
-                        checked={layoutSettings.showBalances} 
-                        onCheckedChange={(checked) => handleLayoutChange('showBalances', checked)} 
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="notifications">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notifications</CardTitle>
-                  <CardDescription>
-                    Configurez vos préférences de notifications
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="trade-notifications">Notifications de trades</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Recevoir des notifications pour les trades et transactions
-                        </p>
-                      </div>
-                      <Switch 
-                        id="trade-notifications" 
-                        checked={notificationSettings.trades} 
-                        onCheckedChange={(checked) => handleNotificationChange('trades', checked)} 
-                      />
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="news-notifications">Actualités financières</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Recevoir des notifications pour les actualités importantes
-                        </p>
-                      </div>
-                      <Switch 
-                        id="news-notifications" 
-                        checked={notificationSettings.news} 
-                        onCheckedChange={(checked) => handleNotificationChange('news', checked)} 
-                      />
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="alert-notifications">Alertes de prix</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Recevoir des notifications pour les alertes de prix
-                        </p>
-                      </div>
-                      <Switch 
-                        id="alert-notifications" 
-                        checked={notificationSettings.alerts} 
-                        onCheckedChange={(checked) => handleNotificationChange('alerts', checked)} 
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="brokers">
-              <Card>
-                <CardHeader>
-                  <CardTitle>API des Brokers</CardTitle>
-                  <CardDescription>
-                    Connectez vos comptes de trading et configurez vos API
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="broker-name">Broker</Label>
-                      <select 
-                        id="broker-name" 
-                        className="w-full p-2 border rounded-md"
-                        value={brokerSettings.name || ''}
-                        onChange={(e) => handleBrokerChange('name', e.target.value)}
-                      >
-                        <option value="">Sélectionner un broker</option>
-                        <option value="binance">Binance</option>
-                        <option value="ftx">FTX</option>
-                        <option value="coinbase">Coinbase</option>
-                        <option value="kraken">Kraken</option>
-                        <option value="mt4">MetaTrader 4</option>
-                        <option value="mt5">MetaTrader 5</option>
-                        <option value="trading212">Trading 212</option>
-                      </select>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="api-key" className="flex items-center gap-2">
-                        <Key className="h-4 w-4 text-muted-foreground" />
-                        Clé API
-                      </Label>
-                      <Input 
-                        id="api-key" 
-                        type="text" 
-                        placeholder="Entrez votre clé API"
-                        value={brokerSettings.apiKey || ''}
-                        onChange={(e) => handleBrokerChange('apiKey', e.target.value)}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        La clé API est requise pour accéder à votre compte de trading.
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="secret-key" className="flex items-center gap-2">
-                        <Lock className="h-4 w-4 text-muted-foreground" />
-                        Clé Secrète
-                      </Label>
-                      <Input 
-                        id="secret-key" 
-                        type="password" 
-                        placeholder="Entrez votre clé secrète"
-                        value={brokerSettings.secretKey || ''}
-                        onChange={(e) => handleBrokerChange('secretKey', e.target.value)}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        La clé secrète est nécessaire pour signer vos requêtes API.
-                      </p>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="is-connected">État de la connexion</Label>
-                        <p className="text-sm text-muted-foreground">
-                          {brokerSettings.isConnected 
-                            ? "Votre compte est connecté" 
-                            : "Votre compte n'est pas connecté"}
-                        </p>
-                      </div>
-                      <Button 
-                        onClick={() => {
-                          if (brokerSettings.name && brokerSettings.apiKey && brokerSettings.secretKey) {
-                            handleBrokerChange('isConnected', true);
-                            toast({
-                              title: "Compte connecté",
-                              description: `Votre compte ${brokerSettings.name} a été connecté avec succès.`
-                            });
-                          } else {
-                            toast({
-                              title: "Erreur de connexion",
-                              description: "Veuillez remplir tous les champs requis.",
-                              variant: "destructive"
-                            });
-                          }
-                        }}
-                        variant={brokerSettings.isConnected ? "outline" : "default"}
-                      >
-                        {brokerSettings.isConnected ? "Reconnecter" : "Connecter"}
-                      </Button>
-                    </div>
-
-                    <div className="bg-muted p-4 rounded-md mt-4">
-                      <h4 className="text-sm font-medium mb-2">Instructions</h4>
-                      <ol className="text-xs text-muted-foreground space-y-1 list-decimal pl-4">
-                        <li>Créez une clé API dans votre compte de broker avec des permissions en lecture seule.</li>
-                        <li>Copiez la clé API et la clé secrète dans les champs ci-dessus.</li>
-                        <li>Cliquez sur "Connecter" pour lier votre compte.</li>
-                        <li>Vos trades et soldes seront synchronisés automatiquement.</li>
-                      </ol>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="account">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Compte et sécurité</CardTitle>
-                  <CardDescription>
-                    Gérez les paramètres de votre compte et la sécurité
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <h3 className="text-sm font-medium">Mot de passe</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Dernière modification il y a 3 mois
-                        </p>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        Modifier
-                      </Button>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <h3 className="text-sm font-medium">Authentification à deux facteurs</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Protégez votre compte avec une couche de sécurité supplémentaire
-                        </p>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        Configurer
-                      </Button>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <h3 className="text-sm font-medium">Sessions actives</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Gérez les appareils connectés à votre compte
-                        </p>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        Gérer
-                      </Button>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <h3 className="text-sm font-medium text-destructive">Supprimer le compte</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Supprimer définitivement votre compte et toutes vos données
-                        </p>
-                      </div>
-                      <Button variant="destructive" size="sm">
-                        Supprimer
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-
-          <div className="flex justify-end">
-            <Button onClick={saveSettings} disabled={isSaving}>
-              {isSaving ? "Enregistrement..." : "Enregistrer les paramètres"}
-            </Button>
-          </div>
-        </div>
+      <div className="container max-w-4xl mx-auto py-8 px-4">
+        <h1 className="text-3xl font-bold mb-6">Paramètres</h1>
+        
+        <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="profile">Profil</TabsTrigger>
+            <TabsTrigger value="appearance">Apparence</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <TabsTrigger value="account">Compte</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Informations du profil</CardTitle>
+                <CardDescription>
+                  Modifiez vos informations personnelles qui seront visibles par les autres utilisateurs.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="username">Nom d'utilisateur</Label>
+                  <Input
+                    id="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Votre nom d'utilisateur"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    readOnly
+                    disabled
+                    className="bg-muted/50"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    L'email ne peut pas être modifié ici. Contactez l'administrateur pour le changer.
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Bio</Label>
+                  <textarea
+                    id="bio"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Quelques mots à propos de vous"
+                    className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button onClick={handleSaveProfile} disabled={isSaving}>
+                  {isSaving ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Enregistrement...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Enregistrer les modifications
+                    </>
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="appearance">
+            {userSettings && (
+              <AppearanceSettings 
+                userSettings={userSettings} 
+                onSettingsChange={updateUserSettings}
+                onSaveSettings={handleSaveSettings}
+                isSaving={isSaving}
+              />
+            )}
+          </TabsContent>
+          
+          <TabsContent value="notifications">
+            <Card>
+              <CardHeader>
+                <CardTitle>Préférences de notifications</CardTitle>
+                <CardDescription>
+                  Gérez comment et quand vous souhaitez être notifié.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground text-center py-8">
+                  Les préférences de notifications seront disponibles dans une prochaine mise à jour.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="account">
+            <Card>
+              <CardHeader>
+                <CardTitle>Sécurité du compte</CardTitle>
+                <CardDescription>
+                  Gérez les paramètres de sécurité de votre compte et vos données personnelles.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium">Modifier le mot de passe</h3>
+                  <p className="text-muted-foreground text-sm">
+                    Pour des raisons de sécurité, cette fonctionnalité nécessite une vérification par email.
+                    Utilisez l'option "Mot de passe oublié" sur la page de connexion pour changer votre mot de passe.
+                  </p>
+                </div>
+                
+                <div className="space-y-2 pt-4">
+                  <h3 className="text-lg font-medium">Télécharger mes données</h3>
+                  <p className="text-muted-foreground text-sm mb-2">
+                    Téléchargez une copie de vos données personnelles et de votre historique de trading.
+                  </p>
+                  <Button variant="outline">
+                    Demander mes données
+                  </Button>
+                </div>
+                
+                <div className="space-y-2 pt-4">
+                  <h3 className="text-lg font-medium text-destructive">Supprimer mon compte</h3>
+                  <p className="text-muted-foreground text-sm mb-2">
+                    La suppression de votre compte est irréversible et entraînera la perte de toutes vos données.
+                  </p>
+                  <Button variant="destructive">
+                    Supprimer mon compte
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );

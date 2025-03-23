@@ -16,6 +16,11 @@ export const UserSettingsService = {
     sidebar: '#f8fafc'
   },
   
+  // Options supplémentaires pour personnalisation
+  fontOptions: ['Inter', 'Roboto', 'Montserrat', 'Open Sans', 'Lato'],
+  borderRadiusOptions: ['0px', '4px', '8px', '12px', '16px'],
+  animationOptions: ['none', 'fade', 'slide', 'bounce'],
+  
   /**
    * Récupère les paramètres de l'utilisateur
    * @param userId ID de l'utilisateur
@@ -133,6 +138,34 @@ export const UserSettingsService = {
       root.style.setProperty('--sidebar-color', themeSettings.sidebar);
     }
     
+    // Apply additional customizations if they exist
+    if (themeSettings.font) {
+      root.style.setProperty('--font-family', themeSettings.font);
+    }
+    
+    if (themeSettings.borderRadius) {
+      root.style.setProperty('--border-radius', themeSettings.borderRadius);
+    }
+    
+    if (themeSettings.animation) {
+      root.style.setProperty('--animation-style', themeSettings.animation);
+    }
+    
+    if (themeSettings.buttonStyle) {
+      root.style.setProperty('--button-style', themeSettings.buttonStyle);
+    }
+    
     console.log('Paramètres de thème appliqués:', themeSettings);
-  }
+  },
+  
+  /**
+   * Liste des options de style pour les boutons
+   */
+  buttonStyleOptions: [
+    'default',
+    'soft', 
+    'outline', 
+    'gradient',
+    'rounded'
+  ]
 };
