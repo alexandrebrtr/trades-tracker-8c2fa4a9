@@ -20,7 +20,6 @@ import Payment from "./pages/Payment";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
-import AdminPanel from "./pages/AdminPanel";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import PremiumAnalytics from "./pages/PremiumAnalytics";
 
@@ -52,7 +51,6 @@ function App() {
           <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
           <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
           
           {/* Premium routes */}
           <Route path="/calendar" element={<ProtectedRoute requirePremium={true}><Calendar /></ProtectedRoute>} />

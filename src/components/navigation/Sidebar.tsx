@@ -35,10 +35,6 @@ export function Sidebar() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const { user } = useAuth();
   const { isPremium } = usePremium();
-  
-  // Admin IDs - hardcoded for simplicity
-  const adminIds = ['9ce47b0c-0d0a-4834-ae81-e103dff2e386'];
-  const isAdmin = user && adminIds.includes(user.id);
 
   // Handle screen resize
   useEffect(() => {
@@ -115,15 +111,6 @@ export function Sidebar() {
       icon: <Contact className="w-5 h-5" />
     }
   ];
-
-  // Add admin item conditionally
-  if (isAdmin) {
-    navItems.push({
-      name: 'Administration',
-      path: '/admin',
-      icon: <Shield className="w-5 h-5" />
-    });
-  }
 
   return (
     <aside 

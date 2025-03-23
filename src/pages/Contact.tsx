@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
+import { Separator } from '@/components/ui/separator';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères" }),
@@ -18,9 +20,23 @@ const formSchema = z.object({
   message: z.string().min(10, { message: "Le message doit contenir au moins 10 caractères" }),
 });
 
+type ContactMessage = {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  created_at: string;
+  read: boolean;
+  response?: string;
+  response_at?: string;
+};
+
 export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userMessages, setUserMessages] = useState<ContactMessage[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -30,6 +46,74 @@ export default function Contact() {
       message: "",
     },
   });
+
+  // Fetch user's messages if logged in
+  useEffect(() => {
+    const fetchUserMessages = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username, email')
+          .eq('id', user.id)
+          .single();
+
+        if (profile) {
+          form.setValue('name', profile.username || '');
+          form.setValue('email', profile.email || '');
+        }
+
+        const { data, error } = await supabase
+          .from('contact_messages')
+          .select('*')
+          .eq('email', profile?.email || user.email)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        setUserMessages(data || []);
+      } catch (error) {
+        console.error('Error fetching user messages:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserMessages();
+
+    // Set up real-time subscription for new responses
+    const subscription = supabase
+      .channel('contact_messages_changes')
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'contact_messages',
+        filter: user?.email ? `email=eq.${user.email}` : undefined
+      }, (payload) => {
+        const updatedMessage = payload.new as ContactMessage;
+        
+        setUserMessages(prev => 
+          prev.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg)
+        );
+        
+        if (updatedMessage.response && !prev.find(m => m.id === updatedMessage.id)?.response) {
+          toast({
+            title: "Nouvelle réponse",
+            description: "Un administrateur a répondu à votre message",
+          });
+        }
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
@@ -50,6 +134,17 @@ export default function Contact() {
       });
       
       form.reset();
+      
+      // Refresh user messages if logged in
+      if (user) {
+        const { data } = await supabase
+          .from('contact_messages')
+          .select('*')
+          .eq('email', values.email)
+          .order('created_at', { ascending: false });
+          
+        setUserMessages(data || []);
+      }
     } catch (error) {
       console.error('Error submitting contact form:', error);
       toast({
@@ -60,6 +155,17 @@ export default function Contact() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   return (
@@ -165,6 +271,68 @@ export default function Contact() {
             </Card>
           </div>
         </div>
+        
+        {/* User's Message History Section */}
+        {user && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-6">Historique de vos messages</h2>
+            
+            {loading ? (
+              <p>Chargement de vos messages...</p>
+            ) : userMessages.length > 0 ? (
+              <div className="space-y-6">
+                {userMessages.map((msg) => (
+                  <Card key={msg.id} className="overflow-hidden">
+                    <CardHeader className="bg-muted/50">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">{msg.name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">{formatDate(msg.created_at)}</p>
+                        </div>
+                        {msg.response ? (
+                          <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                            Répondu
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+                            En attente
+                          </Badge>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-medium text-sm text-muted-foreground mb-2">Votre message :</h4>
+                          <p className="whitespace-pre-wrap">{msg.message}</p>
+                        </div>
+                        
+                        {msg.response && (
+                          <>
+                            <Separator className="my-4" />
+                            <div>
+                              <h4 className="font-medium text-sm text-muted-foreground mb-2">Réponse :</h4>
+                              <p className="whitespace-pre-wrap">{msg.response}</p>
+                              {msg.response_at && (
+                                <p className="text-xs text-muted-foreground mt-2">
+                                  Répondu le {formatDate(msg.response_at)}
+                                </p>
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="p-6 text-center">
+                <p className="text-muted-foreground">Vous n'avez pas encore envoyé de message.</p>
+              </Card>
+            )}
+          </div>
+        )}
       </div>
     </AppLayout>
   );
