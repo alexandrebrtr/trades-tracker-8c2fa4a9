@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { usePremium } from '@/context/PremiumContext';
-import { Calendar, ChartBar, FileText, MessageCircle, Settings, Star, Users } from 'lucide-react';
+import { Calendar, ChartBar, FileText, MessageCircle, Settings, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function PremiumDashboard() {
@@ -71,24 +71,6 @@ export default function PremiumDashboard() {
               </p>
               <Button asChild variant="outline" className="w-full">
                 <Link to="/premium-analytics">Voir les analyses</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-all">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                Communauté
-              </CardTitle>
-              <CardDescription>Réseau de traders premium</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-3">
-                Échangez avec d'autres traders et partagez vos stratégies et analyses.
-              </p>
-              <Button variant="outline" className="w-full">
-                Rejoindre la communauté
               </Button>
             </CardContent>
           </Card>

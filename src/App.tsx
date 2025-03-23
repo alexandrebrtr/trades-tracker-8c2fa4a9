@@ -15,7 +15,6 @@ import Portfolio from "./pages/Portfolio";
 import Statistics from "./pages/Statistics";
 import Calendar from "./pages/Calendar";
 import Contact from "./pages/Contact";
-import Premium from "./pages/Premium";
 import PremiumDashboard from "./pages/PremiumDashboard";
 import Payment from "./pages/Payment";
 import Settings from "./pages/Settings";
@@ -50,7 +49,6 @@ function App() {
           <Route path="/trade/:id" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
           <Route path="/trade-entry" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute requirePremium={true}><Calendar /></ProtectedRoute>} />
-          <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
           <Route path="/premium-dashboard" element={<ProtectedRoute requirePremium={true}><PremiumDashboard /></ProtectedRoute>} />
           <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

@@ -14,7 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // Imported components
 import { ProfileInfo } from '@/components/profile/ProfileInfo';
 import { AccountInfo } from '@/components/profile/AccountInfo';
-import { SocialStats } from '@/components/profile/SocialStats';
 
 export default function Profile() {
   const { isPremium, premiumExpires } = usePremium();
@@ -173,16 +172,6 @@ export default function Profile() {
                 createdAt={createdAt}
                 premiumSince={profile?.premium_since || null}
                 premiumExpires={premiumExpires}
-              />
-              
-              <SocialStats 
-                userId={profileId}
-                followersCount={12}
-                followingCount={34}
-                tradesCount={isOwnProfile ? profile.trades_count || 0 : viewingProfile.trades_count || 0}
-                winRate={68}
-                likesReceived={52}
-                commentsCount={19}
               />
             </div>
             
