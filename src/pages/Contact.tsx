@@ -27,7 +27,7 @@ export default function Contact() {
                   <div>
                     <h3 className="font-medium">Email</h3>
                     <a href="mailto:contact@tradetracker.com" className="text-muted-foreground hover:text-primary transition-colors">
-                      contact@tradetracker.com
+                      trades.tracker.officiel@gmail.com
                     </a>
                   </div>
                 </div>
@@ -37,7 +37,7 @@ export default function Contact() {
                   <div>
                     <h3 className="font-medium">Téléphone</h3>
                     <a href="tel:+33123456789" className="text-muted-foreground hover:text-primary transition-colors">
-                      +33 (0)1 23 45 67 89
+                      +33 (0)7 78 40 67 10
                     </a>
                   </div>
                 </div>
@@ -47,19 +47,8 @@ export default function Contact() {
                   <div>
                     <h3 className="font-medium">WhatsApp</h3>
                     <a href="https://wa.me/33123456789" className="text-muted-foreground hover:text-primary transition-colors">
-                      +33 (0)1 23 45 67 89
+                      +33 (0)7 78 40 67 10
                     </a>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <MapPin className="w-5 h-5 mr-3 text-primary mt-1" />
-                  <div>
-                    <h3 className="font-medium">Adresse</h3>
-                    <p className="text-muted-foreground">
-                      123 Avenue des Champs-Élysées<br />
-                      75008 Paris, France
-                    </p>
                   </div>
                 </div>
                 
@@ -68,7 +57,7 @@ export default function Contact() {
                   <div>
                     <h3 className="font-medium">Site Web</h3>
                     <a href="https://tradetracker.com" className="text-muted-foreground hover:text-primary transition-colors">
-                      www.tradetracker.com
+                      www.trades-tracker.com
                     </a>
                   </div>
                 </div>
@@ -95,7 +84,7 @@ export default function Contact() {
                     </a>
                   </Button>
                   <Button variant="outline" size="icon" asChild>
-                    <a href="https://instagram.com/tradetracker" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                    <a href="https://instagram.com/trades.tracker_official" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                       <Instagram className="h-5 w-5" />
                     </a>
                   </Button>
