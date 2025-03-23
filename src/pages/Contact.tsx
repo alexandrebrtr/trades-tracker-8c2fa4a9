@@ -81,6 +81,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-medium">Email</h3>
                   <p className="text-muted-foreground">trades.tracker.officiel@gmail.com</p>
+                </div>
                 <div>
                   <h3 className="font-medium">WhatsApp</h3>
                   <p className="text-muted-foreground">+33 (0)7 78 40 67 10</p>
