@@ -12,13 +12,15 @@ import {
   X,
   Wallet,
   Shield,
-  Contact
+  Contact,
+  Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { usePremium } from '@/context/PremiumContext';
 import { SidebarNavItem } from './SidebarNavItem';
 import { SidebarUserSection } from './SidebarUserSection';
+import { Badge } from '@/components/ui/badge';
 
 interface NavItem {
   name: string;
@@ -84,7 +86,8 @@ export function Sidebar() {
     {
       name: 'Calendrier',
       path: '/calendar',
-      icon: <Calendar className="w-5 h-5" />
+      icon: <Calendar className="w-5 h-5" />,
+      requirePremium: true
     },
     {
       name: 'Nouveau Trade',
@@ -122,9 +125,6 @@ export function Sidebar() {
     });
   }
 
-  // Filter nav items based on premium status
-  const filteredNavItems = navItems.filter(item => !item.requirePremium || isPremium);
-
   return (
     <aside 
       className={cn(
@@ -154,14 +154,45 @@ export function Sidebar() {
         {/* Navigation */}
         <nav className="flex-1 py-4 overflow-y-auto">
           <ul className="space-y-1 px-3">
-            {filteredNavItems.map((item) => (
-              <SidebarNavItem 
-                key={item.path}
-                name={item.name}
-                path={item.path}
-                icon={item.icon}
-                collapsed={collapsed}
-              />
+            {navItems.map((item) => (
+              <li key={item.path}>
+                <Link
+                  to={isPremium || !item.requirePremium ? item.path : "/premium"}
+                  className={cn(
+                    'flex items-center p-3 rounded-md transition-colors',
+                    collapsed ? 'justify-center' : 'justify-between',
+                    location.pathname === item.path 
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
+                  )}
+                >
+                  <div className="flex items-center">
+                    {item.icon}
+                    {!collapsed && <span className="ml-3 font-medium">{item.name}</span>}
+                  </div>
+                  
+                  {!collapsed && item.requirePremium && (
+                    <Badge 
+                      variant="outline" 
+                      className={cn(
+                        "ml-2 text-xs",
+                        isPremium 
+                          ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" 
+                          : "bg-slate-500/10 text-slate-500 border-slate-500/20"
+                      )}
+                    >
+                      {isPremium ? (
+                        <span className="flex items-center">
+                          <Star className="h-3 w-3 mr-1 fill-yellow-500" />
+                          Premium
+                        </span>
+                      ) : (
+                        "Premium"
+                      )}
+                    </Badge>
+                  )}
+                </Link>
+              </li>
             ))}
           </ul>
         </nav>
