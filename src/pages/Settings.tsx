@@ -11,6 +11,7 @@ import { usePremium, UserSettings } from '@/context/PremiumContext';
 import { useTheme } from '@/context/ThemeContext';
 import { Bell, Layout, Palette, Shield, User, Key, Lock } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { UserSettingsService } from '@/services/UserSettingsService';
 
 interface ThemeSettings {
   primary: string;
@@ -76,6 +77,7 @@ export default function Settings() {
           });
         } else if (typeof userSettings.theme === 'object') {
           setThemeSettings(userSettings.theme as ThemeSettings);
+          UserSettingsService.applyThemeSettings(userSettings.theme);
         }
       }
       
@@ -104,6 +106,7 @@ export default function Settings() {
       };
       
       await updateUserSettings(newSettings);
+      UserSettingsService.applyThemeSettings(themeSettings);
       toast({
         title: "Paramètres enregistrés",
         description: "Vos préférences ont été mises à jour avec succès.",
@@ -139,6 +142,12 @@ export default function Settings() {
       ...prev,
       [key]: value
     }));
+  };
+
+  const handleColorChange = (key: keyof ThemeSettings, value: string) => {
+    const newThemeSettings = { ...themeSettings, [key]: value };
+    setThemeSettings(newThemeSettings);
+    UserSettingsService.applyThemeSettings(newThemeSettings);
   };
 
   return (
@@ -216,7 +225,7 @@ export default function Settings() {
                               type="color" 
                               id="primary-color" 
                               value={themeSettings.primary}
-                              onChange={(e) => setThemeSettings({...themeSettings, primary: e.target.value})}
+                              onChange={(e) => handleColorChange('primary', e.target.value)}
                               className="w-10 h-10 rounded cursor-pointer"
                             />
                             <span className="text-sm font-mono">{themeSettings.primary}</span>
@@ -230,7 +239,7 @@ export default function Settings() {
                               type="color" 
                               id="background-color" 
                               value={themeSettings.background}
-                              onChange={(e) => setThemeSettings({...themeSettings, background: e.target.value})}
+                              onChange={(e) => handleColorChange('background', e.target.value)}
                               className="w-10 h-10 rounded cursor-pointer"
                             />
                             <span className="text-sm font-mono">{themeSettings.background}</span>
@@ -244,7 +253,7 @@ export default function Settings() {
                               type="color" 
                               id="text-color" 
                               value={themeSettings.text}
-                              onChange={(e) => setThemeSettings({...themeSettings, text: e.target.value})}
+                              onChange={(e) => handleColorChange('text', e.target.value)}
                               className="w-10 h-10 rounded cursor-pointer"
                             />
                             <span className="text-sm font-mono">{themeSettings.text}</span>
@@ -258,7 +267,7 @@ export default function Settings() {
                               type="color" 
                               id="sidebar-color" 
                               value={themeSettings.sidebar}
-                              onChange={(e) => setThemeSettings({...themeSettings, sidebar: e.target.value})}
+                              onChange={(e) => handleColorChange('sidebar', e.target.value)}
                               className="w-10 h-10 rounded cursor-pointer"
                             />
                             <span className="text-sm font-mono">{themeSettings.sidebar}</span>

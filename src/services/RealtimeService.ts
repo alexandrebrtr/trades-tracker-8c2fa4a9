@@ -1,6 +1,8 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { UserSettings } from '@/context/PremiumContext';
+import { UserSettingsService } from './UserSettingsService';
 
 /**
  * Service pour gérer les abonnements en temps réel avec Supabase
@@ -112,6 +114,70 @@ export const RealtimeService = {
   },
 
   /**
+   * S'abonne aux changements de paramètres utilisateur
+   * @param userId ID de l'utilisateur
+   * @param onSettingsChange Callback appelé lors d'un changement de paramètres
+   * @returns Fonction pour se désabonner
+   */
+  subscribeToUserSettings(userId: string, onSettingsChange: (settings: UserSettings) => void) {
+    console.log('Initialisation de l\'abonnement aux paramètres utilisateur...');
+    
+    const subscription = supabase
+      .channel('user-settings-updates')
+      .on('postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'profiles',
+          filter: `id=eq.${userId}`
+        }, 
+        async (payload) => {
+          try {
+            // Si les paramètres sont présents dans le payload, les utiliser directement
+            if (payload.new && typeof payload.new === 'object' && 'settings' in payload.new) {
+              const settings = (payload.new as Record<string, any>).settings as UserSettings;
+              
+              if (settings) {
+                console.log('Paramètres utilisateur mis à jour (depuis payload):', settings);
+                onSettingsChange(settings);
+                
+                // Appliquer les paramètres de thème immédiatement
+                if (settings.theme) {
+                  UserSettingsService.applyThemeSettings(settings.theme);
+                }
+                return;
+              }
+            }
+            
+            // Sinon, récupérer les paramètres mis à jour
+            const settings = await UserSettingsService.getUserSettings(userId);
+            
+            if (settings) {
+              console.log('Paramètres utilisateur mis à jour (depuis API):', settings);
+              onSettingsChange(settings);
+              
+              // Appliquer les paramètres de thème immédiatement
+              if (settings.theme) {
+                UserSettingsService.applyThemeSettings(settings.theme);
+              }
+            }
+          } catch (error) {
+            console.error('Erreur lors de la récupération des paramètres utilisateur mis à jour:', error);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Statut de l\'abonnement aux paramètres utilisateur:', status);
+      });
+
+    // Retourne une fonction pour se désabonner
+    return () => {
+      console.log('Désabonnement des paramètres utilisateur...');
+      supabase.removeChannel(subscription);
+    };
+  },
+
+  /**
    * Met à jour le statut premium d'un utilisateur dans la base de données
    * @param userId ID de l'utilisateur
    * @param isPremium Nouveau statut premium
@@ -171,5 +237,3 @@ export const RealtimeService = {
     }
   }
 };
-
-

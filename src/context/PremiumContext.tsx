@@ -1,7 +1,10 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
+import { RealtimeService } from '@/services/RealtimeService';
+import { UserSettingsService } from '@/services/UserSettingsService';
 
 interface UserSettings {
   theme?: string | {
@@ -83,35 +86,22 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
   const adminIds = ['9ce47b0c-0d0a-4834-ae81-e103dff2e386'];
   const isDeveloper = user && adminIds.includes(user.id);
 
-  const loadUserSettings = async (userId: string) => {
-    try {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('settings')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-
-      return profile?.settings as UserSettings || {};
-    } catch (error) {
-      console.error('Error loading user settings:', error);
-      return {};
-    }
-  };
-
   const updateUserSettings = async (newSettings: UserSettings) => {
     if (!user) return;
     
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ settings: newSettings as Json })
-        .eq('id', user.id);
-        
-      if (error) throw error;
+      const result = await UserSettingsService.updateUserSettings(user.id, newSettings);
       
-      setUserSettings(newSettings);
+      if (result.success) {
+        setUserSettings(newSettings);
+        
+        // Appliquer immédiatement les paramètres de thème
+        if (newSettings.theme) {
+          UserSettingsService.applyThemeSettings(newSettings.theme);
+        }
+      } else {
+        throw result.error;
+      }
     } catch (error) {
       console.error('Error updating user settings:', error);
       throw error;
@@ -189,6 +179,11 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
 
         console.log('Premium status loaded:', isActive);
       }
+      
+      // Appliquer les paramètres de thème immédiatement
+      if (data.settings && data.settings.theme) {
+        UserSettingsService.applyThemeSettings(data.settings.theme);
+      }
     } catch (error) {
       console.error('Error loading premium status:', error);
       setIsPremium(false);
@@ -196,6 +191,19 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
       setLoadingPremium(false);
     }
   };
+
+  // Configurer l'abonnement aux changements de paramètres utilisateur
+  useEffect(() => {
+    if (!user) return;
+    
+    const unsubscribe = RealtimeService.subscribeToUserSettings(user.id, (settings) => {
+      setUserSettings(settings);
+    });
+    
+    return () => {
+      unsubscribe();
+    };
+  }, [user]);
 
   useEffect(() => {
     refreshPremiumStatus();
