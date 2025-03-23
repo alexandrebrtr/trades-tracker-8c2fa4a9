@@ -62,7 +62,26 @@ export const useTradesFetcher = (userId: any, selectedPeriod: string) => {
 
         if (error) throw error;
         
-        setTrades(data || []);
+        // Map the data to match the Trade interface
+        const mappedTrades: Trade[] = (data || []).map(trade => ({
+          id: trade.id,
+          user_id: trade.user_id,
+          symbol: trade.symbol,
+          type: trade.type,
+          direction: trade.type as 'long' | 'short', // Use type as direction
+          entry_price: trade.entry_price,
+          exit_price: trade.exit_price,
+          quantity: trade.size, // Map size to quantity
+          date: trade.date || '',
+          pnl: trade.pnl || 0,
+          fees: trade.fees,
+          strategy: trade.strategy,
+          notes: trade.notes,
+          status: 'closed', // Default to closed
+          created_at: trade.created_at || '',
+        }));
+        
+        setTrades(mappedTrades);
       } catch (err: any) {
         console.error('Error fetching trades data:', err.message);
         setError(err);

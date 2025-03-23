@@ -167,7 +167,7 @@ export default function PerformanceMetrics() {
                 <CardDescription>Répartition des gains et pertes par direction de trade</CardDescription>
               </CardHeader>
               <CardContent className="pt-2">
-                <TradeAnalysisChart type="direction" userId={user?.id} period={selectedPeriod} />
+                <TradeAnalysisChart type="type" userId={user?.id} period={selectedPeriod} />
               </CardContent>
             </Card>
             
