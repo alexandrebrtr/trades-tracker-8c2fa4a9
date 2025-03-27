@@ -1,35 +1,67 @@
 
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { Lock } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface NavItemProps {
+interface SidebarNavItemProps {
   name: string;
   path: string;
   icon: React.ReactNode;
   collapsed: boolean;
+  isPremiumFeature?: boolean;
+  userHasPremium?: boolean;
 }
 
-export function SidebarNavItem({ name, path, icon, collapsed }: NavItemProps) {
+export function SidebarNavItem({ 
+  name, 
+  path, 
+  icon, 
+  collapsed,
+  isPremiumFeature = false,
+  userHasPremium = false
+}: SidebarNavItemProps) {
   const location = useLocation();
+  const isActive = location.pathname === path;
   
+  const itemContent = (
+    <div className={cn(
+      'flex items-center gap-3 rounded-md px-3 py-2 transition-colors',
+      isActive 
+        ? 'bg-primary text-primary-foreground' 
+        : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+    )}>
+      <span className="flex-shrink-0">{icon}</span>
+      {!collapsed && (
+        <div className="flex items-center justify-between w-full">
+          <span className="text-sm font-medium">{name}</span>
+          {isPremiumFeature && !userHasPremium && (
+            <Lock className="h-3.5 w-3.5 text-yellow-500" />
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  const tooltipContent = isPremiumFeature && !userHasPremium 
+    ? "Fonctionnalité premium"
+    : name;
+
   return (
     <li>
-      <Link
-        to={path}
-        className={cn(
-          'flex items-center p-3 rounded-md transition-colors',
-          collapsed ? 'justify-center' : 'justify-start',
-          location.pathname === path 
-            ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
-            : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-        )}
-      >
-        <div className="flex items-center">
-          {icon}
-          {!collapsed && <span className="ml-3 font-medium">{name}</span>}
-        </div>
-      </Link>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link to={path} aria-label={name}>
+              {itemContent}
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{tooltipContent}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </li>
   );
 }

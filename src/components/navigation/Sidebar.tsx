@@ -111,7 +111,8 @@ export function Sidebar() {
     }
   ];
 
-  const filteredNavItems = navItems.filter(item => !item.requirePremium || isPremium);
+  // Modification: Afficher tous les éléments de navigation, même ceux premium
+  const filteredNavItems = navItems;
 
   return (
     <aside 
@@ -147,6 +148,8 @@ export function Sidebar() {
                 path={item.path}
                 icon={item.icon}
                 collapsed={collapsed}
+                isPremiumFeature={item.requirePremium}
+                userHasPremium={isPremium}
               />
             ))}
           </ul>

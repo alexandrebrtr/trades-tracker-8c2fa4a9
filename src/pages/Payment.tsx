@@ -747,9 +747,3 @@ export default function Payment() {
                 </CardContent>
               </Card>
             </div>
-          )}
-        </div>
-      </div>
-    </AppLayout>
-  );
-}
