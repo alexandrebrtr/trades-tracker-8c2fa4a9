@@ -84,7 +84,7 @@ export default function Contact() {
                     </a>
                   </Button>
                   <Button variant="outline" size="icon" asChild>
-                    <a href="https://instagram.com/trades.tracker_official" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                    <a href="https://instagram.com/trades_tracker_official" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                       <Instagram className="h-5 w-5" />
                     </a>
                   </Button>
@@ -166,7 +166,7 @@ export default function Contact() {
               <CardHeader>
                 <CardTitle>Heures d'ouverture</CardTitle>
                 <CardDescription>
-                  Notre équipe de support est disponible aux horaires suivants et vous repondra dès que possible.
+                  Notre équipe de support est disponible aux horaires suivants et vous repondra dès que possible
                 </CardDescription>
               </CardHeader>
               <CardContent>
