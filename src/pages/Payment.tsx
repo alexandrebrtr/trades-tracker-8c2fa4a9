@@ -1,3 +1,4 @@
+
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -747,3 +748,9 @@ export default function Payment() {
                 </CardContent>
               </Card>
             </div>
+          )}
+        </div>
+      </div>
+    </AppLayout>
+  );
+}
