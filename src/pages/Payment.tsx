@@ -1,17 +1,28 @@
+
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Check, CreditCard, Star, Download, Gift, Zap, Copy, QrCode, Bitcoin, Wallet } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { AlertTriangle, Check, Star, Download, Gift, Zap, Copy, QrCode, Bitcoin, Wallet } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { usePremium } from '@/context/PremiumContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+// Schéma de validation du formulaire d'adresses crypto
+const cryptoAddressSchema = z.object({
+  bitcoin: z.string().min(26, "L'adresse Bitcoin doit contenir au moins 26 caractères"),
+  ethereum: z.string().min(42, "L'adresse Ethereum doit contenir au moins 42 caractères"),
+  usdc: z.string().min(42, "L'adresse USDC (ERC-20) doit contenir au moins 42 caractères"),
+});
 
 export default function Payment() {
   const { isPremium, setPremiumStatus, premiumExpires } = usePremium();
@@ -19,21 +30,39 @@ export default function Payment() {
   const navigate = useNavigate();
   const { profile, refreshProfile } = useAuth();
   
-  const [step, setStep] = useState<'plan' | 'payment' | 'confirmation'>('plan');
+  const [step, setStep] = useState<'plan' | 'payment' | 'confirmation' | 'setup'>('plan');
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual'>('monthly');
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'crypto'>('card');
   const [selectedCrypto, setSelectedCrypto] = useState<'bitcoin' | 'ethereum' | 'usdc'>('bitcoin');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardName, setCardName] = useState('');
-  const [expiry, setExpiry] = useState('');
-  const [cvc, setCvc] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const cryptoWallets = {
-    bitcoin: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
-    ethereum: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-    usdc: '0x9A67F1940164d0318612b497E8e6038f902a00a4'
+  // Récupérez les adresses depuis le local storage ou utilisez des adresses par défaut
+  const getStoredWallets = () => {
+    const stored = localStorage.getItem('cryptoWallets');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        console.error("Erreur lors de la lecture des adresses crypto:", e);
+      }
+    }
+    return {
+      bitcoin: '',
+      ethereum: '',
+      usdc: ''
+    };
   };
+  
+  const [cryptoWallets, setCryptoWallets] = useState(getStoredWallets());
+  
+  // Formulaire pour configurer les adresses crypto
+  const form = useForm<z.infer<typeof cryptoAddressSchema>>({
+    resolver: zodResolver(cryptoAddressSchema),
+    defaultValues: {
+      bitcoin: cryptoWallets.bitcoin || '',
+      ethereum: cryptoWallets.ethereum || '',
+      usdc: cryptoWallets.usdc || '',
+    },
+  });
   
   const prices = {
     monthly: 9.99,
@@ -63,6 +92,30 @@ export default function Payment() {
     });
   };
 
+  const saveWalletAddresses = (data: z.infer<typeof cryptoAddressSchema>) => {
+    // Enregistrez les adresses dans le localStorage
+    localStorage.setItem('cryptoWallets', JSON.stringify(data));
+    setCryptoWallets(data);
+    
+    toast({
+      title: "Adresses enregistrées",
+      description: "Vos adresses de portefeuille ont été enregistrées avec succès."
+    });
+    
+    if (step === 'setup') {
+      setStep('plan');
+    }
+  };
+
+  // Vérifier si les adresses sont configurées
+  useEffect(() => {
+    const wallets = getStoredWallets();
+    if (!wallets.bitcoin && !wallets.ethereum && !wallets.usdc) {
+      setStep('setup');
+    }
+  }, []);
+
+  // Affichage du profil premium
   if (isPremium) {
     const expiryDate = premiumExpires ? new Date(premiumExpires) : null;
     const formattedExpiryDate = expiryDate ? expiryDate.toLocaleDateString('fr-FR') : 'Date inconnue';
@@ -205,114 +258,24 @@ export default function Payment() {
     );
   }
 
-  const hasEnoughBalance = () => {
-    if (!profile || !profile.balance) return false;
-    return profile.balance >= prices[selectedPlan];
-  };
-
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/g, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-
-    for (let i = 0; i < match.length; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return value;
-    }
-  };
-
-  const formatExpiry = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/g, '');
-    
-    if (v.length >= 2) {
-      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
-    }
-    
-    return value;
-  };
-
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatCardNumber(e.target.value);
-    setCardNumber(formattedValue);
-  };
-
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatExpiry(e.target.value);
-    setExpiry(formattedValue);
-  };
-
-  const validateCard = () => {
-    if (cardNumber.replace(/\s/g, '').length !== 16) {
-      toast({
-        title: "Numéro de carte invalide",
-        description: "Veuillez entrer un numéro de carte valide à 16 chiffres.",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    if (!cardName) {
-      toast({
-        title: "Nom manquant",
-        description: "Veuillez entrer le nom du titulaire de la carte.",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    const expiryRegex = /^(0[1-9]|1[0-2])\/([0-9]{2})$/;
-    if (!expiryRegex.test(expiry)) {
-      toast({
-        title: "Date d'expiration invalide",
-        description: "Veuillez entrer une date d'expiration valide (MM/YY).",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    if (cvc.length !== 3) {
-      toast({
-        title: "CVC invalide",
-        description: "Veuillez entrer un code CVC valide à 3 chiffres.",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    return true;
-  };
-
   const verifyCryptoTransaction = async () => {
     await new Promise(resolve => setTimeout(resolve, 1500));
     return true;
   };
 
   const processPayment = async () => {
-    if (paymentMethod === 'card' && !validateCard() && !hasEnoughBalance()) return;
-    
     setIsProcessing(true);
     
     try {
-      if (paymentMethod === 'card') {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-      } else if (paymentMethod === 'crypto') {
-        const isVerified = await verifyCryptoTransaction();
-        if (!isVerified) {
-          throw new Error("La transaction n'a pas pu être vérifiée");
-        }
+      const isVerified = await verifyCryptoTransaction();
+      if (!isVerified) {
+        throw new Error("La transaction n'a pas pu être vérifiée");
       }
       
       await setPremiumStatus(true);
-      
       await refreshProfile();
       
-      console.log(`Premium plan purchased: ${selectedPlan}, price: ${prices[selectedPlan]}, method: ${paymentMethod}`);
+      console.log(`Premium plan purchased: ${selectedPlan}, price: ${cryptoPrices[selectedCrypto][selectedPlan]} ${selectedCrypto}, method: crypto`);
       
       setStep('confirmation');
       
@@ -331,6 +294,99 @@ export default function Payment() {
       setIsProcessing(false);
     }
   };
+
+  // Configuration des adresses de portefeuille crypto
+  if (step === 'setup') {
+    return (
+      <AppLayout>
+        <div className="container py-8 max-w-4xl mx-auto page-transition">
+          <div className="space-y-8">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Configuration des portefeuilles</h1>
+              <p className="text-muted-foreground mt-2">
+                Configurez vos adresses de portefeuille crypto pour recevoir les paiements.
+              </p>
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Vos adresses de portefeuille</CardTitle>
+                <CardDescription>
+                  Entrez les adresses où vous souhaitez recevoir les paiements en crypto-monnaie.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(saveWalletAddresses)} className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="bitcoin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2">
+                            <Bitcoin className="h-5 w-5 text-amber-500" />
+                            Adresse Bitcoin
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="Entrez votre adresse Bitcoin" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="ethereum"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2">
+                            <svg className="h-5 w-5 text-indigo-500" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z" />
+                            </svg>
+                            Adresse Ethereum
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="Entrez votre adresse Ethereum" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="usdc"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2">
+                            <div className="h-5 w-5 rounded-full bg-blue-500 text-white flex items-center justify-center">
+                              <span className="font-bold text-xs">USDC</span>
+                            </div>
+                            Adresse USDC (ERC-20)
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="Entrez votre adresse USDC" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="pt-2">
+                      <Button type="submit" className="w-full">
+                        Enregistrer mes adresses
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -456,204 +512,110 @@ export default function Payment() {
             <div className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <Tabs 
-                    defaultValue="card" 
-                    value={paymentMethod}
-                    onValueChange={(value) => setPaymentMethod(value as 'card' | 'crypto')}
-                    className="w-full"
-                  >
-                    <TabsList className="grid w-full grid-cols-2 mb-4">
-                      <TabsTrigger value="card" className="flex items-center gap-2">
-                        <CreditCard className="h-4 w-4" />
-                        Carte bancaire
-                      </TabsTrigger>
-                      <TabsTrigger value="crypto" className="flex items-center gap-2">
-                        <Bitcoin className="h-4 w-4" />
-                        Crypto-monnaie
-                      </TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="card">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Carte bancaire</CardTitle>
-                          <CardDescription>
-                            Entrez vos informations de carte bancaire
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="card-number">Numéro de carte</Label>
-                            <div className="relative">
-                              <Input 
-                                id="card-number" 
-                                value={cardNumber} 
-                                onChange={handleCardNumberChange} 
-                                placeholder="1234 5678 9012 3456" 
-                                maxLength={19} 
-                              />
-                              <CreditCard className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                            </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Paiement en crypto-monnaie</CardTitle>
+                      <CardDescription>
+                        Sélectionnez une crypto-monnaie et effectuez le paiement
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Sélectionner une crypto-monnaie</Label>
+                        <RadioGroup 
+                          value={selectedCrypto} 
+                          onValueChange={(value) => setSelectedCrypto(value as 'bitcoin' | 'ethereum' | 'usdc')}
+                          className="grid grid-cols-3 gap-4"
+                        >
+                          <div className={`flex flex-col items-center border rounded-lg p-3 ${selectedCrypto === 'bitcoin' ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                            <RadioGroupItem value="bitcoin" id="bitcoin" className="sr-only" />
+                            <Label htmlFor="bitcoin" className="cursor-pointer flex flex-col items-center">
+                              <Bitcoin className="h-8 w-8 mb-2 text-amber-500" />
+                              <span className="font-medium">Bitcoin</span>
+                              <span className="text-xs text-muted-foreground mt-1">
+                                {cryptoPrices.bitcoin[selectedPlan]} BTC
+                              </span>
+                            </Label>
                           </div>
                           
-                          <div className="space-y-2">
-                            <Label htmlFor="card-name">Nom sur la carte</Label>
-                            <Input 
-                              id="card-name" 
-                              value={cardName} 
-                              onChange={(e) => setCardName(e.target.value)} 
-                              placeholder="John Doe" 
-                            />
+                          <div className={`flex flex-col items-center border rounded-lg p-3 ${selectedCrypto === 'ethereum' ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                            <RadioGroupItem value="ethereum" id="ethereum" className="sr-only" />
+                            <Label htmlFor="ethereum" className="cursor-pointer flex flex-col items-center">
+                              <svg className="h-8 w-8 mb-2 text-indigo-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z" />
+                              </svg>
+                              <span className="font-medium">Ethereum</span>
+                              <span className="text-xs text-muted-foreground mt-1">
+                                {cryptoPrices.ethereum[selectedPlan]} ETH
+                              </span>
+                            </Label>
                           </div>
                           
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="expiry">Date d'expiration</Label>
-                              <Input 
-                                id="expiry" 
-                                value={expiry} 
-                                onChange={handleExpiryChange} 
-                                placeholder="MM/YY" 
-                                maxLength={5} 
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="cvc">CVC</Label>
-                              <Input 
-                                id="cvc" 
-                                value={cvc} 
-                                onChange={(e) => setCvc(e.target.value.replace(/[^0-9]/g, ''))} 
-                                placeholder="123" 
-                                maxLength={3} 
-                                type="tel" 
-                              />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </TabsContent>
-                    
-                    <TabsContent value="crypto">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Paiement en crypto-monnaie</CardTitle>
-                          <CardDescription>
-                            Sélectionnez une crypto-monnaie et effectuez le paiement
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="space-y-2">
-                            <Label>Sélectionner une crypto-monnaie</Label>
-                            <RadioGroup 
-                              value={selectedCrypto} 
-                              onValueChange={(value) => setSelectedCrypto(value as 'bitcoin' | 'ethereum' | 'usdc')}
-                              className="grid grid-cols-3 gap-4"
-                            >
-                              <div className={`flex flex-col items-center border rounded-lg p-3 ${selectedCrypto === 'bitcoin' ? 'border-primary bg-primary/5' : 'border-border'}`}>
-                                <RadioGroupItem value="bitcoin" id="bitcoin" className="sr-only" />
-                                <Label htmlFor="bitcoin" className="cursor-pointer flex flex-col items-center">
-                                  <Bitcoin className="h-8 w-8 mb-2 text-amber-500" />
-                                  <span className="font-medium">Bitcoin</span>
-                                  <span className="text-xs text-muted-foreground mt-1">
-                                    {cryptoPrices.bitcoin[selectedPlan]} BTC
-                                  </span>
-                                </Label>
+                          <div className={`flex flex-col items-center border rounded-lg p-3 ${selectedCrypto === 'usdc' ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                            <RadioGroupItem value="usdc" id="usdc" className="sr-only" />
+                            <Label htmlFor="usdc" className="cursor-pointer flex flex-col items-center">
+                              <div className="h-8 w-8 mb-2 rounded-full bg-blue-500 text-white flex items-center justify-center">
+                                <span className="font-bold text-xs">USDC</span>
                               </div>
-                              
-                              <div className={`flex flex-col items-center border rounded-lg p-3 ${selectedCrypto === 'ethereum' ? 'border-primary bg-primary/5' : 'border-border'}`}>
-                                <RadioGroupItem value="ethereum" id="ethereum" className="sr-only" />
-                                <Label htmlFor="ethereum" className="cursor-pointer flex flex-col items-center">
-                                  <svg className="h-8 w-8 mb-2 text-indigo-500" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z" />
-                                  </svg>
-                                  <span className="font-medium">Ethereum</span>
-                                  <span className="text-xs text-muted-foreground mt-1">
-                                    {cryptoPrices.ethereum[selectedPlan]} ETH
-                                  </span>
-                                </Label>
-                              </div>
-                              
-                              <div className={`flex flex-col items-center border rounded-lg p-3 ${selectedCrypto === 'usdc' ? 'border-primary bg-primary/5' : 'border-border'}`}>
-                                <RadioGroupItem value="usdc" id="usdc" className="sr-only" />
-                                <Label htmlFor="usdc" className="cursor-pointer flex flex-col items-center">
-                                  <div className="h-8 w-8 mb-2 rounded-full bg-blue-500 text-white flex items-center justify-center">
-                                    <span className="font-bold text-xs">USDC</span>
-                                  </div>
-                                  <span className="font-medium">USD Coin</span>
-                                  <span className="text-xs text-muted-foreground mt-1">
-                                    {cryptoPrices.usdc[selectedPlan]} USDC
-                                  </span>
-                                </Label>
-                              </div>
-                            </RadioGroup>
+                              <span className="font-medium">USD Coin</span>
+                              <span className="text-xs text-muted-foreground mt-1">
+                                {cryptoPrices.usdc[selectedPlan]} USDC
+                              </span>
+                            </Label>
                           </div>
-                          
-                          <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                            <div className="flex justify-between items-center mb-3">
-                              <h3 className="font-medium">Adresse de paiement</h3>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => copyToClipboard(cryptoWallets[selectedCrypto])}
-                                className="flex items-center gap-1"
-                              >
-                                <Copy className="h-3 w-3" />
-                                Copier
-                              </Button>
-                            </div>
-                            <div className="flex flex-col items-center space-y-3">
-                              <div className="bg-white p-2 rounded">
-                                <QrCode className="h-32 w-32" />
-                              </div>
-                              <div className="bg-background text-xs sm:text-sm p-2 rounded break-all text-center border">
-                                {cryptoWallets[selectedCrypto]}
-                              </div>
-                            </div>
-                            <div className="mt-4 text-sm text-muted-foreground">
-                              <p className="flex items-center">
-                                <AlertTriangle className="h-4 w-4 mr-2 text-yellow-500" />
-                                Envoyez exactement <span className="font-medium mx-1">{cryptoPrices[selectedCrypto][selectedPlan]} {selectedCrypto.toUpperCase()}</span> à cette adresse.
-                              </p>
-                            </div>
+                        </RadioGroup>
+                      </div>
+                      
+                      <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                        <div className="flex justify-between items-center mb-3">
+                          <h3 className="font-medium">Adresse de paiement</h3>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => copyToClipboard(cryptoWallets[selectedCrypto])}
+                            className="flex items-center gap-1"
+                          >
+                            <Copy className="h-3 w-3" />
+                            Copier
+                          </Button>
+                        </div>
+                        <div className="flex flex-col items-center space-y-3">
+                          <div className="bg-white p-2 rounded">
+                            <QrCode className="h-32 w-32" />
                           </div>
-                          
-                          <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                            <h3 className="font-medium mb-2">Instructions</h3>
-                            <ol className="text-sm space-y-2 list-decimal pl-4">
-                              <li>Copier l'adresse ou scanner le QR code avec votre portefeuille crypto</li>
-                              <li>Envoyer exactement le montant indiqué à cette adresse</li>
-                              <li>Après confirmation de la transaction (peut prendre quelques minutes), cliquer sur "Vérifier le paiement"</li>
-                              <li>Votre compte sera mis à niveau vers Premium automatiquement après vérification</li>
-                            </ol>
+                          <div className="bg-background text-xs sm:text-sm p-2 rounded break-all text-center border">
+                            {cryptoWallets[selectedCrypto] || "Aucune adresse configurée"}
                           </div>
-                        </CardContent>
-                      </Card>
-                    </TabsContent>
-                  </Tabs>
-
-                  {profile && profile.balance > 0 && paymentMethod === 'card' && (
-                    <Card className="mt-4">
-                      <CardHeader>
-                        <CardTitle>Utiliser mon solde</CardTitle>
-                        <CardDescription>
-                          Vous avez {profile.balance.toLocaleString('fr-FR')} € disponibles
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        {hasEnoughBalance() ? (
-                          <div className="flex items-center space-x-2 text-green-500">
-                            <Check className="h-5 w-5" />
-                            <span>Votre solde est suffisant pour cet achat!</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center space-x-2 text-yellow-500">
-                            <AlertTriangle className="h-5 w-5" />
-                            <span>Solde insuffisant, complétez avec une carte bancaire.</span>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )}
+                        </div>
+                        <div className="mt-4 text-sm text-muted-foreground">
+                          <p className="flex items-center">
+                            <AlertTriangle className="h-4 w-4 mr-2 text-yellow-500" />
+                            Envoyez exactement <span className="font-medium mx-1">{cryptoPrices[selectedCrypto][selectedPlan]} {selectedCrypto.toUpperCase()}</span> à cette adresse.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                        <h3 className="font-medium mb-2">Instructions</h3>
+                        <ol className="text-sm space-y-2 list-decimal pl-4">
+                          <li>Copier l'adresse ou scanner le QR code avec votre portefeuille crypto</li>
+                          <li>Envoyer exactement le montant indiqué à cette adresse</li>
+                          <li>Après confirmation de la transaction (peut prendre quelques minutes), cliquer sur "Vérifier le paiement"</li>
+                          <li>Votre compte sera mis à niveau vers Premium automatiquement après vérification</li>
+                        </ol>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setStep('setup')}
+                        >
+                          <Wallet className="h-4 w-4 mr-2" />
+                          Configurer mes adresses
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 <div>
@@ -670,10 +632,7 @@ export default function Payment() {
                       <div className="flex justify-between">
                         <span>Prix</span>
                         <span>
-                          {paymentMethod === 'crypto' 
-                            ? `${cryptoPrices[selectedCrypto][selectedPlan]} ${selectedCrypto.toUpperCase()}`
-                            : `${prices[selectedPlan].toLocaleString('fr-FR')} €`
-                          }
+                          {`${cryptoPrices[selectedCrypto][selectedPlan]} ${selectedCrypto.toUpperCase()}`}
                         </span>
                       </div>
                       
@@ -682,10 +641,7 @@ export default function Payment() {
                       <div className="flex justify-between font-bold">
                         <span>Total</span>
                         <span>
-                          {paymentMethod === 'crypto' 
-                            ? `${cryptoPrices[selectedCrypto][selectedPlan]} ${selectedCrypto.toUpperCase()}`
-                            : `${prices[selectedPlan].toLocaleString('fr-FR')} €`
-                          }
+                          {`${cryptoPrices[selectedCrypto][selectedPlan]} ${selectedCrypto.toUpperCase()}`}
                         </span>
                       </div>
                       
@@ -697,13 +653,11 @@ export default function Payment() {
                       <Button 
                         onClick={processPayment} 
                         className="w-full" 
-                        disabled={isProcessing}
+                        disabled={isProcessing || !cryptoWallets[selectedCrypto]}
                       >
                         {isProcessing 
                           ? "Traitement en cours..." 
-                          : paymentMethod === 'crypto'
-                            ? "Vérifier le paiement"
-                            : "Payer maintenant"
+                          : "Vérifier le paiement"
                         }
                       </Button>
                       <Button 
