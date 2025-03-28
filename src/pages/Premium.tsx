@@ -124,12 +124,6 @@ const Premium = () => {
                     <Button disabled className="w-full mt-6">
                       Prochainement disponible
                     </Button>
-                    
-                    <Button variant="outline" asChild className="w-full mt-2">
-                      <Link to="/payment">
-                        Voir les détails
-                      </Link>
-                    </Button>
                   </CardContent>
                 </Card>
               </div>
