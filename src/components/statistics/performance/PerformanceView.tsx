@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,8 @@ import { MetricsCard } from "./MetricsCard";
 import { usePerformanceData } from "@/hooks/usePerformanceData";
 import { useAuth } from "@/context/AuthContext";
 import { Calendar, ChevronDown } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useTradeStats } from "@/hooks/useTradeStats";
+import { useTradesFetcher } from "@/hooks/useTradesFetcher";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,18 +45,14 @@ export default function PerformanceView({
   const { user } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [periodLabel, setPeriodLabel] = useState("Dernier mois");
-  const [tradingStats, setTradingStats] = useState({
-    winRate: 0,
-    bestTrade: 0,
-    worstTrade: 0,
-    profitFactor: 0,
-    gainLossRatio: 0,
-    marketCorrelation: 0,
-    sortinoRatio: 0
-  });
-  const [loadingStats, setLoadingStats] = useState(true);
   
-  // Utiliser les données externes si disponibles, sinon utiliser le hook
+  // Fetch user's trades based on selected period
+  const { isLoading: tradesLoading, trades } = useTradesFetcher(user?.id, selectedPeriod);
+  
+  // Use our enhanced trade stats hook to calculate real metrics from trades
+  const tradeStats = useTradeStats(trades, 0); // Pass 0 as balance as we'll calculate from trades
+  
+  // Use external data or fetch from the performance data hook
   const { 
     loading: internalLoading, 
     cumulativeReturnsData: internalCumulativeData, 
@@ -64,91 +61,12 @@ export default function PerformanceView({
     metrics: internalMetrics 
   } = usePerformanceData(externalCumulativeData ? null : user, selectedPeriod);
   
-  // Priorité aux données externes si fournies
-  const loading = externalLoading !== undefined ? externalLoading : internalLoading;
+  // Prioritize external data if provided
+  const loading = externalLoading !== undefined ? externalLoading : internalLoading || tradesLoading;
   const cumulativeReturnsData = externalCumulativeData || internalCumulativeData;
   const monthlyReturnsData = externalMonthlyData || internalMonthlyData;
   const volatilityData = externalVolatilityData || internalVolatilityData;
   const metrics = externalMetrics || internalMetrics;
-
-  useEffect(() => {
-    // Charger les statistiques de trading depuis les trades réels de l'utilisateur
-    const loadTradingStats = async () => {
-      if (!user) {
-        setLoadingStats(false);
-        setDefaultTradingStats();
-        return;
-      }
-
-      try {
-        setLoadingStats(true);
-        const { data: trades, error } = await supabase
-          .from('trades')
-          .select('*')
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-
-        if (!trades || trades.length === 0) {
-          setDefaultTradingStats();
-          return;
-        }
-
-        // Calculer les statistiques réelles
-        const winningTrades = trades.filter(trade => trade.pnl > 0);
-        const losingTrades = trades.filter(trade => trade.pnl < 0);
-        
-        const winRate = (winningTrades.length / trades.length) * 100;
-        
-        const totalWins = winningTrades.reduce((sum, trade) => sum + trade.pnl, 0);
-        const totalLosses = Math.abs(losingTrades.reduce((sum, trade) => sum + trade.pnl, 0) || 0);
-        
-        const profitFactor = totalLosses > 0 ? totalWins / totalLosses : totalWins > 0 ? 2 : 0;
-        
-        const avgWin = winningTrades.length > 0 ? totalWins / winningTrades.length : 0;
-        const avgLoss = losingTrades.length > 0 ? totalLosses / losingTrades.length : 1;
-        const gainLossRatio = avgLoss > 0 ? avgWin / avgLoss : avgWin > 0 ? 2 : 0;
-        
-        // Trouver le meilleur et le pire trade
-        const sortedTrades = [...trades].sort((a, b) => b.pnl - a.pnl);
-        const bestTrade = sortedTrades[0]?.pnl || 0;
-        const worstTrade = sortedTrades[sortedTrades.length - 1]?.pnl || 0;
-        
-        // Simuler correlation et ratio de Sortino (en pratique ces valeurs seraient calculées plus précisément)
-        const marketCorrelation = 0.65;
-        const sortinoRatio = 1.24;
-        
-        setTradingStats({
-          winRate: Math.round(winRate),
-          bestTrade,
-          worstTrade,
-          profitFactor: parseFloat(profitFactor.toFixed(2)),
-          gainLossRatio: parseFloat(gainLossRatio.toFixed(2)),
-          marketCorrelation,
-          sortinoRatio
-        });
-      } catch (err) {
-        console.error("Erreur lors du chargement des statistiques de trading:", err);
-        setDefaultTradingStats();
-      } finally {
-        setLoadingStats(false);
-      }
-    };
-    
-    loadTradingStats();
-  }, [user]);
-
-  const setDefaultTradingStats = () => {
-    setTradingStats({
-      winRate: 65,
-      bestTrade: 1243,
-      worstTrade: -578,
-      profitFactor: 1.85,
-      gainLossRatio: 1.85,
-      marketCorrelation: 0.65,
-      sortinoRatio: 1.24
-    });
-  };
 
   const handlePeriodChange = (period: string, label: string) => {
     setSelectedPeriod(period);
@@ -279,7 +197,7 @@ export default function PerformanceView({
             <CardTitle>Statistiques de Trading</CardTitle>
           </CardHeader>
           <CardContent>
-            {loadingStats ? (
+            {loading ? (
               <div className="grid grid-cols-2 gap-4">
                 {Array.from({ length: 4 }).map((_, index) => (
                   <div key={index} className="space-y-1">
@@ -292,19 +210,23 @@ export default function PerformanceView({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Taux de réussite</p>
-                  <p className="text-xl font-semibold">{tradingStats.winRate}%</p>
+                  <p className="text-xl font-semibold">{tradeStats.winRate?.toFixed(1) || 0}%</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Durée moyenne</p>
-                  <p className="text-xl font-semibold">{metrics.averageHoldingPeriod}</p>
+                  <p className="text-xl font-semibold">{tradeStats.avgDuration || metrics.averageHoldingPeriod}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Meilleur trade</p>
-                  <p className="text-xl font-semibold text-green-500">+{tradingStats.bestTrade} €</p>
+                  <p className="text-xl font-semibold text-green-500">
+                    +{tradeStats.bestTrade ? Math.round(tradeStats.bestTrade) : 0} €
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Pire trade</p>
-                  <p className="text-xl font-semibold text-red-500">{tradingStats.worstTrade} €</p>
+                  <p className="text-xl font-semibold text-red-500">
+                    {tradeStats.worstTrade ? Math.round(tradeStats.worstTrade) : 0} €
+                  </p>
                 </div>
               </div>
             )}
@@ -316,7 +238,7 @@ export default function PerformanceView({
             <CardTitle>Analyse de Performance</CardTitle>
           </CardHeader>
           <CardContent>
-            {loadingStats ? (
+            {loading ? (
               <div className="grid grid-cols-2 gap-4">
                 {Array.from({ length: 4 }).map((_, index) => (
                   <div key={index} className="space-y-1">
@@ -329,19 +251,27 @@ export default function PerformanceView({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Profit Factor</p>
-                  <p className="text-xl font-semibold">{tradingStats.profitFactor}</p>
+                  <p className="text-xl font-semibold">
+                    {tradeStats.profitFactor ? tradeStats.profitFactor.toFixed(2) : 0}
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Ratio Gain/Perte</p>
-                  <p className="text-xl font-semibold">{tradingStats.gainLossRatio}</p>
+                  <p className="text-xl font-semibold">
+                    {tradeStats.gainLossRatio || 0}
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Corrélation marché</p>
-                  <p className="text-xl font-semibold">{tradingStats.marketCorrelation}</p>
+                  <p className="text-xl font-semibold">
+                    {tradeStats.marketCorrelation || 0}
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Ratio de Sortino</p>
-                  <p className="text-xl font-semibold">{tradingStats.sortinoRatio}</p>
+                  <p className="text-xl font-semibold">
+                    {tradeStats.sortinoRatio || 0}
+                  </p>
                 </div>
               </div>
             )}
