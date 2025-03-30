@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { parseISO, differenceInDays, format } from "date-fns";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
+import { UserSettings } from "@/context/PremiumContext";
 
 export function PerformanceComparison() {
   const [loading, setLoading] = useState(true);
@@ -46,8 +46,8 @@ export function PerformanceComparison() {
         const currentBalance = profileData?.balance || 10000;
         
         // Extraire la balance initiale depuis settings ou utiliser 10000 par défaut
-        const userSettings = profileData?.settings || {};
-        const initialBalance = userSettings.initialBalance || 10000;
+        const userSettings = profileData?.settings as UserSettings || {};
+        const initialBalance = userSettings.initialBalance ? Number(userSettings.initialBalance) : 10000;
         
         if (!trades || trades.length === 0) {
           // Si pas de trades, utiliser des valeurs par défaut
