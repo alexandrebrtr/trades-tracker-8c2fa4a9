@@ -16,7 +16,7 @@ import { CHART_CONFIG } from "./chartConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, differenceInDays, parseISO, isValid } from "date-fns";
+import { format, differenceInDays, parseISO, isValid, addDays } from "date-fns";
 
 export function PerformanceComparison() {
   const [loading, setLoading] = useState(true);
@@ -50,7 +50,7 @@ export function PerformanceComparison() {
 
         if (profileError && profileError.code !== 'PGRST116') throw profileError;
 
-        // Valeur initiale de la balance
+        // Valeur initiale et actuelle de la balance
         const initialBalance = profileData?.balance || 10000;
         const currentBalance = profileData?.balance || initialBalance;
 
@@ -96,11 +96,17 @@ export function PerformanceComparison() {
     firstDate = validDates.length > 0 ? validDates[0] : new Date();
     lastDate = validDates.length > 0 ? validDates[validDates.length - 1] : new Date();
 
+    // Si on n'a qu'une seule date de trade, ajouter un jour avant et après pour le graphique
+    if (validDates.length === 1) {
+      firstDate = addDays(firstDate, -7);  // Une semaine avant
+      lastDate = addDays(lastDate, 7);     // Une semaine après
+    }
+
     // Initialiser le point de départ pour les deux courbes
     const startMonthKey = format(firstDate, 'MMM yyyy');
     monthlyData[startMonthKey] = {
       portfolioValue: initialBalance,
-      benchmarkValue: initialBalance,
+      benchmarkValue: initialBalance, // Le benchmark commence au même point que le portefeuille
       date: startMonthKey
     };
 
@@ -136,6 +142,19 @@ export function PerformanceComparison() {
       monthlyData[lastMonthKey].portfolioValue = currentBalance;
     }
 
+    // Si nécessaire, ajouter un point supplémentaire pour le mois actuel
+    const currentMonthKey = format(new Date(), 'MMM yyyy');
+    if (!monthlyData[currentMonthKey]) {
+      const daysDiff = differenceInDays(new Date(), firstDate!);
+      const benchmarkValue = calculateBenchmarkValue(new Date(), firstDate!, initialBalance);
+      
+      monthlyData[currentMonthKey] = {
+        portfolioValue: currentBalance,
+        benchmarkValue: benchmarkValue,
+        date: currentMonthKey
+      };
+    }
+
     // Convertir l'objet en tableau pour le graphique
     return Object.values(monthlyData);
   };
@@ -159,15 +178,19 @@ export function PerformanceComparison() {
     const data = [];
     const monthCount = 12;
     
+    // Date de départ - un an dans le passé
+    const startDate = new Date(now.getFullYear() - 1, now.getMonth(), 1);
+    
     for (let i = 0; i < monthCount; i++) {
-      const date = new Date(now.getFullYear(), now.getMonth() - (monthCount - 1) + i, 1);
-      const daysDiff = differenceInDays(date, new Date(now.getFullYear(), now.getMonth() - (monthCount - 1), 1));
+      const date = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
+      const daysDiff = differenceInDays(date, startDate);
       
-      // Croissance de 10% par an, convertie en croissance quotidienne
+      // Croissance de 10% par an pour le benchmark
       const dailyGrowthRate = Math.pow(1.10, 1/365) - 1;
       const benchmarkValue = initialBalance * Math.pow(1 + dailyGrowthRate, daysDiff);
       
-      // Pour la simulation, on suppose une croissance plus rapide pour le portefeuille
+      // Pour la simulation, on suppose une croissance légèrement différente pour le portefeuille
+      // Juste pour avoir un graphique intéressant
       const portfolioGrowthRate = Math.pow(1.15, 1/365) - 1;
       const portfolioValue = initialBalance * Math.pow(1 + portfolioGrowthRate, daysDiff);
       

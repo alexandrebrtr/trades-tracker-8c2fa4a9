@@ -51,7 +51,11 @@ export const CumulativeReturnsChart = ({ data: propData }: CumulativeReturnsChar
         if (tradesError) throw tradesError;
         
         if (!trades || trades.length === 0) {
-          setReturnsData([]);
+          // Si pas de trades, créer un point unique avec la balance initiale
+          setReturnsData([{
+            date: format(new Date(), 'dd/MM/yyyy'),
+            return: initialBalance
+          }]);
           setLoading(false);
           return;
         }
@@ -78,17 +82,22 @@ export const CumulativeReturnsChart = ({ data: propData }: CumulativeReturnsChar
     if (firstTrade) {
       const firstDate = parseISO(firstTrade.date);
       if (isValid(firstDate)) {
+        // Ajouter un point initial avant le premier trade
         returnsData.push({
-          date: format(firstDate, 'dd/MM/yyyy'),
+          date: format(new Date(firstDate.getTime() - 86400000), 'dd/MM/yyyy'), // Jour avant le premier trade
           return: cumulativeBalance
         });
       }
     } else {
-      // Si pas de trades, retourner un tableau vide
-      return [];
+      // Si pas de trades, retourner juste la balance initiale
+      returnsData.push({
+        date: format(new Date(), 'dd/MM/yyyy'),
+        return: cumulativeBalance
+      });
+      return returnsData;
     }
     
-    // Calculer l'évolution de la balance
+    // Calculer l'évolution de la balance en fonction des trades
     trades.forEach(trade => {
       const date = parseISO(trade.date);
       if (!isValid(date)) return;
