@@ -15,20 +15,32 @@ export const getStartDateForTimeframe = (timeframe: '1W' | '1M' | '3M' | '6M' | 
       return new Date(now.setFullYear(now.getFullYear() - 1));
     case 'ALL':
     default:
-      return new Date(now.setFullYear(now.getFullYear() - 5));
+      // For 'ALL', go back 5 years or to the beginning of time
+      return new Date(2000, 0, 1); // January 1, 2000 - effectively "all time"
   }
 };
 
-export const createTimeScale = (timeframe: string) => {
-  const startDate = getStartDateForTimeframe(timeframe as any);
-  const endDate = new Date();
+export const createTimeScale = (timeframe: string, startDate: Date, endDate: Date = new Date()) => {
   const dates = [];
   
   let currentDate = new Date(startDate);
   
+  // Different date format based on timeframe
+  let dateFormat: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit' };
+  
+  // For longer timeframes, adjust format to prevent too many labels
+  if (timeframe === '1Y' || timeframe === 'ALL') {
+    dateFormat = { day: '2-digit', month: '2-digit', year: '2-digit' };
+  }
+  
+  // Generate dates with appropriate intervals based on timeframe
+  let interval = 1; // days
+  if (timeframe === '1Y') interval = 7; // weekly for 1Y
+  if (timeframe === 'ALL') interval = 30; // monthly for ALL
+  
   while (currentDate <= endDate) {
-    dates.push(currentDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }));
-    currentDate.setDate(currentDate.getDate() + 1);
+    dates.push(currentDate.toLocaleDateString('fr-FR', dateFormat));
+    currentDate.setDate(currentDate.getDate() + interval);
   }
   
   return dates;
@@ -77,7 +89,11 @@ export const generateMockData = (timeframe: '1W' | '1M' | '3M' | '6M' | '1Y' | '
 };
 
 export const generatePerformanceData = (trades: any[], initialBalance: number, timeframe: string) => {
-  // Grouper les trades par jour
+  // Get start and end dates
+  const startDate = getStartDateForTimeframe(timeframe as any);
+  const endDate = new Date();
+  
+  // Create a map of trades by date
   const tradesByDay: Record<string, any[]> = {};
   
   trades.forEach(trade => {
@@ -91,24 +107,49 @@ export const generatePerformanceData = (trades: any[], initialBalance: number, t
     tradesByDay[dateKey].push(trade);
   });
   
-  // Créer l'échelle temporelle en fonction de la période
-  const timeScale = createTimeScale(timeframe);
+  // Create the time scale with appropriate interval based on timeframe
+  const timeScale = createTimeScale(timeframe, startDate, endDate);
   
-  // Générer les données avec le solde qui évolue
+  // Generate the performance data
   let currentBalance = initialBalance;
-  const performanceData = timeScale.map(dateKey => {
+  const performanceData = [];
+  
+  // First point is the initial balance
+  performanceData.push({
+    date: startDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+    value: currentBalance
+  });
+  
+  // Process each day in the time scale
+  for (const dateKey of timeScale) {
     if (tradesByDay[dateKey]) {
-      // Ajouter les P&L des trades pour cette date
+      // Add the P&L of each trade for this date
       tradesByDay[dateKey].forEach(trade => {
         currentBalance += (trade.pnl || 0);
       });
+      
+      // Add data point for this date
+      performanceData.push({
+        date: dateKey,
+        value: currentBalance
+      });
+    } else if (performanceData.length > 0 && performanceData[performanceData.length - 1].date !== dateKey) {
+      // If no trades for this date but we have a previous balance, carry it forward
+      performanceData.push({
+        date: dateKey,
+        value: currentBalance
+      });
     }
-    
-    return {
-      date: dateKey,
+  }
+  
+  // Ensure the last point is today's date with current balance
+  const todayKey = endDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+  if (performanceData.length > 0 && performanceData[performanceData.length - 1].date !== todayKey) {
+    performanceData.push({
+      date: todayKey,
       value: currentBalance
-    };
-  });
+    });
+  }
   
   return performanceData;
 };
