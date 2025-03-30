@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  ResponsiveContainer
 } from "recharts";
 import { CHART_CONFIG } from "./chartConfig";
 import { supabase } from "@/integrations/supabase/client";
