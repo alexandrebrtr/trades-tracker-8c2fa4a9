@@ -42,17 +42,17 @@ export function PerformanceComparison() {
         if (tradesError) throw tradesError;
 
         // Récupérer la balance actuelle
-        const { data: balanceData, error: balanceError } = await supabase
-          .from('accounts')
-          .select('balance, initial_balance')
-          .eq('user_id', user.id)
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('balance')
+          .eq('id', user.id)
           .single();
 
-        if (balanceError && balanceError.code !== 'PGRST116') throw balanceError;
+        if (profileError && profileError.code !== 'PGRST116') throw profileError;
 
         // Valeur initiale de la balance
-        const initialBalance = balanceData?.initial_balance || balanceData?.balance || 10000;
-        const currentBalance = balanceData?.balance || initialBalance;
+        const initialBalance = profileData?.balance || 10000;
+        const currentBalance = profileData?.balance || initialBalance;
 
         // Générer les données pour le graphique
         if (!trades || trades.length === 0) {

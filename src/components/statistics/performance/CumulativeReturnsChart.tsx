@@ -30,16 +30,16 @@ export const CumulativeReturnsChart = ({ data: propData }: CumulativeReturnsChar
       
       try {
         setLoading(true);
-        // Récupérer la balance initiale
-        const { data: accountData, error: accountError } = await supabase
-          .from('accounts')
-          .select('initial_balance, balance')
-          .eq('user_id', user.id)
+        // Récupérer la balance de l'utilisateur depuis la table profiles
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('balance')
+          .eq('id', user.id)
           .single();
           
-        if (accountError && accountError.code !== 'PGRST116') throw accountError;
+        if (profileError && profileError.code !== 'PGRST116') throw profileError;
         
-        const initialBalance = accountData?.initial_balance || accountData?.balance || 10000;
+        const initialBalance = profileData?.balance || 10000;
         
         // Récupérer les trades
         const { data: trades, error: tradesError } = await supabase
