@@ -10,6 +10,11 @@ interface PerformanceAreaChartProps {
 }
 
 export const PerformanceAreaChart: React.FC<PerformanceAreaChartProps> = ({ data, isPositive }) => {
+  // Make sure we have data to display
+  if (!data || data.length === 0) {
+    return <div className="flex items-center justify-center h-full">Aucune donnée disponible</div>;
+  }
+  
   // Find min and max values to ensure proper y-axis domain
   const minValue = Math.min(...data.map(item => item.value));
   const maxValue = Math.max(...data.map(item => item.value));
@@ -17,6 +22,10 @@ export const PerformanceAreaChart: React.FC<PerformanceAreaChartProps> = ({ data
   // Add padding to min/max for better visualization
   const yAxisMin = Math.floor(minValue * 0.9); // Increased space below to show negative values better
   const yAxisMax = Math.ceil(maxValue * 1.1);
+  
+  // For flat lines (only one value or all same values), add some padding
+  const adjustedYAxisMin = minValue === maxValue ? minValue * 0.9 : yAxisMin;
+  const adjustedYAxisMax = minValue === maxValue ? maxValue * 1.1 : yAxisMax;
   
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -52,7 +61,7 @@ export const PerformanceAreaChart: React.FC<PerformanceAreaChartProps> = ({ data
           tickLine={false}
           axisLine={false}
           dx={-10}
-          domain={[yAxisMin, yAxisMax]} 
+          domain={[adjustedYAxisMin, adjustedYAxisMax]} 
         />
         <Tooltip content={<CustomTooltip />} />
         <Area 

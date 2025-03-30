@@ -22,6 +22,17 @@ export const useChartData = (userId?: string, timeframe: '1W' | '1M' | '3M' | '6
       }
 
       try {
+        // Récupérer le solde du portfolio d'abord
+        const { data: portfolios, error: portfolioError } = await supabase
+          .from('portfolios')
+          .select('balance')
+          .eq('user_id', userId)
+          .limit(1);
+
+        if (portfolioError) throw portfolioError;
+
+        const initialBalance = portfolios && portfolios.length > 0 ? portfolios[0].balance : 10000;
+        
         // Déterminer la date de début en fonction de la période sélectionnée
         const startDate = getStartDateForTimeframe(timeframe);
         
@@ -35,28 +46,9 @@ export const useChartData = (userId?: string, timeframe: '1W' | '1M' | '3M' | '6
 
         if (error) throw error;
 
-        if (!trades || trades.length === 0) {
-          // Aucun trade pour cette période, utiliser des données fictives
-          const mockData = generateMockData(timeframe);
-          setData(mockData);
-          setIsPositive(true);
-          setIsLoading(false);
-          return;
-        }
-
-        // Récupérer le solde du portfolio
-        const { data: portfolios, error: portfolioError } = await supabase
-          .from('portfolios')
-          .select('balance')
-          .eq('user_id', userId)
-          .limit(1);
-
-        if (portfolioError) throw portfolioError;
-
-        const initialBalance = portfolios && portfolios.length > 0 ? portfolios[0].balance : 10000;
-        
         // Générer une série temporelle avec le solde après chaque trade
-        const performanceData = generatePerformanceData(trades, initialBalance, timeframe);
+        // Même s'il n'y a pas de trades, on affichera une ligne droite avec le solde actuel
+        const performanceData = generatePerformanceData(trades || [], initialBalance, timeframe);
         
         setData(performanceData);
         setIsPositive(

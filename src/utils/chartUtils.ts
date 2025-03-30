@@ -120,6 +120,20 @@ export const generatePerformanceData = (trades: any[], initialBalance: number, t
     value: currentBalance
   });
   
+  // If there are no trades for the period or if it's the 'ALL' timeframe with very few trades,
+  // just create a flat line with the current balance
+  if (Object.keys(tradesByDay).length === 0 || 
+     (timeframe === '1W' || timeframe === '1M') && Object.keys(tradesByDay).length <= 1) {
+    
+    // Just add the end point with the same value to create a flat line
+    performanceData.push({
+      date: endDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+      value: currentBalance
+    });
+    
+    return performanceData;
+  }
+  
   // Process each day in the time scale
   for (const dateKey of timeScale) {
     if (tradesByDay[dateKey]) {
