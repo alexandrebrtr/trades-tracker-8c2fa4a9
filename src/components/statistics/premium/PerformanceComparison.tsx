@@ -1,26 +1,18 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer
-} from "recharts";
-import { CHART_CONFIG } from "./chartConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, differenceInDays, parseISO, isValid, addDays } from "date-fns";
+import { parseISO, differenceInDays, format } from "date-fns";
+import { ArrowUp, ArrowDown } from "lucide-react";
+import { formatCurrency } from "@/utils/formatters";
 
 export function PerformanceComparison() {
   const [loading, setLoading] = useState(true);
-  const [performanceData, setPerformanceData] = useState<any[]>([]);
+  const [portfolioValue, setPortfolioValue] = useState(0);
+  const [initialValue, setInitialValue] = useState(0);
+  const [startDate, setStartDate] = useState<Date | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -51,23 +43,35 @@ export function PerformanceComparison() {
         if (profileError && profileError.code !== 'PGRST116') throw profileError;
 
         // Valeur initiale et actuelle de la balance
-        const initialBalance = profileData?.balance || 10000;
-        const currentBalance = profileData?.balance || initialBalance;
-
-        // Générer les données pour le graphique
+        const currentBalance = profileData?.balance || 10000;
+        
         if (!trades || trades.length === 0) {
-          // Si pas de trades, créer des données simples avec uniquement la balance
-          const defaultData = generateDefaultData(initialBalance);
-          setPerformanceData(defaultData);
+          // Si pas de trades, utiliser des valeurs par défaut
+          setInitialValue(10000);
+          setPortfolioValue(currentBalance);
+          setStartDate(new Date(new Date().getFullYear() - 1, 0, 1)); // 1 an avant
         } else {
-          // Calculer l'évolution de la balance et générer les données pour le graphique
-          const chartData = generatePerformanceChartData(trades, initialBalance, currentBalance);
-          setPerformanceData(chartData);
+          // Trouver la première date de trade valide
+          const validDates = trades
+            .map(trade => parseISO(trade.date))
+            .filter(date => !isNaN(date.getTime()));
+          
+          const firstTradeDate = validDates.length > 0 ? validDates[0] : new Date(new Date().getFullYear() - 1, 0, 1);
+          setStartDate(firstTradeDate);
+          
+          // Calculer le PnL total
+          const totalPnL = trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+          
+          // Calculer la valeur initiale (balance actuelle - PnL total)
+          const estimatedInitialValue = Math.max(1000, currentBalance - totalPnL);
+          setInitialValue(estimatedInitialValue);
+          setPortfolioValue(currentBalance);
         }
       } catch (err) {
         console.error("Erreur lors du chargement des données de performance:", err);
-        const defaultData = generateDefaultData(10000);
-        setPerformanceData(defaultData);
+        setInitialValue(10000);
+        setPortfolioValue(10000);
+        setStartDate(new Date(new Date().getFullYear() - 1, 0, 1));
       } finally {
         setLoading(false);
       }
@@ -76,133 +80,30 @@ export function PerformanceComparison() {
     fetchPortfolioData();
   }, [user]);
 
-  const generatePerformanceChartData = (trades: any[], initialBalance: number, currentBalance: number) => {
-    // Grouper les trades par mois pour simplifier le graphique
-    const monthlyData: Record<string, { 
-      portfolioValue: number, 
-      benchmarkValue: number,
-      date: string 
-    }> = {};
-
-    let cumulativeBalance = initialBalance;
-    let firstDate: Date | null = null;
-    let lastDate: Date = new Date();
-
-    // Trouver la première date de trade
-    const validDates = trades
-      .map(trade => parseISO(trade.date))
-      .filter(date => isValid(date));
+  // Calcul du rendement du portefeuille
+  const portfolioReturn = initialValue > 0 ? ((portfolioValue - initialValue) / initialValue) * 100 : 0;
+  
+  // Calcul de la valeur théorique avec rendement de 10% annuel (S&P 500)
+  const calculateSP500Value = () => {
+    if (!startDate || initialValue <= 0) return initialValue;
     
-    firstDate = validDates.length > 0 ? validDates[0] : new Date();
-    lastDate = validDates.length > 0 ? validDates[validDates.length - 1] : new Date();
-
-    // Si on n'a qu'une seule date de trade, ajouter un jour avant et après pour le graphique
-    if (validDates.length === 1) {
-      firstDate = addDays(firstDate, -7);  // Une semaine avant
-      lastDate = addDays(lastDate, 7);     // Une semaine après
-    }
-
-    // Initialiser le point de départ pour les deux courbes
-    const startMonthKey = format(firstDate, 'MMM yyyy');
-    monthlyData[startMonthKey] = {
-      portfolioValue: initialBalance,
-      benchmarkValue: initialBalance, // Le benchmark commence au même point que le portefeuille
-      date: startMonthKey
-    };
-
-    // Parcourir tous les trades pour calculer la balance cumulative
-    trades.forEach((trade) => {
-      const date = parseISO(trade.date);
-      if (!isValid(date)) return;
-      
-      const monthKey = format(date, 'MMM yyyy');
-      
-      // Ajouter le PNL au cumul
-      cumulativeBalance += trade.pnl || 0;
-      
-      // Stocker ou mettre à jour les données pour ce mois
-      if (!monthlyData[monthKey]) {
-        const daysDiff = differenceInDays(date, firstDate!);
-        const benchmarkValue = calculateBenchmarkValue(date, firstDate!, initialBalance);
-        
-        monthlyData[monthKey] = {
-          portfolioValue: cumulativeBalance,
-          benchmarkValue: benchmarkValue,
-          date: monthKey
-        };
-      } else {
-        // Mise à jour avec la dernière valeur du mois
-        monthlyData[monthKey].portfolioValue = cumulativeBalance;
-      }
-    });
-
-    // S'assurer que la dernière valeur du portefeuille correspond à la balance actuelle
-    const lastMonthKey = format(lastDate, 'MMM yyyy');
-    if (monthlyData[lastMonthKey]) {
-      monthlyData[lastMonthKey].portfolioValue = currentBalance;
-    }
-
-    // Si nécessaire, ajouter un point supplémentaire pour le mois actuel
-    const currentMonthKey = format(new Date(), 'MMM yyyy');
-    if (!monthlyData[currentMonthKey]) {
-      const daysDiff = differenceInDays(new Date(), firstDate!);
-      const benchmarkValue = calculateBenchmarkValue(new Date(), firstDate!, initialBalance);
-      
-      monthlyData[currentMonthKey] = {
-        portfolioValue: currentBalance,
-        benchmarkValue: benchmarkValue,
-        date: currentMonthKey
-      };
-    }
-
-    // Convertir l'objet en tableau pour le graphique
-    return Object.values(monthlyData);
-  };
-
-  // Calculer la valeur du benchmark (S&P 500) avec une croissance constante de 10% par an
-  const calculateBenchmarkValue = (currentDate: Date, startDate: Date, initialValue: number) => {
-    // Calculer le nombre de jours écoulés
-    const daysDiff = differenceInDays(currentDate, startDate);
+    const today = new Date();
+    const daysDiff = differenceInDays(today, startDate);
     if (daysDiff <= 0) return initialValue;
     
-    // Croissance de 10% par an, convertie en croissance quotidienne
-    const dailyGrowthRate = Math.pow(1.10, 1/365) - 1;
-    // Calculer la valeur du benchmark
-    const benchmarkValue = initialValue * Math.pow(1 + dailyGrowthRate, daysDiff);
+    // 10% par an converti en taux journalier
+    const dailyRate = Math.pow(1.10, 1/365) - 1;
+    const sp500Value = initialValue * Math.pow(1 + dailyRate, daysDiff);
     
-    return Math.round(benchmarkValue * 100) / 100; // Arrondir à 2 décimales
+    return sp500Value;
   };
-
-  const generateDefaultData = (initialBalance: number) => {
-    const now = new Date();
-    const data = [];
-    const monthCount = 12;
-    
-    // Date de départ - un an dans le passé
-    const startDate = new Date(now.getFullYear() - 1, now.getMonth(), 1);
-    
-    for (let i = 0; i < monthCount; i++) {
-      const date = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
-      const daysDiff = differenceInDays(date, startDate);
-      
-      // Croissance de 10% par an pour le benchmark
-      const dailyGrowthRate = Math.pow(1.10, 1/365) - 1;
-      const benchmarkValue = initialBalance * Math.pow(1 + dailyGrowthRate, daysDiff);
-      
-      // Pour la simulation, on suppose une croissance légèrement différente pour le portefeuille
-      // Juste pour avoir un graphique intéressant
-      const portfolioGrowthRate = Math.pow(1.15, 1/365) - 1;
-      const portfolioValue = initialBalance * Math.pow(1 + portfolioGrowthRate, daysDiff);
-      
-      data.push({
-        date: format(date, 'MMM yyyy'),
-        portfolioValue: Math.round(portfolioValue),
-        benchmarkValue: Math.round(benchmarkValue)
-      });
-    }
-    
-    return data;
-  };
+  
+  const sp500Value = calculateSP500Value();
+  const sp500Return = initialValue > 0 ? ((sp500Value - initialValue) / initialValue) * 100 : 0;
+  
+  // Déterminer quelle performance est meilleure
+  const portfolioOutperforms = portfolioReturn > sp500Return;
+  const performanceDiff = Math.abs(portfolioReturn - sp500Return);
 
   if (loading) {
     return (
@@ -223,50 +124,100 @@ export function PerformanceComparison() {
         <CardTitle>Comparaison avec le Marché (S&P 500)</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={CHART_CONFIG} className="h-80">
-          <LineChart data={performanceData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="date" />
-            <YAxis 
-              tickFormatter={(value) => 
-                new Intl.NumberFormat('fr-FR', {
-                  style: 'currency',
-                  currency: 'EUR',
-                  notation: 'compact',
-                  compactDisplay: 'short'
-                }).format(value)
-              }
-            />
-            <Tooltip 
-              formatter={(value: any) => [
-                new Intl.NumberFormat('fr-FR', {
-                  style: 'currency', 
-                  currency: 'EUR'
-                }).format(value), 
-                value === performanceData[0]?.benchmarkValue ? 'S&P 500 (10%)' : 'Portefeuille'
-              ]}
-              labelFormatter={(label) => `Date: ${label}`}
-            />
-            <Legend />
-            <Line 
-              type="monotone" 
-              dataKey="portfolioValue" 
-              name="Portefeuille" 
-              stroke={CHART_CONFIG.primary.theme.light}
-              strokeWidth={2} 
-              dot={{ r: 4 }}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="benchmarkValue" 
-              name="S&P 500 (10%)" 
-              stroke={CHART_CONFIG.tertiary.theme.light}
-              strokeWidth={2} 
-              dot={{ r: 4 }}
-              strokeDasharray="5 5"
-            />
-          </LineChart>
-        </ChartContainer>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="border border-primary/20 overflow-hidden">
+            <CardHeader className="bg-primary/5 pb-2">
+              <CardTitle className="text-xl">Votre Portefeuille</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Depuis {startDate ? format(startDate, 'dd/MM/yyyy') : 'le début'}
+              </p>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="space-y-6">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Capital initial</p>
+                  <p className="text-xl font-semibold">{formatCurrency(initialValue)}</p>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Valeur actuelle</p>
+                  <p className="text-2xl font-bold text-primary">{formatCurrency(portfolioValue)}</p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground">Performance totale:</p>
+                  <p className={`text-lg font-bold flex items-center ${portfolioReturn >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {portfolioReturn >= 0 ? 
+                      <ArrowUp className="h-4 w-4 mr-1" /> : 
+                      <ArrowDown className="h-4 w-4 mr-1" />
+                    }
+                    {Math.abs(portfolioReturn).toFixed(2)}%
+                  </p>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Gains totaux</p>
+                  <p className={`text-lg font-semibold ${portfolioValue >= initialValue ? 'text-green-500' : 'text-red-500'}`}>
+                    {formatCurrency(portfolioValue - initialValue)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border border-muted overflow-hidden">
+            <CardHeader className="bg-muted/20 pb-2">
+              <CardTitle className="text-xl">S&P 500 (10% annuel)</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Même période, même capital initial
+              </p>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="space-y-6">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Capital initial</p>
+                  <p className="text-xl font-semibold">{formatCurrency(initialValue)}</p>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Valeur théorique actuelle</p>
+                  <p className="text-2xl font-bold">{formatCurrency(sp500Value)}</p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground">Performance totale:</p>
+                  <p className="text-lg font-bold flex items-center text-green-500">
+                    <ArrowUp className="h-4 w-4 mr-1" />
+                    {sp500Return.toFixed(2)}%
+                  </p>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Gains totaux</p>
+                  <p className="text-lg font-semibold text-green-500">
+                    {formatCurrency(sp500Value - initialValue)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="mt-6 p-4 bg-secondary/10 rounded-lg">
+          <p className="font-medium flex items-center gap-2">
+            {portfolioOutperforms ? (
+              <>
+                <ArrowUp className="h-5 w-5 text-green-500" />
+                <span>Votre portefeuille surperforme le S&P 500 de <span className="text-green-500 font-bold">{performanceDiff.toFixed(2)}%</span></span>
+              </>
+            ) : (
+              <>
+                <ArrowDown className="h-5 w-5 text-red-500" />
+                <span>Votre portefeuille sous-performe le S&P 500 de <span className="text-red-500 font-bold">{performanceDiff.toFixed(2)}%</span></span>
+              </>
+            )}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
