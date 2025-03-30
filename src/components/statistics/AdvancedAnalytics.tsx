@@ -7,7 +7,6 @@ import {
   DrawdownChart,
   RiskReturnScatter
 } from "./premium/AdvancedCharts";
-import { PerformanceMetricsPanel } from "./premium/PerformanceMetrics";
 import { PremiumAnalyticsContent } from "./PremiumAnalyticsContent";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -80,9 +79,6 @@ export default function AdvancedAnalytics() {
         
         <TabsContent value="comparison" className="space-y-6">
           <PerformanceComparison />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <PerformanceMetricsPanel />
-          </div>
         </TabsContent>
         
         <TabsContent value="volatility" className="space-y-6">
