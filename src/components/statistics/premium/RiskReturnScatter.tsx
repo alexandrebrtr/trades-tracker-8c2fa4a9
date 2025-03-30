@@ -96,12 +96,12 @@ export function RiskReturnScatter() {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="h-full">
         <CardHeader>
           <CardTitle>Risque vs Rendement</CardTitle>
         </CardHeader>
         <CardContent>
-          <Skeleton className="w-full h-80" />
+          <Skeleton className="w-full h-[280px]" />
         </CardContent>
       </Card>
     );
@@ -110,11 +110,11 @@ export function RiskReturnScatter() {
   // If no data, display a message
   if (riskReturnData.length === 0) {
     return (
-      <Card>
+      <Card className="h-full">
         <CardHeader>
           <CardTitle>Risque vs Rendement</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center h-80">
+        <CardContent className="flex flex-col items-center justify-center h-[280px]">
           <p className="text-muted-foreground">
             Ajoutez plus de trades pour voir l'analyse risque-rendement.
           </p>
@@ -124,49 +124,53 @@ export function RiskReturnScatter() {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-full">
+      <CardHeader className="pb-2">
         <CardTitle>Risque vs Rendement</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={CHART_CONFIG} className="h-80">
-          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            <CartesianGrid />
-            <XAxis 
-              type="number" 
-              dataKey="x" 
-              name="Risque" 
-              label={{ value: 'Risque (Volatilité)', position: 'bottom' }} 
-            />
-            <YAxis 
-              type="number" 
-              dataKey="y" 
-              name="Rendement" 
-              label={{ value: 'Rendement', angle: -90, position: 'left' }} 
-            />
-            <ZAxis 
-              type="number" 
-              dataKey="z" 
-              range={[50, 400]} 
-              name="Fréquence" 
-            />
-            <Tooltip 
-              cursor={{ strokeDasharray: '3 3' }} 
-              formatter={(value, name) => {
-                if (name === 'Risque') return [`${parseFloat(String(value)).toFixed(2)}`, name];
-                if (name === 'Rendement') return [`${parseFloat(String(value)).toFixed(2)} €`, name];
-                if (name === 'Fréquence') return [value, 'Nombre de trades'];
-                return [value, name];
-              }}
-            />
-            <Legend />
-            <Scatter 
-              name="Symboles" 
-              data={riskReturnData} 
-              fill={CHART_CONFIG.primary.theme.light}
-            />
-          </ScatterChart>
-        </ChartContainer>
+        <div className="w-full h-[280px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+              <CartesianGrid />
+              <XAxis 
+                type="number" 
+                dataKey="x" 
+                name="Risque" 
+                label={{ value: 'Risque', position: 'bottom', fontSize: 12 }}
+                tick={{ fontSize: 12 }}
+              />
+              <YAxis 
+                type="number" 
+                dataKey="y" 
+                name="Rendement" 
+                label={{ value: 'Rendement', angle: -90, position: 'left', fontSize: 12 }}
+                tick={{ fontSize: 12 }}
+              />
+              <ZAxis 
+                type="number" 
+                dataKey="z" 
+                range={[40, 300]} 
+                name="Fréquence" 
+              />
+              <Tooltip 
+                cursor={{ strokeDasharray: '3 3' }} 
+                formatter={(value, name) => {
+                  if (name === 'Risque') return [`${parseFloat(String(value)).toFixed(2)}`, name];
+                  if (name === 'Rendement') return [`${parseFloat(String(value)).toFixed(2)} €`, name];
+                  if (name === 'Fréquence') return [value, 'Nombre de trades'];
+                  return [value, name];
+                }}
+              />
+              <Legend />
+              <Scatter 
+                name="Symboles" 
+                data={riskReturnData} 
+                fill={CHART_CONFIG.primary.theme.light}
+              />
+            </ScatterChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );
