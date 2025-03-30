@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,6 @@ import { CumulativeReturnsChart } from "./CumulativeReturnsChart";
 import { MonthlyReturnsChart } from "./MonthlyReturnsChart";
 import { VolatilityChart } from "./VolatilityChart";
 import { MetricsCard } from "./MetricsCard";
-import { usePerformanceData } from "@/hooks/usePerformanceData";
-import { useAuth } from "@/context/AuthContext";
 import { Calendar, ChevronDown } from "lucide-react";
 import { useTradeStats } from "@/hooks/useTradeStats";
 import { useTradesFetcher } from "@/hooks/useTradesFetcher";
@@ -19,6 +17,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/context/AuthContext";
+import { processTradesData } from "@/utils/tradeDataProcessors";
 
 interface PerformanceViewProps {
   loading?: boolean;
@@ -45,28 +45,45 @@ export default function PerformanceView({
   const { user } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [periodLabel, setPeriodLabel] = useState("Dernier mois");
+  const [portfolioMetrics, setPortfolioMetrics] = useState({
+    totalReturn: 0,
+    annualizedReturn: 0,
+    sharpeRatio: 0,
+    maxDrawdown: 0,
+    winRate: 0,
+    averageHoldingPeriod: "0 jours"
+  });
+  const [chartsData, setChartsData] = useState({
+    cumulativeReturnsData: [],
+    monthlyReturnsData: [],
+    volatilityData: []
+  });
   
   // Fetch user's trades based on selected period
   const { isLoading: tradesLoading, trades } = useTradesFetcher(user?.id, selectedPeriod);
   
   // Use our enhanced trade stats hook to calculate real metrics from trades
-  const tradeStats = useTradeStats(trades, 0); // Pass 0 as balance as we'll calculate from trades
+  const tradeStats = useTradeStats(trades, 0);
   
-  // Use external data or fetch from the performance data hook
-  const { 
-    loading: internalLoading, 
-    cumulativeReturnsData: internalCumulativeData, 
-    monthlyReturnsData: internalMonthlyData, 
-    volatilityData: internalVolatilityData, 
-    metrics: internalMetrics 
-  } = usePerformanceData(externalCumulativeData ? null : user, selectedPeriod);
+  // Process trades data for charts when trades update
+  useEffect(() => {
+    if (!tradesLoading && trades.length > 0) {
+      const processedData = processTradesData(trades);
+      setChartsData({
+        cumulativeReturnsData: processedData.cumulativeReturnsData,
+        monthlyReturnsData: processedData.monthlyReturnsData,
+        volatilityData: processedData.volatilityData
+      });
+      setPortfolioMetrics(processedData.metrics);
+    }
+  }, [trades, tradesLoading]);
   
   // Prioritize external data if provided
-  const loading = externalLoading !== undefined ? externalLoading : internalLoading || tradesLoading;
-  const cumulativeReturnsData = externalCumulativeData || internalCumulativeData;
-  const monthlyReturnsData = externalMonthlyData || internalMonthlyData;
-  const volatilityData = externalVolatilityData || internalVolatilityData;
-  const metrics = externalMetrics || internalMetrics;
+  const loading = externalLoading !== undefined ? externalLoading : tradesLoading;
+  const cumulativeReturnsData = externalCumulativeData || chartsData.cumulativeReturnsData;
+  const monthlyReturnsData = externalMonthlyData || chartsData.monthlyReturnsData;
+  const volatilityData = externalVolatilityData || chartsData.volatilityData;
+  const metrics = externalMetrics || portfolioMetrics;
 
   const handlePeriodChange = (period: string, label: string) => {
     setSelectedPeriod(period);
@@ -90,7 +107,7 @@ export default function PerformanceView({
       <MetricsCard
         title={title}
         value={value}
-        type={type as "currency" | "percentage" | "number"}
+        type={type as "currency" | "percentage" | "number" | "text"}
         icon={icon as "profit" | "performance" | "ratio" | "volatility"}
         trend={trend as "up" | "down" | "neutral"}
         comparison={comparison}
@@ -133,7 +150,7 @@ export default function PerformanceView({
           metrics.totalReturn,
           "currency",
           "profit",
-          "up",
+          metrics.totalReturn >= 0 ? "up" : "down",
           "depuis le début"
         )}
         {renderMetricsCard(
@@ -141,7 +158,7 @@ export default function PerformanceView({
           metrics.annualizedReturn,
           "percentage",
           "performance",
-          "up",
+          metrics.annualizedReturn >= 0 ? "up" : "down",
           "par an"
         )}
         {renderMetricsCard(
@@ -169,21 +186,21 @@ export default function PerformanceView({
           <TabsTrigger value="volatility">Analyse de Volatilité</TabsTrigger>
         </TabsList>
         <TabsContent value="cumulative" className="pt-4">
-          {loading ? (
+          {loading || cumulativeReturnsData.length === 0 ? (
             <Skeleton className="w-full h-[350px]" />
           ) : (
             <CumulativeReturnsChart data={cumulativeReturnsData} />
           )}
         </TabsContent>
         <TabsContent value="monthly" className="pt-4">
-          {loading ? (
+          {loading || monthlyReturnsData.length === 0 ? (
             <Skeleton className="w-full h-[350px]" />
           ) : (
             <MonthlyReturnsChart data={monthlyReturnsData} />
           )}
         </TabsContent>
         <TabsContent value="volatility" className="pt-4">
-          {loading ? (
+          {loading || volatilityData.length === 0 ? (
             <Skeleton className="w-full h-[350px]" />
           ) : (
             <VolatilityChart data={volatilityData} />
