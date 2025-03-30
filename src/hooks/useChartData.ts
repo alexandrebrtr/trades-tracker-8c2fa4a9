@@ -16,7 +16,7 @@ export const useChartData = (userId?: string, timeframe: '1W' | '1M' | '3M' | '6
         // Générer des données fictives si aucun utilisateur n'est connecté
         const mockData = generateMockData(timeframe);
         setData(mockData);
-        setIsPositive(mockData[mockData.length - 1].value >= mockData[0].value);
+        setIsPositive(mockData && mockData.length > 0 ? mockData[mockData.length - 1].value >= mockData[0].value : true);
         setIsLoading(false);
         return;
       }
@@ -58,7 +58,7 @@ export const useChartData = (userId?: string, timeframe: '1W' | '1M' | '3M' | '6
         
         setData(performanceData);
         setIsPositive(
-          performanceData.length > 1 
+          performanceData && performanceData.length > 1 
           ? performanceData[performanceData.length - 1].value >= performanceData[0].value 
           : true
         );
@@ -67,7 +67,7 @@ export const useChartData = (userId?: string, timeframe: '1W' | '1M' | '3M' | '6
         // En cas d'erreur, utiliser des données fictives
         const mockData = generateMockData(timeframe);
         setData(mockData);
-        setIsPositive(mockData[mockData.length - 1].value >= mockData[0].value);
+        setIsPositive(mockData && mockData.length > 0 ? mockData[mockData.length - 1].value >= mockData[0].value : true);
       } finally {
         setIsLoading(false);
       }

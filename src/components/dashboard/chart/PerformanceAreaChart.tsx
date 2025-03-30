@@ -9,15 +9,15 @@ interface PerformanceAreaChartProps {
   isPositive: boolean;
 }
 
-export const PerformanceAreaChart: React.FC<PerformanceAreaChartProps> = ({ data, isPositive }) => {
+export const PerformanceAreaChart: React.FC<PerformanceAreaChartProps> = ({ data = [], isPositive = true }) => {
   // Make sure we have data to display
   if (!data || data.length === 0) {
     return <div className="flex items-center justify-center h-full">Aucune donnée disponible</div>;
   }
   
   // Find min and max values to ensure proper y-axis domain
-  const minValue = Math.min(...data.map(item => item.value));
-  const maxValue = Math.max(...data.map(item => item.value));
+  const minValue = Math.min(...data.map(item => item?.value || 0));
+  const maxValue = Math.max(...data.map(item => item?.value || 0));
   
   // Add padding to min/max for better visualization
   const yAxisMin = Math.floor(minValue * 0.9); // Increased space below to show negative values better

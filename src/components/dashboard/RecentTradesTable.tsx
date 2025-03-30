@@ -16,11 +16,11 @@ interface RecentTradesTableProps {
   trades: Trade[];
 }
 
-export function RecentTradesTable({ trades }: RecentTradesTableProps) {
+export function RecentTradesTable({ trades = [] }: RecentTradesTableProps) {
   return (
     <div className="glass-card">
       <h3 className="text-lg font-semibold mb-4">Trades récents</h3>
-      {trades.length === 0 ? (
+      {(!trades || trades.length === 0) ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground">Aucun trade enregistré. Commencez à ajouter vos trades dans la section "Ajouter un trade".</p>
         </div>

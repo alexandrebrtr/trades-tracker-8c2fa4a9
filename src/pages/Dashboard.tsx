@@ -9,6 +9,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { DashboardData, Trade } from '@/services/DashboardData';
+import { formatCurrency as formatCurrencyUtil } from '@/utils/formatters';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -85,17 +86,17 @@ const Dashboard = () => {
         <StatsDisplay 
           balance={portfolioBalance}
           monthlyPnL={monthlyPnL}
-          trades={trades}
+          trades={trades || []}
         />
         
         <PerformanceChart className="mt-8" userId={user?.id} />
         
         <PortfolioDistribution 
-          assetData={assetAllocation.length > 0 ? assetAllocation : null}
-          strategyData={strategyAllocation.length > 0 ? strategyAllocation : null}
+          assetData={assetAllocation && assetAllocation.length > 0 ? assetAllocation : null}
+          strategyData={strategyAllocation && strategyAllocation.length > 0 ? strategyAllocation : null}
         />
         
-        <RecentTradesTable trades={trades} />
+        <RecentTradesTable trades={trades || []} />
       </div>
     </AppLayout>
   );
