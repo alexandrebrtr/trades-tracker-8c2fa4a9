@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -127,10 +126,8 @@ const AnalyticsView = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Calculate start date based on selected timeframe
         const startDate = getStartDateFromTimeframe(timeframe);
         
-        // Fetch user trades
         const { data: trades, error: tradesError } = await supabase
           .from('trades')
           .select('*')
@@ -140,7 +137,6 @@ const AnalyticsView = () => {
 
         if (tradesError) throw tradesError;
 
-        // Process trades data for analytics
         processTradesData(trades || []);
         
       } catch (error: any) {
@@ -168,7 +164,7 @@ const AnalyticsView = () => {
         return new Date(now.setFullYear(now.getFullYear() - 1));
       case 'all':
       default:
-        return new Date(2000, 0, 1); // A date far in the past
+        return new Date(2000, 0, 1);
     }
   };
 
@@ -188,7 +184,6 @@ const AnalyticsView = () => {
       return;
     }
 
-    // Process daily returns data
     const dailyReturns: Record<string, number> = {};
     trades.forEach(trade => {
       const date = new Date(trade.date).toLocaleDateString('fr-FR');
@@ -206,7 +201,6 @@ const AnalyticsView = () => {
 
     setAnalyticsData(analyticsData);
 
-    // Calculate performance summary
     const wins = trades.filter(trade => trade.pnl > 0);
     const losses = trades.filter(trade => trade.pnl < 0);
     const totalPnl = trades.reduce((sum, trade) => sum + trade.pnl, 0);
@@ -223,7 +217,6 @@ const AnalyticsView = () => {
       lossRate
     });
 
-    // Process asset allocation data
     const assets: Record<string, number> = {};
     trades.forEach(trade => {
       if (!assets[trade.symbol]) {
@@ -234,7 +227,7 @@ const AnalyticsView = () => {
 
     const assetAllocationData = Object.entries(assets)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 7) // Take top 7 for better visualization
+      .slice(0, 7)
       .map(([name, value], index) => ({
         name,
         value,
@@ -243,7 +236,6 @@ const AnalyticsView = () => {
 
     setAssetAllocation(assetAllocationData);
 
-    // Process trades by type data
     const tradeTypes: Record<string, number> = {};
     trades.forEach(trade => {
       const type = trade.type || 'Unknown';
@@ -257,7 +249,6 @@ const AnalyticsView = () => {
 
     setTradesByType(tradeTypesData);
 
-    // Process trades by strategy data
     const strategies: Record<string, number> = {};
     trades.forEach(trade => {
       const strategy = trade.strategy || 'Non définie';
@@ -266,7 +257,7 @@ const AnalyticsView = () => {
 
     const strategiesData = Object.entries(strategies)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 7) // Take top 7 for better visualization
+      .slice(0, 7)
       .map(([name, value]) => ({
         name,
         value
@@ -399,6 +390,7 @@ const AnalyticsView = () => {
                       compactDisplay: 'short'
                     }).format(value)
                   }
+                  domain={['auto', 'auto']}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Area 
@@ -564,6 +556,7 @@ const AnalyticsView = () => {
                       compactDisplay: 'short'
                     }).format(value)
                   }
+                  domain={['auto', 'auto']}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar 
@@ -572,7 +565,14 @@ const AnalyticsView = () => {
                   shape={(props) => {
                     const { x, y, width, height, value } = props;
                     const color = value >= 0 ? "#4ade80" : "#f87171";
-                    return <rect x={x} y={value >= 0 ? y : y - height} width={width} height={Math.abs(height)} fill={color} />;
+                    
+                    const baseline = props.background?.y || 0;
+                    
+                    if (value >= 0) {
+                      return <rect x={x} y={y} width={width} height={Math.abs(height)} fill={color} />;
+                    } else {
+                      return <rect x={x} y={baseline} width={width} height={Math.abs(height)} fill={color} />;
+                    }
                   }}
                 />
               </BarChart>

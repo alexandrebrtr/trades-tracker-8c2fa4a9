@@ -73,7 +73,7 @@ export const generateMockData = (timeframe: '1W' | '1M' | '3M' | '6M' | '1Y' | '
       : -Math.random() * 300;
     
     currentValue += change;
-    if (currentValue < 0) currentValue = 100; // Prevent negative values
+    // Allow negative values
     
     // Calculer la date pour ce point
     const date = new Date();

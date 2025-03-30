@@ -10,6 +10,14 @@ interface PerformanceAreaChartProps {
 }
 
 export const PerformanceAreaChart: React.FC<PerformanceAreaChartProps> = ({ data, isPositive }) => {
+  // Find min and max values to ensure proper y-axis domain
+  const minValue = Math.min(...data.map(item => item.value));
+  const maxValue = Math.max(...data.map(item => item.value));
+  
+  // Add padding to min/max for better visualization
+  const yAxisMin = Math.floor(minValue * 1.1);
+  const yAxisMax = Math.ceil(maxValue * 1.1);
+  
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart
@@ -39,11 +47,12 @@ export const PerformanceAreaChart: React.FC<PerformanceAreaChartProps> = ({ data
           dy={10}
         />
         <YAxis 
-          tickFormatter={formatYAxis} 
+          tickFormatter={formatYAxis}
           tick={{ fontSize: 12 }} 
           tickLine={false}
           axisLine={false}
           dx={-10}
+          domain={[yAxisMin < 0 ? yAxisMin : 0, yAxisMax]}
         />
         <Tooltip content={<CustomTooltip />} />
         <Area 
