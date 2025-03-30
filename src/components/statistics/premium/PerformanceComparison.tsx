@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,10 +25,10 @@ export function PerformanceComparison() {
 
       try {
         setLoading(true);
-        // Récupérer les données du profil pour obtenir la balance initiale
+        // Récupérer les données du profil pour obtenir la balance actuelle
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('balance, settings')
+          .select('balance')
           .eq('id', user.id)
           .single();
 
@@ -42,12 +43,11 @@ export function PerformanceComparison() {
 
         if (tradesError) throw tradesError;
 
-        // Valeur initiale et actuelle de la balance
+        // Valeur actuelle de la balance
         const currentBalance = profileData?.balance || 10000;
         
-        // Extraire la balance initiale depuis settings ou utiliser 10000 par défaut
-        const userSettings = profileData?.settings as UserSettings || {};
-        const initialBalance = userSettings.initialBalance ? Number(userSettings.initialBalance) : 10000;
+        // Utiliser la balance actuelle comme valeur initiale pour les deux graphiques
+        const initialBalance = currentBalance;
         
         if (!trades || trades.length === 0) {
           // Si pas de trades, utiliser des valeurs par défaut
@@ -63,7 +63,7 @@ export function PerformanceComparison() {
           const firstTradeDate = validDates.length > 0 ? validDates[0] : new Date(new Date().getFullYear() - 1, 0, 1);
           setStartDate(firstTradeDate);
           
-          // Utiliser la balance initiale définie par l'utilisateur
+          // Utiliser la balance actuelle comme valeur initiale
           setInitialValue(initialBalance);
           setPortfolioValue(currentBalance);
         }
