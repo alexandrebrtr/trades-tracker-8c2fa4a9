@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
 import { StatsDisplay } from '@/components/dashboard/StatsDisplay';
@@ -9,9 +10,10 @@ import { useAuth } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { DashboardData, Trade } from '@/services/DashboardData';
 import { BrokerSyncNotification } from '@/components/dashboard/BrokerSyncNotification';
+import { formatCurrency } from '@/utils/formatters';
 
 const Dashboard = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [portfolioBalance, setPortfolioBalance] = useState(0);
   const [monthlyPnL, setMonthlyPnL] = useState(0);
@@ -55,10 +57,6 @@ const Dashboard = () => {
     setIsLoading(false);
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
-  };
-
   if (isLoading) {
     return (
       <AppLayout>
@@ -73,14 +71,22 @@ const Dashboard = () => {
   return (
     <AppLayout>
       <div className="page-transition">
-        <DashboardHeader />
+        <DashboardHeader 
+          portfolioBalance={portfolioBalance} 
+          monthlyPnL={monthlyPnL} 
+          formatCurrency={formatCurrency} 
+        />
         
-        {isAuthenticated && <BrokerSyncNotification />}
+        {user && <BrokerSyncNotification />}
         
         <div className="grid gap-6">
           <PerformanceChart />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StatsDisplay />
+            <StatsDisplay 
+              balance={portfolioBalance} 
+              monthlyPnL={monthlyPnL} 
+              trades={trades} 
+            />
             <RecentTradesTable trades={trades} />
           </div>
         </div>
