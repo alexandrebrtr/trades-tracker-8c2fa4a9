@@ -1,4 +1,3 @@
-
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -10,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/context/AuthContext';
 import { usePerformanceData } from '@/hooks/usePerformanceData';
 import { 
-  PerformanceComparison, 
   VolatilityAnalysis, 
   DrawdownChart,
   RiskReturnScatter
@@ -66,9 +64,7 @@ export default function PremiumAnalytics() {
           </TabsList>
           
           <TabsContent value="performance" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PerformanceComparison />
-              
+            <div className="grid grid-cols-1 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Métriques Avancées</CardTitle>
