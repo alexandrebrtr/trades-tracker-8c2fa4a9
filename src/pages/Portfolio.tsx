@@ -7,6 +7,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { CapitalManagement } from '@/components/portfolio/CapitalManagement';
 import { AssetAllocation } from '@/components/portfolio/AssetAllocation';
 import { TradesHistory } from '@/components/portfolio/TradesHistory';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 
 interface Trade {
   id: string;
@@ -27,12 +32,15 @@ interface Asset {
 
 export default function Portfolio() {
   const { user } = useAuth();
+  const { toast } = useToast();
   
   const [isLoading, setIsLoading] = useState(true);
   const [portfolioId, setPortfolioId] = useState<string | null>(null);
   const [portfolioSize, setPortfolioSize] = useState(0);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
+  const [initialSetupDone, setInitialSetupDone] = useState(false);
+  const [initialBalance, setInitialBalance] = useState('');
 
   // Charger les données du portfolio de l'utilisateur
   useEffect(() => {
@@ -62,9 +70,11 @@ export default function Portfolio() {
           
           if (createError) throw createError;
           setPortfolioSize(0);
+          setInitialSetupDone(false);
           currentPortfolioId = newPortfolio.id;
         } else {
           setPortfolioSize(portfolios[0].balance);
+          setInitialSetupDone(portfolios[0].balance > 0);
           currentPortfolioId = portfolios[0].id;
         }
         
@@ -124,12 +134,98 @@ export default function Portfolio() {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
   };
 
+  const handleInitialBalanceSubmit = async () => {
+    if (!user || !portfolioId) return;
+    
+    const amount = parseFloat(initialBalance);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Montant invalide",
+        description: "Veuillez entrer un montant valide supérieur à 0.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      // Update portfolio balance
+      const { error: portfolioError } = await supabase
+        .from('portfolios')
+        .update({ balance: amount })
+        .eq('id', portfolioId);
+      
+      if (portfolioError) throw portfolioError;
+      
+      // Update user profile balance
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ balance: amount })
+        .eq('id', user.id);
+      
+      if (profileError) throw profileError;
+      
+      setPortfolioSize(amount);
+      setInitialSetupDone(true);
+      
+      toast({
+        title: "Balance initiale configurée",
+        description: `Votre balance a été configurée à ${formatCurrency(amount)}.`,
+      });
+    } catch (error) {
+      console.error('Erreur lors de la configuration de la balance:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-[80vh]">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           <span className="ml-2 text-muted-foreground">Chargement de votre portefeuille...</span>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Afficher l'écran de configuration initiale si nécessaire
+  if (!initialSetupDone) {
+    return (
+      <AppLayout>
+        <div className="page-transition space-y-8">
+          <h1 className="text-3xl font-bold tracking-tight">Configuration du portefeuille</h1>
+          
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle>Bienvenue !</CardTitle>
+              <CardDescription>
+                Avant de commencer, veuillez définir la balance initiale de votre portefeuille
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="initial-balance">Balance initiale</Label>
+                <Input
+                  id="initial-balance"
+                  type="number"
+                  placeholder="Entrez votre balance initiale"
+                  value={initialBalance}
+                  onChange={(e) => setInitialBalance(e.target.value)}
+                />
+              </div>
+              <Button 
+                className="w-full" 
+                onClick={handleInitialBalanceSubmit}
+                disabled={!initialBalance || parseFloat(initialBalance) <= 0}
+              >
+                Commencer
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </AppLayout>
     );
