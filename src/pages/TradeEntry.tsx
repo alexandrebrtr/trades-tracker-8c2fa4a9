@@ -4,9 +4,11 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { TradeForm } from '@/components/forms/TradeForm';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Zap, Book, X } from 'lucide-react';
+import { Zap, Book, X, RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { usePremium } from '@/context/PremiumContext';
+import { useAuth } from '@/context/AuthContext';
+import { useBinanceSync } from '@/hooks/useBinanceSync';
 import { 
   Dialog,
   DialogContent,
@@ -22,7 +24,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const TradeEntry = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const { isPremium, userSettings, updateUserSettings } = usePremium();
+  const { synchronizeTrades, isLoading: isSyncing } = useBinanceSync();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [brokerName, setBrokerName] = useState(userSettings.broker?.name || '');
   const [apiKey, setApiKey] = useState(userSettings.broker?.apiKey || '');
@@ -78,6 +82,32 @@ const TradeEntry = () => {
     }
   };
 
+  const handleSyncTrades = async () => {
+    if (!isPremium) {
+      toast({
+        title: "Fonctionnalité Premium",
+        description: "Passez à l'abonnement Premium pour accéder à la synchronisation des trades.",
+        variant: "default",
+      });
+      return;
+    }
+
+    if (!userSettings.broker?.isConnected || !userSettings.broker?.apiKey || !userSettings.broker?.secretKey) {
+      toast({
+        title: "Broker non connecté",
+        description: "Veuillez d'abord connecter votre compte de trading.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await synchronizeTrades(
+      user.id, 
+      userSettings.broker.apiKey, 
+      userSettings.broker.secretKey
+    );
+  };
+
   return (
     <AppLayout>
       <div className="page-transition">
@@ -98,6 +128,17 @@ const TradeEntry = () => {
               <Zap className="h-4 w-4" />
               <span>Connecter un compte</span>
             </Button>
+            {userSettings.broker?.isConnected && (
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={handleSyncTrades}
+                disabled={isSyncing}
+              >
+                <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                <span>{isSyncing ? 'Synchronisation...' : 'Synchroniser les trades'}</span>
+              </Button>
+            )}
           </div>
         </div>
         <TradeForm />

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
 import { StatsDisplay } from '@/components/dashboard/StatsDisplay';
@@ -9,9 +8,10 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { DashboardData, Trade } from '@/services/DashboardData';
+import { BrokerSyncNotification } from '@/components/dashboard/BrokerSyncNotification';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [portfolioBalance, setPortfolioBalance] = useState(0);
   const [monthlyPnL, setMonthlyPnL] = useState(0);
@@ -20,11 +20,9 @@ const Dashboard = () => {
   const [strategyAllocation, setStrategyAllocation] = useState<any[]>([]);
 
   useEffect(() => {
-    // Si l'utilisateur est connecté, charger ses données réelles
     if (user) {
       loadUserData();
     } else {
-      // Sinon, utiliser des données fictives
       loadDemoData();
     }
   }, [user]);
@@ -41,7 +39,6 @@ const Dashboard = () => {
       setStrategyAllocation(data.strategyAllocation);
     } catch (error) {
       console.error('Erreur lors du chargement des données:', error);
-      // En cas d'erreur, utiliser des données fictives
       loadDemoData();
     } finally {
       setIsLoading(false);
@@ -75,27 +72,18 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
-      <div className="page-transition space-y-8">
-        <DashboardHeader 
-          portfolioBalance={portfolioBalance}
-          monthlyPnL={monthlyPnL}
-          formatCurrency={formatCurrency}
-        />
+      <div className="page-transition">
+        <DashboardHeader />
         
-        <StatsDisplay 
-          balance={portfolioBalance}
-          monthlyPnL={monthlyPnL}
-          trades={trades}
-        />
+        {isAuthenticated && <BrokerSyncNotification />}
         
-        <PerformanceChart className="mt-8" userId={user?.id} />
-        
-        <PortfolioDistribution 
-          assetData={assetAllocation.length > 0 ? assetAllocation : null}
-          strategyData={strategyAllocation.length > 0 ? strategyAllocation : null}
-        />
-        
-        <RecentTradesTable trades={trades} />
+        <div className="grid gap-6">
+          <PerformanceChart />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <StatsDisplay />
+            <RecentTradesTable trades={trades} />
+          </div>
+        </div>
       </div>
     </AppLayout>
   );
