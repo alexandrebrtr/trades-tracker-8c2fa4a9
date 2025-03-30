@@ -10,10 +10,10 @@ import {
 import { PremiumAnalyticsContent } from "./PremiumAnalyticsContent";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/utils/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowUp, ArrowDown, Zap } from "lucide-react";
 
 interface StrategyStats {
   name: string;
@@ -204,95 +204,82 @@ export default function AdvancedAnalytics() {
                   <p className="text-muted-foreground">Aucune stratégie trouvée dans vos trades.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Stratégie</TableHead>
-                        <TableHead className="text-right">Trades</TableHead>
-                        <TableHead className="text-right">Taux de Réussite</TableHead>
-                        <TableHead className="text-right">P&L Total</TableHead>
-                        <TableHead className="text-right">P&L Moyen</TableHead>
-                        <TableHead className="text-right">Profit Factor</TableHead>
-                        <TableHead className="text-right">Meilleur Trade</TableHead>
-                        <TableHead className="text-right">Pire Trade</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {strategyStats.map((strategy) => (
-                        <TableRow key={strategy.name}>
-                          <TableCell className="font-medium">{strategy.name}</TableCell>
-                          <TableCell className="text-right">{strategy.totalTrades}</TableCell>
-                          <TableCell className="text-right">{strategy.winRate.toFixed(1)}%</TableCell>
-                          <TableCell className="text-right font-medium">
-                            <span className={strategy.totalPnL >= 0 ? "text-green-600" : "text-red-600"}>
-                              {formatCurrency(strategy.totalPnL)}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <span className={strategy.avgPnL >= 0 ? "text-green-600" : "text-red-600"}>
-                              {formatCurrency(strategy.avgPnL)}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right">{strategy.profitFactor.toFixed(2)}</TableCell>
-                          <TableCell className="text-right text-green-600">
-                            {formatCurrency(strategy.bestTrade)}
-                          </TableCell>
-                          <TableCell className="text-right text-red-600">
-                            {formatCurrency(strategy.worstTrade)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {strategyStats.map((strategy) => (
+                    <Card key={strategy.name} className="border border-border overflow-hidden">
+                      <CardHeader className="bg-secondary/10 pb-3">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-xl flex items-center gap-2">
+                            <Zap className="h-5 w-5 text-primary" />
+                            {strategy.name}
+                          </CardTitle>
+                          <Badge 
+                            variant={strategy.winRate >= 50 ? "default" : "destructive"} 
+                            className="text-md px-3 py-1"
+                          >
+                            {strategy.winRate.toFixed(1)}% taux de réussite
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-4">
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-secondary/10 p-3 rounded-lg">
+                              <p className="text-xs text-muted-foreground">Nombre de trades</p>
+                              <p className="text-lg font-semibold">{strategy.totalTrades}</p>
+                            </div>
+                            <div className="bg-secondary/10 p-3 rounded-lg">
+                              <p className="text-xs text-muted-foreground">Profit Factor</p>
+                              <p className={`text-lg font-semibold ${strategy.profitFactor >= 1 ? 'text-green-500' : 'text-red-500'}`}>
+                                {strategy.profitFactor.toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-secondary/10 p-3 rounded-lg">
+                              <p className="text-xs text-muted-foreground">P&L Total</p>
+                              <p className={`text-lg font-semibold ${strategy.totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                {formatCurrency(strategy.totalPnL)}
+                              </p>
+                            </div>
+                            <div className="bg-secondary/10 p-3 rounded-lg">
+                              <p className="text-xs text-muted-foreground">P&L Moyen</p>
+                              <p className={`text-lg font-semibold ${strategy.avgPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                {formatCurrency(strategy.avgPnL)}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col p-3 rounded-lg border border-border">
+                              <div className="flex items-center gap-2 mb-1">
+                                <ArrowUp className="h-4 w-4 text-green-500" />
+                                <span className="text-sm">Meilleur Trade</span>
+                              </div>
+                              <span className="text-lg font-semibold text-green-500">
+                                {formatCurrency(strategy.bestTrade)}
+                              </span>
+                            </div>
+                            
+                            <div className="flex flex-col p-3 rounded-lg border border-border">
+                              <div className="flex items-center gap-2 mb-1">
+                                <ArrowDown className="h-4 w-4 text-red-500" />
+                                <span className="text-sm">Pire Trade</span>
+                              </div>
+                              <span className="text-lg font-semibold text-red-500">
+                                {formatCurrency(strategy.worstTrade)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               )}
             </CardContent>
           </Card>
-          
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-secondary/10 p-6 rounded-lg">
-              <h3 className="text-xl font-medium mb-4">Optimisation de Portefeuille</h3>
-              <p className="text-sm text-muted-foreground mb-6">
-                Recommandations basées sur l'analyse de vos performances actuelles et historiques.
-              </p>
-              
-              <div className="space-y-6">
-                <div className="p-4 bg-background rounded-lg border border-border">
-                  <h4 className="text-lg font-medium mb-2 flex items-center">
-                    <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                    Recommandation #1
-                  </h4>
-                  <p className="text-sm mb-2">Réduction de l'exposition au secteur technologique</p>
-                  <p className="text-xs text-muted-foreground">
-                    Votre portefeuille montre une surexposition (48%) au secteur technologique. Une réduction à 35% pourrait améliorer votre ratio de Sharpe de 0.3.
-                  </p>
-                </div>
-                
-                <div className="p-4 bg-background rounded-lg border border-border">
-                  <h4 className="text-lg font-medium mb-2 flex items-center">
-                    <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                    Recommandation #2
-                  </h4>
-                  <p className="text-sm mb-2">Augmentation des titres à faible volatilité</p>
-                  <p className="text-xs text-muted-foreground">
-                    Ajouter 10-15% d'allocation vers des titres à faible bêta pourrait réduire votre drawdown maximal de 4% sans impact significatif sur vos rendements.
-                  </p>
-                </div>
-                
-                <div className="p-4 bg-background rounded-lg border border-border">
-                  <h4 className="text-lg font-medium mb-2 flex items-center">
-                    <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                    Recommandation #3
-                  </h4>
-                  <p className="text-sm mb-2">Optimisation de la taille des positions</p>
-                  <p className="text-xs text-muted-foreground">
-                    Votre analyse montre que vos positions supérieures à 5% du capital ont une performance inférieure de 12%. Limiter la taille des positions entre 2-4% pourrait améliorer vos rendements.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
         </TabsContent>
       </Tabs>
     </div>
