@@ -27,7 +27,7 @@ export function SidebarNavItem({
   
   const itemContent = (
     <div className={cn(
-      'flex items-center gap-3 rounded-md px-3 py-2 transition-colors',
+      'flex items-center gap-3 rounded-md px-3 py-3', // Augmenté py-2 à py-3 pour plus de hauteur
       isActive 
         ? 'bg-primary text-primary-foreground' 
         : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
@@ -49,7 +49,7 @@ export function SidebarNavItem({
     : name;
 
   return (
-    <li>
+    <li className="mb-2"> {/* Ajout de mb-2 pour augmenter la marge en bas de chaque élément */}
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

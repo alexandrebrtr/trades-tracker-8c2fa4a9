@@ -139,8 +139,8 @@ export function Sidebar() {
           </Button>
         </div>
 
-        <nav className="flex-1 py-4 overflow-y-auto">
-          <ul className="space-y-1 px-3">
+        <nav className="flex-1 py-6 overflow-y-auto"> {/* Augmenté py-4 à py-6 pour plus d'espace vertical */}
+          <ul className="space-y-3 px-3"> {/* Augmenté space-y-1 à space-y-3 pour plus d'espace entre les éléments */}
             {filteredNavItems.map((item) => (
               <SidebarNavItem 
                 key={item.path}
