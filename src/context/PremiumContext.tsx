@@ -25,6 +25,7 @@ interface UserSettings {
     secretKey?: string;
     isConnected?: boolean;
   };
+  initialBalance?: string | number;
 }
 
 interface Profile {
