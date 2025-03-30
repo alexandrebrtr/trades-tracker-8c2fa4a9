@@ -37,12 +37,18 @@ export const useChartData = (userId?: string, timeframe: '1W' | '1M' | '3M' | '6
         const startDate = getStartDateForTimeframe(timeframe);
         
         // Récupérer les trades de l'utilisateur pour la période
-        const { data: trades, error } = await supabase
+        // Pour ALL, ne pas limiter par startDate pour inclure tous les trades
+        let query = supabase
           .from('trades')
           .select('*')
-          .eq('user_id', userId)
-          .gte('date', startDate.toISOString())
-          .order('date', { ascending: true });
+          .eq('user_id', userId);
+          
+        // Ajouter le filtre de date sauf pour ALL
+        if (timeframe !== 'ALL') {
+          query = query.gte('date', startDate.toISOString());
+        }
+        
+        const { data: trades, error } = await query.order('date', { ascending: true });
 
         if (error) throw error;
 

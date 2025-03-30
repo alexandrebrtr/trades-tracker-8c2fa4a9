@@ -15,8 +15,8 @@ export const getStartDateForTimeframe = (timeframe: '1W' | '1M' | '3M' | '6M' | 
       return new Date(now.setFullYear(now.getFullYear() - 1));
     case 'ALL':
     default:
-      // For 'ALL', go back 5 years or to the beginning of time
-      return new Date(2000, 0, 1); // January 1, 2000 - effectively "all time"
+      // For 'ALL', we go back to 2000, which is effectively "all time"
+      return new Date(2000, 0, 1); // January 1, 2000
   }
 };
 
@@ -98,7 +98,11 @@ export const generatePerformanceData = (trades: any[], initialBalance: number, t
   
   trades.forEach(trade => {
     const date = new Date(trade.date);
-    const dateKey = date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+    const dateKey = date.toLocaleDateString('fr-FR', { 
+      day: '2-digit', 
+      month: '2-digit',
+      year: timeframe === 'ALL' ? '2-digit' : undefined
+    });
     
     if (!tradesByDay[dateKey]) {
       tradesByDay[dateKey] = [];
@@ -116,25 +120,102 @@ export const generatePerformanceData = (trades: any[], initialBalance: number, t
   
   // First point is the initial balance at the start date
   performanceData.push({
-    date: startDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+    date: startDate.toLocaleDateString('fr-FR', { 
+      day: '2-digit', 
+      month: '2-digit',
+      year: timeframe === 'ALL' ? '2-digit' : undefined
+    }),
     value: currentBalance
   });
   
-  // If there are no trades for the period or if it's the 'ALL' timeframe with very few trades,
+  // If there are no trades for the period or if it's a period with very few trades,
   // just create a flat line with the current balance
   if (Object.keys(tradesByDay).length === 0 || 
-     (timeframe === '1W' || timeframe === '1M') && Object.keys(tradesByDay).length <= 1) {
+     (timeframe === '1W' || timeframe === '1M' || timeframe === 'ALL') && Object.keys(tradesByDay).length <= 1) {
     
     // Just add the end point with the same value to create a flat line
     performanceData.push({
-      date: endDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+      date: endDate.toLocaleDateString('fr-FR', { 
+        day: '2-digit', 
+        month: '2-digit',
+        year: timeframe === 'ALL' ? '2-digit' : undefined 
+      }),
       value: currentBalance
     });
     
     return performanceData;
   }
   
-  // Process each day in the time scale
+  // For ALL timeframe with multiple trades, we need a different approach to avoid too many data points
+  if (timeframe === 'ALL' && Object.keys(tradesByDay).length > 1) {
+    // Group trades by month for ALL timeframe
+    const tradesByMonth: Record<string, any[]> = {};
+    
+    trades.forEach(trade => {
+      const date = new Date(trade.date);
+      const monthKey = date.toLocaleDateString('fr-FR', { month: '2-digit', year: '2-digit' });
+      
+      if (!tradesByMonth[monthKey]) {
+        tradesByMonth[monthKey] = [];
+      }
+      
+      tradesByMonth[monthKey].push(trade);
+    });
+    
+    // Create a new timeline with monthly intervals
+    const monthlyTimeScale = [];
+    let currentMonth = new Date(startDate);
+    
+    while (currentMonth <= endDate) {
+      monthlyTimeScale.push(currentMonth.toLocaleDateString('fr-FR', { month: '2-digit', year: '2-digit' }));
+      currentMonth.setMonth(currentMonth.getMonth() + 1);
+    }
+    
+    // Clear the performance data and reset
+    performanceData.length = 0;
+    currentBalance = initialBalance;
+    
+    // Add first point
+    performanceData.push({
+      date: startDate.toLocaleDateString('fr-FR', { month: '2-digit', year: '2-digit' }),
+      value: currentBalance
+    });
+    
+    // Process each month
+    for (const monthKey of monthlyTimeScale) {
+      if (tradesByMonth[monthKey]) {
+        // Add the P&L of each trade for this month
+        tradesByMonth[monthKey].forEach(trade => {
+          currentBalance += (trade.pnl || 0);
+        });
+        
+        // Add data point for this month
+        performanceData.push({
+          date: monthKey,
+          value: currentBalance
+        });
+      } else if (performanceData.length > 0 && performanceData[performanceData.length - 1].date !== monthKey) {
+        // If no trades for this month but we have a previous balance, carry it forward
+        performanceData.push({
+          date: monthKey,
+          value: currentBalance
+        });
+      }
+    }
+    
+    // Ensure the last point is today's date with current balance
+    const todayKey = endDate.toLocaleDateString('fr-FR', { month: '2-digit', year: '2-digit' });
+    if (performanceData.length > 0 && performanceData[performanceData.length - 1].date !== todayKey) {
+      performanceData.push({
+        date: todayKey,
+        value: currentBalance
+      });
+    }
+    
+    return performanceData;
+  }
+  
+  // Process each day in the time scale for non-ALL timeframes or ALL with few trades
   for (const dateKey of timeScale) {
     if (tradesByDay[dateKey]) {
       // Add the P&L of each trade for this date
@@ -157,7 +238,12 @@ export const generatePerformanceData = (trades: any[], initialBalance: number, t
   }
   
   // Ensure the last point is today's date with current balance
-  const todayKey = endDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+  const todayKey = endDate.toLocaleDateString('fr-FR', { 
+    day: '2-digit', 
+    month: '2-digit',
+    year: timeframe === 'ALL' ? '2-digit' : undefined
+  });
+  
   if (performanceData.length > 0 && performanceData[performanceData.length - 1].date !== todayKey) {
     performanceData.push({
       date: todayKey,
