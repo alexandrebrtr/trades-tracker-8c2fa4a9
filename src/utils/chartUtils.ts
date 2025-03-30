@@ -114,7 +114,7 @@ export const generatePerformanceData = (trades: any[], initialBalance: number, t
   let currentBalance = initialBalance;
   const performanceData = [];
   
-  // First point is the initial balance
+  // First point is the initial balance at the start date
   performanceData.push({
     date: startDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
     value: currentBalance

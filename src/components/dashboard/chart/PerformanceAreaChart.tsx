@@ -15,7 +15,7 @@ export const PerformanceAreaChart: React.FC<PerformanceAreaChartProps> = ({ data
   const maxValue = Math.max(...data.map(item => item.value));
   
   // Add padding to min/max for better visualization
-  const yAxisMin = Math.floor(minValue * 1.1);
+  const yAxisMin = Math.floor(minValue * 0.9); // Increased space below to show negative values better
   const yAxisMax = Math.ceil(maxValue * 1.1);
   
   return (
@@ -52,7 +52,7 @@ export const PerformanceAreaChart: React.FC<PerformanceAreaChartProps> = ({ data
           tickLine={false}
           axisLine={false}
           dx={-10}
-          domain={[yAxisMin < 0 ? yAxisMin : 0, yAxisMax]}
+          domain={[yAxisMin, yAxisMax]} 
         />
         <Tooltip content={<CustomTooltip />} />
         <Area 
