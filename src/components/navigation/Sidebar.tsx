@@ -125,7 +125,13 @@ export function Sidebar() {
         <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
           {!collapsed && (
             <Link to="/dashboard" className="flex items-center">
-              <span className="text-primary font-bold text-xl">Trades Tracker</span>
+              <div className="text-primary">
+                <img 
+                  src="/lovable-uploads/128c3315-8a41-4c31-a03a-d02ccdd8a82e.png" 
+                  alt="TT Logo" 
+                  className="h-8"
+                />
+              </div>
             </Link>
           )}
           <Button 
