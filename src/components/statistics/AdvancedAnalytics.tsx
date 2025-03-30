@@ -10,10 +10,27 @@ import {
 import { PremiumAnalyticsContent } from "./PremiumAnalyticsContent";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency } from "@/utils/formatters";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+interface StrategyStats {
+  name: string;
+  totalTrades: number;
+  winCount: number;
+  winRate: number;
+  totalPnL: number;
+  avgPnL: number;
+  bestTrade: number;
+  worstTrade: number;
+  profitFactor: number;
+}
 
 export default function AdvancedAnalytics() {
   const [hasData, setHasData] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [strategyStats, setStrategyStats] = useState<StrategyStats[]>([]);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -32,6 +49,89 @@ export default function AdvancedAnalytics() {
         if (error) throw error;
         
         setHasData(count ? count > 0 : false);
+        
+        if (count && count > 0) {
+          // Fetch the trades data
+          const { data: trades, error: tradesError } = await supabase
+            .from('trades')
+            .select('*')
+            .eq('user_id', user.id);
+            
+          if (tradesError) throw tradesError;
+          
+          if (trades && trades.length > 0) {
+            // Group trades by strategy
+            const strategiesMap = new Map<string, StrategyStats>();
+            
+            trades.forEach(trade => {
+              const strategyName = trade.strategy || 'Non définie';
+              
+              if (!strategiesMap.has(strategyName)) {
+                strategiesMap.set(strategyName, {
+                  name: strategyName,
+                  totalTrades: 0,
+                  winCount: 0,
+                  winRate: 0,
+                  totalPnL: 0,
+                  avgPnL: 0,
+                  bestTrade: -Infinity,
+                  worstTrade: Infinity,
+                  profitFactor: 0
+                });
+              }
+              
+              const stats = strategiesMap.get(strategyName)!;
+              stats.totalTrades += 1;
+              stats.totalPnL += (trade.pnl || 0);
+              
+              if (trade.pnl > 0) {
+                stats.winCount += 1;
+              }
+              
+              // Update best and worst trades
+              if (trade.pnl > stats.bestTrade) {
+                stats.bestTrade = trade.pnl;
+              }
+              
+              if (trade.pnl < stats.worstTrade) {
+                stats.worstTrade = trade.pnl;
+              }
+            });
+            
+            // Calculate derived statistics for each strategy
+            const strategiesArray: StrategyStats[] = [];
+            
+            strategiesMap.forEach(stats => {
+              // Calculate win rate
+              stats.winRate = (stats.winCount / stats.totalTrades) * 100;
+              
+              // Calculate average P&L
+              stats.avgPnL = stats.totalPnL / stats.totalTrades;
+              
+              // Calculate profit factor (total gains / total losses)
+              const totalGains = trades
+                .filter(t => t.strategy === stats.name && t.pnl > 0)
+                .reduce((sum, t) => sum + t.pnl, 0);
+                
+              const totalLosses = Math.abs(trades
+                .filter(t => t.strategy === stats.name && t.pnl < 0)
+                .reduce((sum, t) => sum + t.pnl, 0));
+                
+              stats.profitFactor = totalLosses > 0 ? totalGains / totalLosses : 0;
+              
+              // Handle edge cases
+              if (stats.bestTrade === -Infinity) stats.bestTrade = 0;
+              if (stats.worstTrade === Infinity) stats.worstTrade = 0;
+              
+              strategiesArray.push(stats);
+            });
+            
+            // Sort by total P&L descending
+            strategiesArray.sort((a, b) => b.totalPnL - a.totalPnL);
+            
+            setStrategyStats(strategiesArray);
+          }
+        }
       } catch (err) {
         console.error("Error checking user data:", err);
         setHasData(false);
@@ -94,6 +194,62 @@ export default function AdvancedAnalytics() {
         </TabsContent>
         
         <TabsContent value="strategies" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Analyse Détaillée par Stratégie</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {strategyStats.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-muted-foreground">Aucune stratégie trouvée dans vos trades.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Stratégie</TableHead>
+                        <TableHead className="text-right">Trades</TableHead>
+                        <TableHead className="text-right">Taux de Réussite</TableHead>
+                        <TableHead className="text-right">P&L Total</TableHead>
+                        <TableHead className="text-right">P&L Moyen</TableHead>
+                        <TableHead className="text-right">Profit Factor</TableHead>
+                        <TableHead className="text-right">Meilleur Trade</TableHead>
+                        <TableHead className="text-right">Pire Trade</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {strategyStats.map((strategy) => (
+                        <TableRow key={strategy.name}>
+                          <TableCell className="font-medium">{strategy.name}</TableCell>
+                          <TableCell className="text-right">{strategy.totalTrades}</TableCell>
+                          <TableCell className="text-right">{strategy.winRate.toFixed(1)}%</TableCell>
+                          <TableCell className="text-right font-medium">
+                            <span className={strategy.totalPnL >= 0 ? "text-green-600" : "text-red-600"}>
+                              {formatCurrency(strategy.totalPnL)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <span className={strategy.avgPnL >= 0 ? "text-green-600" : "text-red-600"}>
+                              {formatCurrency(strategy.avgPnL)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">{strategy.profitFactor.toFixed(2)}</TableCell>
+                          <TableCell className="text-right text-green-600">
+                            {formatCurrency(strategy.bestTrade)}
+                          </TableCell>
+                          <TableCell className="text-right text-red-600">
+                            {formatCurrency(strategy.worstTrade)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          
           <div className="grid grid-cols-1 gap-6">
             <div className="bg-secondary/10 p-6 rounded-lg">
               <h3 className="text-xl font-medium mb-4">Optimisation de Portefeuille</h3>
