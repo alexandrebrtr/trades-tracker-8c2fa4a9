@@ -1,5 +1,12 @@
+
 export { 
-  VolatilityAnalysis, 
-  DrawdownChart,
+  VolatilityAnalysis 
+} from './VolatilityAnalysis';
+
+export { 
+  DrawdownChart 
+} from './DrawdownChart';
+
+export { 
   RiskReturnScatter 
-} from './AdvancedCharts';
+} from './RiskReturnScatter';

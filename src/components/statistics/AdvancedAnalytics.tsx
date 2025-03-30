@@ -1,8 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  PerformanceComparison, 
   VolatilityAnalysis, 
   DrawdownChart,
   RiskReturnScatter
@@ -51,7 +49,6 @@ export default function AdvancedAnalytics() {
         setHasData(count ? count > 0 : false);
         
         if (count && count > 0) {
-          // Fetch the trades data
           const { data: trades, error: tradesError } = await supabase
             .from('trades')
             .select('*')
@@ -60,7 +57,6 @@ export default function AdvancedAnalytics() {
           if (tradesError) throw tradesError;
           
           if (trades && trades.length > 0) {
-            // Group trades by strategy
             const strategiesMap = new Map<string, StrategyStats>();
             
             trades.forEach(trade => {
@@ -88,7 +84,6 @@ export default function AdvancedAnalytics() {
                 stats.winCount += 1;
               }
               
-              // Update best and worst trades
               if (trade.pnl > stats.bestTrade) {
                 stats.bestTrade = trade.pnl;
               }
@@ -98,17 +93,12 @@ export default function AdvancedAnalytics() {
               }
             });
             
-            // Calculate derived statistics for each strategy
             const strategiesArray: StrategyStats[] = [];
             
             strategiesMap.forEach(stats => {
-              // Calculate win rate
               stats.winRate = (stats.winCount / stats.totalTrades) * 100;
-              
-              // Calculate average P&L
               stats.avgPnL = stats.totalPnL / stats.totalTrades;
               
-              // Calculate profit factor (total gains / total losses)
               const totalGains = trades
                 .filter(t => t.strategy === stats.name && t.pnl > 0)
                 .reduce((sum, t) => sum + t.pnl, 0);
@@ -119,14 +109,12 @@ export default function AdvancedAnalytics() {
                 
               stats.profitFactor = totalLosses > 0 ? totalGains / totalLosses : 0;
               
-              // Handle edge cases
               if (stats.bestTrade === -Infinity) stats.bestTrade = 0;
               if (stats.worstTrade === Infinity) stats.worstTrade = 0;
               
               strategiesArray.push(stats);
             });
             
-            // Sort by total P&L descending
             strategiesArray.sort((a, b) => b.totalPnL - a.totalPnL);
             
             setStrategyStats(strategiesArray);
@@ -169,17 +157,12 @@ export default function AdvancedAnalytics() {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Analyses Avancées Premium</h2>
       
-      <Tabs defaultValue="comparison" className="w-full">
-        <TabsList className="grid grid-cols-4 mb-8">
-          <TabsTrigger value="comparison">Comparaison Marché</TabsTrigger>
+      <Tabs defaultValue="volatility" className="w-full">
+        <TabsList className="grid grid-cols-3 mb-8">
           <TabsTrigger value="volatility">Volatilité</TabsTrigger>
           <TabsTrigger value="risk">Risque & Drawdown</TabsTrigger>
           <TabsTrigger value="strategies">Stratégies</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="comparison" className="space-y-6">
-          <PerformanceComparison />
-        </TabsContent>
         
         <TabsContent value="volatility" className="space-y-6">
           <VolatilityAnalysis />
