@@ -24,30 +24,34 @@ export function PerformanceComparison() {
 
       try {
         setLoading(true);
-        // Récupérer l'historique des trades et des dépôts pour calculer l'évolution de la balance
+        // Récupérer les données du profil pour obtenir la balance initiale
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('balance, settings')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) throw profileError;
+
+        // Récupérer l'historique des trades pour calculer la date de début
         const { data: trades, error: tradesError } = await supabase
           .from('trades')
-          .select('*')
+          .select('date, pnl')
           .eq('user_id', user.id)
           .order('date', { ascending: true });
 
         if (tradesError) throw tradesError;
 
-        // Récupérer la balance actuelle
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('balance')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError && profileError.code !== 'PGRST116') throw profileError;
-
         // Valeur initiale et actuelle de la balance
         const currentBalance = profileData?.balance || 10000;
         
+        // Extraire la balance initiale depuis settings ou utiliser 10000 par défaut
+        const userSettings = profileData?.settings || {};
+        const initialBalance = userSettings.initialBalance || 10000;
+        
         if (!trades || trades.length === 0) {
           // Si pas de trades, utiliser des valeurs par défaut
-          setInitialValue(10000);
+          setInitialValue(initialBalance);
           setPortfolioValue(currentBalance);
           setStartDate(new Date(new Date().getFullYear() - 1, 0, 1)); // 1 an avant
         } else {
@@ -59,12 +63,8 @@ export function PerformanceComparison() {
           const firstTradeDate = validDates.length > 0 ? validDates[0] : new Date(new Date().getFullYear() - 1, 0, 1);
           setStartDate(firstTradeDate);
           
-          // Calculer le PnL total
-          const totalPnL = trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
-          
-          // Calculer la valeur initiale (balance actuelle - PnL total)
-          const estimatedInitialValue = Math.max(1000, currentBalance - totalPnL);
-          setInitialValue(estimatedInitialValue);
+          // Utiliser la balance initiale définie par l'utilisateur
+          setInitialValue(initialBalance);
           setPortfolioValue(currentBalance);
         }
       } catch (err) {
