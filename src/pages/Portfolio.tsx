@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Loader2 } from 'lucide-react';
@@ -31,7 +30,7 @@ interface Asset {
 }
 
 export default function Portfolio() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   
   const [isLoading, setIsLoading] = useState(true);
@@ -42,12 +41,21 @@ export default function Portfolio() {
   const [initialSetupDone, setInitialSetupDone] = useState(false);
   const [initialBalance, setInitialBalance] = useState('');
 
-  // Charger les données du portfolio de l'utilisateur
+  // Charger les données du portfolio de l'utilisateur seulement si l'utilisateur est connecté
   useEffect(() => {
-    if (!user) return;
+    // Attendre que l'état d'authentification soit chargé
+    if (authLoading) return;
+    
+    if (!user) {
+      // Si l'utilisateur n'est pas connecté, on ne charge pas les données
+      setIsLoading(false);
+      return;
+    }
     
     const fetchPortfolioData = async () => {
+      console.log("Fetching portfolio data for user:", user.id);
       setIsLoading(true);
+      
       try {
         // Vérifier si l'utilisateur a déjà un portfolio
         const { data: portfolios, error: portfolioError } = await supabase
@@ -128,7 +136,7 @@ export default function Portfolio() {
     };
     
     fetchPortfolioData();
-  }, [user]);
+  }, [user, authLoading]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
@@ -181,18 +189,31 @@ export default function Portfolio() {
     }
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center h-[80vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <span className="ml-2 text-muted-foreground">Chargement de votre portefeuille...</span>
+        <div className="flex flex-col items-center justify-center h-[80vh]">
+          <Loader2 className="h-8 w-8 animate-spin mb-4" />
+          <span className="text-muted-foreground">Chargement de votre portefeuille...</span>
         </div>
       </AppLayout>
     );
   }
 
-  // Afficher l'écran de configuration initiale si nécessaire
+  if (!user) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center h-[80vh]">
+          <h2 className="text-2xl font-bold mb-4">Veuillez vous connecter</h2>
+          <p className="text-muted-foreground mb-4">Vous devez être connecté pour accéder à votre portefeuille.</p>
+          <Button asChild>
+            <a href="/login">Se connecter</a>
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
+
   if (!initialSetupDone) {
     return (
       <AppLayout>

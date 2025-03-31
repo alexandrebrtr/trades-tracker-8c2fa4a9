@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,43 +27,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if the user has previously chosen to stay logged in
-    const stayLoggedIn = localStorage.getItem(STAY_LOGGED_IN_KEY) === 'true';
+    console.log("Auth provider initialized");
     
-    // Récupérer la session au chargement seulement si l'utilisateur a choisi de rester connecté
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        console.log("Auth state changed:", event);
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        
+        if (newSession?.user) {
+          // Use setTimeout to prevent potential deadlocks
+          setTimeout(() => {
+            fetchProfile(newSession.user.id);
+          }, 0);
+        } else if (event === 'SIGNED_OUT') {
+          setProfile(null);
+          localStorage.removeItem(STAY_LOGGED_IN_KEY);
+        }
+        
+        setIsLoading(false);
+      }
+    );
+
+    // THEN check for existing session
     const getInitialSession = async () => {
       try {
-        // Get current session
-        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("Getting initial session");
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error("Erreur de récupération de la session:", error);
+          console.error("Error retrieving session:", error);
+          setIsLoading(false);
           return;
         }
         
-        // Only set the session if "stay logged in" is enabled or if this is a fresh login
-        // We can't use created_at directly, so we'll check if the session was created recently
-        // A fresh login would be less than 1 minute old
-        const isFreshLogin = session?.user?.last_sign_in_at 
-          ? new Date().getTime() - new Date(session.user.last_sign_in_at).getTime() < 60000 
-          : false;
+        if (initialSession) {
+          console.log("Initial session found");
+          setSession(initialSession);
+          setUser(initialSession.user);
           
-        if (stayLoggedIn || (session && isFreshLogin)) {
-          setSession(session);
-          setUser(session?.user || null);
-          
-          if (session?.user) {
-            await fetchProfile(session.user.id);
+          if (initialSession.user) {
+            await fetchProfile(initialSession.user.id);
           }
-        } else if (session) {
-          // If "stay logged in" is not enabled and this is not a fresh login, sign the user out
-          await supabase.auth.signOut();
-          setSession(null);
-          setUser(null);
-          setProfile(null);
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération de la session:", error);
+        console.error("Error retrieving session:", error);
       } finally {
         setIsLoading(false);
       }
@@ -72,37 +80,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     getInitialSession();
 
-    // Configurer le listener pour les changements d'état d'authentification
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
-      
-      if (event === 'SIGNED_IN') {
-        setSession(session);
-        setUser(session?.user || null);
-        
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        }
-      } else if (event === 'SIGNED_OUT') {
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-        
-        // Clear the stay logged in preference when signing out
-        localStorage.removeItem(STAY_LOGGED_IN_KEY);
-      }
-      
-      setIsLoading(false);
-    });
-
     return () => {
-      authListener?.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
   // Récupérer le profil utilisateur
   const fetchProfile = async (userId: string) => {
     try {
+      console.log("Fetching profile for user:", userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -110,13 +96,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
       
       if (error) {
-        console.error("Erreur lors de la récupération du profil:", error);
+        console.error("Error fetching profile:", error);
         return;
       }
       
+      console.log("Profile fetched:", data);
       setProfile(data);
     } catch (error) {
-      console.error("Erreur lors de la récupération du profil:", error);
+      console.error("Error fetching profile:", error);
     }
   };
 
@@ -168,6 +155,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string, stayLoggedIn: boolean = false) => {
     try {
       setIsLoading(true);
+      console.log("Signing in with email:", email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
