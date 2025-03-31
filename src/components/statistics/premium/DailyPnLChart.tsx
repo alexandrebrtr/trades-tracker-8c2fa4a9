@@ -50,38 +50,49 @@ export function DailyPnLChart() {
 
         if (error) throw error;
 
-        if (!trades || trades.length === 0) {
-          setPnlData(getDefaultData());
-          setLoading(false);
-          return;
-        }
-
+        // Générer tous les jours de l'année
+        const allDays = generateAllDaysOfYear(currentYear);
+        
         // Regrouper les données par jour
         const dailyPnL: Record<string, number> = {};
         
-        trades.forEach(trade => {
-          const tradeDate = new Date(trade.date);
-          const dateKey = tradeDate.toISOString().split('T')[0];
-          
-          if (!dailyPnL[dateKey]) {
-            dailyPnL[dateKey] = 0;
-          }
-          
-          dailyPnL[dateKey] += (trade.pnl || 0);
-        });
+        if (trades && trades.length > 0) {
+          trades.forEach(trade => {
+            const tradeDate = new Date(trade.date);
+            const dateKey = tradeDate.toISOString().split('T')[0];
+            
+            if (!dailyPnL[dateKey]) {
+              dailyPnL[dateKey] = 0;
+            }
+            
+            dailyPnL[dateKey] += (trade.pnl || 0);
+          });
+        }
         
-        // Transformer les données pour le graphique
-        const chartData = Object.entries(dailyPnL).map(([date, pnl]) => {
-          const formattedDate = new Date(date).toLocaleDateString('fr-FR', { 
+        // Créer le dataset final avec tous les jours
+        const chartData = allDays.map(day => {
+          const dateStr = day.toISOString().split('T')[0];
+          const hasTrade = dailyPnL[dateStr] !== undefined;
+          const pnl = hasTrade ? dailyPnL[dateStr] : 0;
+          
+          const formattedDate = day.toLocaleDateString('fr-FR', { 
             day: '2-digit', 
             month: '2-digit' 
           });
           
           return {
             date: formattedDate,
-            pnl,
-            // Ajouter une couleur en fonction du P&L (positif ou négatif)
-            fill: pnl >= 0 ? CHART_CONFIG.secondary.theme.light : CHART_CONFIG.danger.theme.light
+            pnl: pnl,
+            // Utiliser une couleur grise pour les jours sans trades, sinon vert/rouge selon P&L
+            fill: !hasTrade 
+              ? "#C8C8C9" 
+              : pnl >= 0 
+                ? CHART_CONFIG.secondary.theme.light 
+                : CHART_CONFIG.danger.theme.light,
+            // Définir une hauteur fixe pour les jours sans trades
+            barSize: !hasTrade ? 2 : undefined,
+            // Ajouter une propriété pour identifier les jours sans trades
+            noTrade: !hasTrade
           };
         });
         
@@ -97,36 +108,67 @@ export function DailyPnLChart() {
     fetchDailyPnLData();
   }, [user]);
 
-  const getDefaultData = () => {
-    // Générer des données fictives pour les 30 derniers jours
-    const data = [];
-    const today = new Date();
+  // Fonction pour générer tous les jours de l'année en cours
+  const generateAllDaysOfYear = (year: number) => {
+    const days = [];
+    const startDate = new Date(year, 0, 1); // 1er janvier
+    const endDate = new Date(); // Aujourd'hui
     
-    for (let i = 30; i > 0; i--) {
-      const date = new Date();
-      date.setDate(today.getDate() - i);
+    let currentDate = new Date(startDate);
+    
+    while (currentDate <= endDate) {
+      days.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return days;
+  };
+
+  const getDefaultData = () => {
+    // Générer tous les jours de l'année en cours avec des données fictives
+    const currentYear = new Date().getFullYear();
+    const allDays = generateAllDaysOfYear(currentYear);
+    
+    return allDays.map(day => {
+      // 30% des jours ont un trade
+      const hasTrade = Math.random() > 0.7;
       
-      const formattedDate = date.toLocaleDateString('fr-FR', { 
+      const pnl = hasTrade 
+        ? (Math.random() > 0.3 ? Math.floor(Math.random() * 500) : -Math.floor(Math.random() * 400))
+        : 0;
+      
+      const formattedDate = day.toLocaleDateString('fr-FR', { 
         day: '2-digit', 
         month: '2-digit' 
       });
       
-      const pnl = Math.random() > 0.3 
-        ? Math.floor(Math.random() * 500) 
-        : -Math.floor(Math.random() * 400);
-      
-      data.push({
+      return {
         date: formattedDate,
-        pnl,
-        fill: pnl >= 0 ? CHART_CONFIG.secondary.theme.light : CHART_CONFIG.danger.theme.light
-      });
-    }
-    
-    return data;
+        pnl: pnl,
+        fill: !hasTrade 
+          ? "#C8C8C9" 
+          : pnl >= 0 
+            ? CHART_CONFIG.secondary.theme.light 
+            : CHART_CONFIG.danger.theme.light,
+        barSize: !hasTrade ? 2 : undefined,
+        noTrade: !hasTrade
+      };
+    });
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      
+      if (data.noTrade) {
+        return (
+          <div className="bg-background p-2 border border-border rounded-md shadow-md">
+            <p className="text-sm font-medium">{`Date: ${label}`}</p>
+            <p className="text-sm text-gray-500">Pas de trades ce jour</p>
+          </div>
+        );
+      }
+      
       return (
         <div className="bg-background p-2 border border-border rounded-md shadow-md">
           <p className="text-sm font-medium">{`Date: ${label}`}</p>
@@ -159,7 +201,11 @@ export function DailyPnLChart() {
       </CardHeader>
       <CardContent className="space-y-6">
         <ChartContainer config={CHART_CONFIG} className="h-80">
-          <BarChart data={pnlData}>
+          <BarChart 
+            data={pnlData}
+            barGap={0}
+            barCategoryGap={1}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis 
               dataKey="date" 
@@ -176,7 +222,7 @@ export function DailyPnLChart() {
             <Bar 
               dataKey="pnl" 
               name="P&L" 
-              fill="#8884d8"
+              fill="#8884d8" 
               radius={[4, 4, 0, 0]}
               // Utiliser la propriété fill de chaque point de données pour colorer les barres
               fillOpacity={0.8}
