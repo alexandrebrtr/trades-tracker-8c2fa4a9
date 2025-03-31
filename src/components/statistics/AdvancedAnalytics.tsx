@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  VolatilityAnalysis, 
+  DailyPnLChart,
   DrawdownChart,
   RiskReturnScatter
 } from "./premium/AdvancedCharts";
@@ -159,13 +159,13 @@ export default function AdvancedAnalytics() {
       
       <Tabs defaultValue="volatility" className="w-full">
         <TabsList className="grid grid-cols-3 mb-8">
-          <TabsTrigger value="volatility">Volatilité</TabsTrigger>
+          <TabsTrigger value="volatility">P&L Journalier</TabsTrigger>
           <TabsTrigger value="risk">Risque & Drawdown</TabsTrigger>
           <TabsTrigger value="strategies">Stratégies</TabsTrigger>
         </TabsList>
         
         <TabsContent value="volatility" className="space-y-6">
-          <VolatilityAnalysis />
+          <DailyPnLChart />
           <PremiumAnalyticsContent />
         </TabsContent>
         

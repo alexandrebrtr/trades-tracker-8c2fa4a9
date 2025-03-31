@@ -10,3 +10,7 @@ export {
 export { 
   RiskReturnScatter 
 } from './RiskReturnScatter';
+
+export {
+  DailyPnLChart
+} from './DailyPnLChart';

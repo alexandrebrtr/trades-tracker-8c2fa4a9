@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/context/AuthContext';
 import { usePerformanceData } from '@/hooks/usePerformanceData';
 import { 
-  VolatilityAnalysis, 
+  DailyPnLChart, 
   DrawdownChart,
   RiskReturnScatter
 } from '@/components/statistics/premium/AdvancedCharts';
@@ -183,7 +183,7 @@ export default function PremiumAnalytics() {
           <TabsContent value="risk" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <DrawdownChart />
-              <VolatilityAnalysis />
+              <DailyPnLChart />
             </div>
             
             <Card>
