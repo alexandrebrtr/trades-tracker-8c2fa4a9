@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -80,20 +79,6 @@ export default function LandingPage() {
   return (
     <AppLayout>
       <div className="flex flex-col">
-        {/* Avertissements */}
-        <section className="mb-8">
-          <Alert variant="destructive" className="mb-4">
-            <AlertTriangle className="h-5 w-5" />
-            <AlertTitle>Avertissement sur les risques d'investissement</AlertTitle>
-            <AlertDescription>
-              Ce site est uniquement un outil de suivi d'investissement et n'offre en aucun cas des conseils financiers. 
-              L'investissement comporte des risques importants de perte en capital. Environ 75% des investisseurs 
-              particuliers perdent de l'argent lors de leurs opérations de trading. Veuillez vous informer complètement 
-              avant d'investir et ne risquez jamais plus que ce que vous pouvez vous permettre de perdre.
-            </AlertDescription>
-          </Alert>
-        </section>
-
         {/* Hero Section */}
         <section className="bg-gradient-to-b from-background to-secondary/20 pb-16">
           <div className="container px-4 md:px-6">
