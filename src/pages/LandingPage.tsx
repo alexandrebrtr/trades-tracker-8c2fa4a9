@@ -10,10 +10,13 @@ import {
   Calendar, 
   CheckCircle2,
   ExternalLink,
-  ArrowRight
+  ArrowRight,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 export default function LandingPage() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -75,289 +78,326 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-b from-background to-secondary/20 pt-24 pb-16">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center text-center space-y-4 mb-8">
-            <motion.h1 
-              className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter"
-              initial="hidden"
-              animate="visible"
-              variants={fadeIn}
-              transition={{ duration: 0.5 }}
-            >
-              Optimisez votre trading avec<br />
-              <span className="text-primary">Trades Tracker</span>
-            </motion.h1>
-            <motion.p 
-              className="text-xl md:text-2xl text-muted-foreground max-w-[800px]"
-              initial="hidden"
-              animate="visible"
-              variants={fadeIn}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              Suivez vos performances, analysez vos trades et améliorez votre stratégie avec notre plateforme intuitive.
-            </motion.p>
-            <motion.div 
-              className="flex flex-col sm:flex-row gap-4 mt-8"
-              initial="hidden"
-              animate="visible"
-              variants={fadeIn}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <Button asChild size="lg" className="rounded-full px-8">
-                <Link to="/login">Commencer gratuitement</Link>
-              </Button>
-              <Button variant="outline" size="lg" className="rounded-full px-8">
-                <Link to="/dashboard">Voir la démo</Link>
-              </Button>
-            </motion.div>
-          </div>
-          
-          {/* Dashboard Preview */}
-          <motion.div 
-            className="relative mx-auto max-w-5xl rounded-xl border shadow-2xl overflow-hidden bg-black/5 backdrop-blur"
-            initial="hidden"
-            animate="visible"
-            variants={fadeIn}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
-            <div 
-              className="aspect-[16/9] bg-cover bg-center bg-no-repeat"
-              style={{ 
-                backgroundImage: !isVideoPlaying ? 
-                  "url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=2070&auto=format&fit=crop')" : 
-                  "none"
-              }}
-              onClick={() => setIsVideoPlaying(true)}
-            >
-              {isVideoPlaying && (
-                <iframe 
-                  width="100%" 
-                  height="100%" 
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" 
-                  title="Dashboard Preview" 
-                  frameBorder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  allowFullScreen
-                ></iframe>
-              )}
-              {!isVideoPlaying && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Button variant="default" size="lg" className="rounded-full">
-                    <span className="mr-2">Voir la démo</span>
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        </div>
-      </section>
+    <AppLayout>
+      <div className="flex flex-col">
+        {/* Avertissements */}
+        <section className="mb-8">
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-5 w-5" />
+            <AlertTitle>Avertissement sur les risques d'investissement</AlertTitle>
+            <AlertDescription>
+              Ce site est uniquement un outil de suivi d'investissement et n'offre en aucun cas des conseils financiers. 
+              L'investissement comporte des risques importants de perte en capital. Environ 75% des investisseurs 
+              particuliers perdent de l'argent lors de leurs opérations de trading. Veuillez vous informer complètement 
+              avant d'investir et ne risquez jamais plus que ce que vous pouvez vous permettre de perdre.
+            </AlertDescription>
+          </Alert>
+        </section>
 
-      {/* Features Section */}
-      <section className="py-16 md:py-24">
-        <div className="container px-4 md:px-6">
-          <div className="text-center mb-10 md:mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-              Fonctionnalités principales
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-[800px] mx-auto">
-              Tout ce dont vous avez besoin pour améliorer votre trading
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
+        {/* Hero Section */}
+        <section className="bg-gradient-to-b from-background to-secondary/20 pb-16">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center text-center space-y-4 mb-8">
+              <motion.h1 
+                className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter"
                 initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
+                animate="visible"
                 variants={fadeIn}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.5 }}
               >
-                <Card className="h-full border-none shadow-md bg-card hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6 flex flex-col h-full">
-                    <div className="mb-4">{feature.icon}</div>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground flex-1">{feature.description}</p>
-                  </CardContent>
-                </Card>
+                Optimisez votre trading avec<br />
+                <span className="text-primary">Trades Tracker</span>
+              </motion.h1>
+              <motion.p 
+                className="text-xl md:text-2xl text-muted-foreground max-w-[800px]"
+                initial="hidden"
+                animate="visible"
+                variants={fadeIn}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                Suivez vos performances, analysez vos trades et améliorez votre stratégie avec notre plateforme intuitive.
+              </motion.p>
+              <motion.div 
+                className="flex flex-col sm:flex-row gap-4 mt-8"
+                initial="hidden"
+                animate="visible"
+                variants={fadeIn}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
+                <Button asChild size="lg" className="rounded-full px-8">
+                  <Link to="/login">Commencer gratuitement</Link>
+                </Button>
+                <Button variant="outline" size="lg" className="rounded-full px-8">
+                  <Link to="/dashboard">Voir la démo</Link>
+                </Button>
               </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Integration Section */}
-      <section className="py-16 md:py-24 bg-secondary/20">
-        <div className="container px-4 md:px-6">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <motion.div
+            </div>
+            
+            {/* Dashboard Preview */}
+            <motion.div 
+              className="relative mx-auto max-w-5xl rounded-xl border shadow-2xl overflow-hidden bg-black/5 backdrop-blur"
               initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
+              animate="visible"
               variants={fadeIn}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-                Connectez votre broker en toute sécurité
-              </h2>
-              <p className="text-xl text-muted-foreground mb-6">
-                Grâce à notre intégration avec les principales plateformes de trading, importez automatiquement vos trades et suivez vos performances en temps réel.
-              </p>
-              <ul className="space-y-3 mb-8">
-                {["Binance", "FTX", "Coinbase", "Kraken", "MetaTrader 4", "MetaTrader 5"].map((broker, index) => (
-                  <li key={index} className="flex items-center">
-                    <CheckCircle2 className="h-5 w-5 text-primary mr-2" />
-                    <span>{broker}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button asChild>
-                <Link to="/trade-entry" className="inline-flex items-center">
-                  <span>Connectez votre compte</span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </motion.div>
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeIn}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex justify-center"
-            >
-              <div className="relative max-w-md">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-lg blur opacity-25"></div>
-                <div className="relative bg-card rounded-lg overflow-hidden p-6 shadow-xl">
-                  <h3 className="text-xl font-semibold mb-4">Connectez votre broker</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Plateforme</label>
-                      <select className="w-full p-2 rounded-md border bg-background">
-                        <option>Binance</option>
-                        <option>FTX</option>
-                        <option>Coinbase</option>
-                        <option>Kraken</option>
-                        <option>MetaTrader 4</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Clé API</label>
-                      <input type="text" className="w-full p-2 rounded-md border bg-background" placeholder="Votre clé API" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Clé secrète</label>
-                      <input type="password" className="w-full p-2 rounded-md border bg-background" placeholder="Votre clé secrète" />
-                    </div>
-                    <Button className="w-full">Connecter et synchroniser</Button>
+              <div 
+                className="aspect-[16/9] bg-cover bg-center bg-no-repeat"
+                style={{ 
+                  backgroundImage: !isVideoPlaying ? 
+                    "url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=2070&auto=format&fit=crop')" : 
+                    "none"
+                }}
+                onClick={() => setIsVideoPlaying(true)}
+              >
+                {isVideoPlaying && (
+                  <iframe 
+                    width="100%" 
+                    height="100%" 
+                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" 
+                    title="Dashboard Preview" 
+                    frameBorder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen
+                  ></iframe>
+                )}
+                {!isVideoPlaying && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Button variant="default" size="lg" className="rounded-full">
+                      <span className="mr-2">Voir la démo</span>
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
                   </div>
-                </div>
+                )}
               </div>
             </motion.div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Testimonials */}
-      <section className="py-16 md:py-24">
-        <div className="container px-4 md:px-6">
-          <div className="text-center mb-10 md:mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-              Ce que disent nos utilisateurs
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-[800px] mx-auto">
-              Découvrez comment Trades Tracker aide les traders à améliorer leurs performances
-            </p>
+        {/* Features Section */}
+        <section className="py-16 md:py-24">
+          <div className="container px-4 md:px-6">
+            <div className="text-center mb-10 md:mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                Fonctionnalités principales
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-[800px] mx-auto">
+                Tout ce dont vous avez besoin pour améliorer votre trading
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {features.map((feature, index) => (
+                <motion.div
+                  key={index}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={fadeIn}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Card className="h-full border-none shadow-md bg-card hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6 flex flex-col h-full">
+                      <div className="mb-4">{feature.icon}</div>
+                      <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                      <p className="text-muted-foreground flex-1">{feature.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
+        </section>
+
+        {/* Integration Section */}
+        <section className="py-16 md:py-24 bg-secondary/20">
+          <div className="container px-4 md:px-6">
+            <div className="grid md:grid-cols-2 gap-10 items-center">
               <motion.div
-                key={index}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={fadeIn}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.5 }}
               >
-                <Card className="h-full bg-card shadow border-none">
-                  <CardContent className="p-6 flex flex-col h-full">
-                    <div className="mb-4">
-                      {Array(5).fill(0).map((_, i) => (
-                        <span key={i} className="text-yellow-500">★</span>
-                      ))}
-                    </div>
-                    <p className="text-muted-foreground italic flex-1 mb-4">"{testimonial.content}"</p>
-                    <div>
-                      <p className="font-semibold">{testimonial.name}</p>
-                      <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                  Connectez votre broker en toute sécurité
+                </h2>
+                <p className="text-xl text-muted-foreground mb-6">
+                  Grâce à notre intégration avec les principales plateformes de trading, importez automatiquement vos trades et suivez vos performances en temps réel.
+                </p>
+                <ul className="space-y-3 mb-8">
+                  {["Binance", "FTX", "Coinbase", "Kraken", "MetaTrader 4", "MetaTrader 5"].map((broker, index) => (
+                    <li key={index} className="flex items-center">
+                      <CheckCircle2 className="h-5 w-5 text-primary mr-2" />
+                      <span>{broker}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button asChild>
+                  <Link to="/trade-entry" className="inline-flex items-center">
+                    <span>Connectez votre compte</span>
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
               </motion.div>
-            ))}
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeIn}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="flex justify-center"
+              >
+                <div className="relative max-w-md">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-lg blur opacity-25"></div>
+                  <div className="relative bg-card rounded-lg overflow-hidden p-6 shadow-xl">
+                    <h3 className="text-xl font-semibold mb-4">Connectez votre broker</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Plateforme</label>
+                        <select className="w-full p-2 rounded-md border bg-background">
+                          <option>Binance</option>
+                          <option>FTX</option>
+                          <option>Coinbase</option>
+                          <option>Kraken</option>
+                          <option>MetaTrader 4</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Clé API</label>
+                        <input type="text" className="w-full p-2 rounded-md border bg-background" placeholder="Votre clé API" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Clé secrète</label>
+                        <input type="password" className="w-full p-2 rounded-md border bg-background" placeholder="Votre clé secrète" />
+                      </div>
+                      <Button className="w-full">Connecter et synchroniser</Button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-primary text-primary-foreground">
-        <div className="container px-4 md:px-6 text-center">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeIn}
-            transition={{ duration: 0.5 }}
-            className="max-w-[800px] mx-auto"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-              Prêt à transformer votre trading ?
-            </h2>
-            <p className="text-xl opacity-90 mb-8">
-              Rejoignez des milliers de traders qui ont amélioré leurs performances grâce à Trades Tracker.
-            </p>
-            <Button size="lg" variant="secondary" asChild className="rounded-full px-8">
-              <Link to="/login">Commencer gratuitement</Link>
-            </Button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-10 border-t">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <h3 className="text-primary font-semibold text-xl mb-2">
-                Trades Tracker
-              </h3>
-              <p className="text-muted-foreground">
-                Votre compagnon de trading au quotidien
+        {/* Testimonials */}
+        <section className="py-16 md:py-24">
+          <div className="container px-4 md:px-6">
+            <div className="text-center mb-10 md:mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                Ce que disent nos utilisateurs
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-[800px] mx-auto">
+                Découvrez comment Trades Tracker aide les traders à améliorer leurs performances
               </p>
             </div>
-            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
-              <Link to="/contact" className="text-muted-foreground hover:text-foreground">
-                Contact
-              </Link>
-              <Link to="/premium" className="text-muted-foreground hover:text-foreground">
-                Premium
-              </Link>
-              <Link to="/dashboard" className="text-muted-foreground hover:text-foreground">
-                Démo
-              </Link>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <motion.div
+                  key={index}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={fadeIn}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Card className="h-full bg-card shadow border-none">
+                    <CardContent className="p-6 flex flex-col h-full">
+                      <div className="mb-4">
+                        {Array(5).fill(0).map((_, i) => (
+                          <span key={i} className="text-yellow-500">★</span>
+                        ))}
+                      </div>
+                      <p className="text-muted-foreground italic flex-1 mb-4">"{testimonial.content}"</p>
+                      <div>
+                        <p className="font-semibold">{testimonial.name}</p>
+                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-            <p>© {new Date().getFullYear()} Trades Tracker. Tous droits réservés.</p>
+        </section>
+
+        {/* Disclaimer Section - Avertissement supplémentaire */}
+        <section className="py-10 bg-muted/50">
+          <div className="container px-4 md:px-6">
+            <div className="max-w-[800px] mx-auto text-center">
+              <AlertTriangle className="h-10 w-10 mx-auto mb-4 text-amber-500" />
+              <h2 className="text-2xl font-bold mb-4">Avertissement important</h2>
+              <p className="text-muted-foreground mb-4">
+                Le trading et les investissements sur les marchés financiers comportent un risque substantiel de perte. 
+                Les performances passées ne préjugent pas des résultats futurs.
+              </p>
+              <p className="text-muted-foreground mb-4">
+                <strong>75% des comptes d'investisseurs particuliers perdent de l'argent</strong> lorsqu'ils négocient des produits financiers.
+              </p>
+              <p className="text-muted-foreground">
+                Cette plateforme est conçue pour le suivi et l'analyse de vos activités de trading, et non pour fournir des recommandations d'investissement. 
+                Veuillez consulter un conseiller financier professionnel avant de prendre des décisions d'investissement.
+              </p>
+            </div>
           </div>
-        </div>
-      </footer>
-    </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 md:py-24 bg-primary text-primary-foreground">
+          <div className="container px-4 md:px-6 text-center">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeIn}
+              transition={{ duration: 0.5 }}
+              className="max-w-[800px] mx-auto"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                Prêt à transformer votre trading ?
+              </h2>
+              <p className="text-xl opacity-90 mb-8">
+                Rejoignez des milliers de traders qui ont amélioré leurs performances grâce à Trades Tracker.
+              </p>
+              <Button size="lg" variant="secondary" asChild className="rounded-full px-8">
+                <Link to="/login">Commencer gratuitement</Link>
+              </Button>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="py-10 border-t">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="mb-4 md:mb-0">
+                <h3 className="text-primary font-semibold text-xl mb-2">
+                  Trades Tracker
+                </h3>
+                <p className="text-muted-foreground">
+                  Votre compagnon de trading au quotidien
+                </p>
+              </div>
+              <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+                <Link to="/contact" className="text-muted-foreground hover:text-foreground">
+                  Contact
+                </Link>
+                <Link to="/premium" className="text-muted-foreground hover:text-foreground">
+                  Premium
+                </Link>
+                <Link to="/dashboard" className="text-muted-foreground hover:text-foreground">
+                  Démo
+                </Link>
+              </div>
+            </div>
+            <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
+              <p>© {new Date().getFullYear()} Trades Tracker. Tous droits réservés.</p>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </AppLayout>
   );
 }
