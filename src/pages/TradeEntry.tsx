@@ -19,15 +19,19 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/context/AuthContext';
+import { RealtimeService } from '@/services/RealtimeService';
 
 const TradeEntry = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const { isPremium, userSettings, updateUserSettings } = usePremium();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [brokerName, setBrokerName] = useState(userSettings.broker?.name || '');
   const [apiKey, setApiKey] = useState(userSettings.broker?.apiKey || '');
   const [secretKey, setSecretKey] = useState(userSettings.broker?.secretKey || '');
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const handleConnectAccount = () => {
     if (!isPremium) {
@@ -42,11 +46,10 @@ const TradeEntry = () => {
   };
 
   const handleSubmitConnection = async () => {
+    if (!user) return;
+    
     setIsConnecting(true);
     try {
-      // Simuler une connexion à l'API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       // Mettre à jour les paramètres utilisateur
       const newSettings = {
         ...userSettings,
@@ -60,10 +63,22 @@ const TradeEntry = () => {
       
       await updateUserSettings(newSettings);
       
-      toast({
-        title: "Connecté",
-        description: `Votre compte ${brokerName} a été connecté avec succès.`,
+      // Synchroniser les trades depuis le broker
+      setIsSyncing(true);
+      const result = await RealtimeService.syncTradesFromBroker(user.id, {
+        name: brokerName,
+        apiKey: apiKey,
+        secretKey: secretKey
       });
+      
+      if (result.success) {
+        toast({
+          title: "Connecté et synchronisé",
+          description: `Votre compte ${brokerName} a été connecté avec succès. ${result.tradesCount} trades ont été importés.`,
+        });
+      } else {
+        throw new Error("Échec de la synchronisation des trades");
+      }
       
       setIsDialogOpen(false);
     } catch (error) {
@@ -75,6 +90,7 @@ const TradeEntry = () => {
       });
     } finally {
       setIsConnecting(false);
+      setIsSyncing(false);
     }
   };
 
@@ -171,9 +187,9 @@ const TradeEntry = () => {
               <Button 
                 type="submit" 
                 onClick={handleSubmitConnection}
-                disabled={!brokerName || !apiKey || !secretKey || isConnecting}
+                disabled={!brokerName || !apiKey || !secretKey || isConnecting || isSyncing}
               >
-                {isConnecting ? "Connexion en cours..." : "Connecter"}
+                {isSyncing ? "Synchronisation en cours..." : isConnecting ? "Connexion en cours..." : "Connecter et synchroniser"}
               </Button>
             </DialogFooter>
           </DialogContent>
