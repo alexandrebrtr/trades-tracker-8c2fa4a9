@@ -12,7 +12,8 @@ import {
   X,
   Wallet,
   Contact,
-  Settings
+  Settings,
+  Home
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -67,6 +68,11 @@ export function Sidebar() {
   };
 
   const navItems: NavItem[] = [
+    {
+      name: 'Accueil',
+      path: '/',
+      icon: <Home className="w-5 h-5" />
+    },
     {
       name: 'Tableau de bord',
       path: '/dashboard',
@@ -124,7 +130,7 @@ export function Sidebar() {
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
           {!collapsed && (
-            <Link to="/dashboard" className="flex items-center">
+            <Link to="/" className="flex items-center">
               <span className="text-primary font-bold text-xl">Trades Tracker</span>
             </Link>
           )}
@@ -139,8 +145,8 @@ export function Sidebar() {
           </Button>
         </div>
 
-        <nav className="flex-1 py-6 overflow-y-auto"> {/* Augmenté py-4 à py-6 pour plus d'espace vertical */}
-          <ul className="space-y-3 px-3"> {/* Augmenté space-y-1 à space-y-3 pour plus d'espace entre les éléments */}
+        <nav className="flex-1 py-6 overflow-y-auto">
+          <ul className="space-y-3 px-3">
             {filteredNavItems.map((item) => (
               <SidebarNavItem 
                 key={item.path}
