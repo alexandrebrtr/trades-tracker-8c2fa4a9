@@ -74,12 +74,12 @@ export default function Contact() {
               <CardContent>
                 <div className="flex flex-wrap gap-4">
                   <Button variant="outline" size="icon" asChild>
-                    <a href="https://facebook.com/tradetracker" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                    <a href="https://facebook.com/Alexandre Tracker" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                       <Facebook className="h-5 w-5" />
                     </a>
                   </Button>
                   <Button variant="outline" size="icon" asChild>
-                    <a href="https://twitter.com/tradetracker" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                    <a href="https://twitter.com/trades_track_of" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
                       <Twitter className="h-5 w-5" />
                     </a>
                   </Button>
