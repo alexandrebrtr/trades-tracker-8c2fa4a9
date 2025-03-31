@@ -4,7 +4,7 @@ import { MonthlyPnLCard } from "./stats/MonthlyPnLCard";
 import { DailyPnLCard } from "./stats/DailyPnLCard";
 import { YearlyPnLCard } from "./stats/YearlyPnLCard";
 import { WinRateCard } from "./stats/WinRateCard";
-import { ProfitFactorCard } from "./stats/ProfitFactorCard";
+import { TotalGainsCard } from "./stats/TotalGainsCard";
 import { MaxDrawdownCard } from "./stats/MaxDrawdownCard";
 import { AvgDurationCard } from "./stats/AvgDurationCard";
 import { LoadingCard } from "./stats/LoadingCard";
@@ -25,6 +25,9 @@ export function StatsDisplay({ balance, monthlyPnL, trades }: StatsDisplayProps)
   const dailyPnL = calculateDailyPnL(trades);
   const yearlyPnL = calculateYearlyPnL(trades);
   
+  // Calculate total lifetime gains
+  const totalGains = calculateTotalGains(trades);
+  
   // Add a loading effect for better UX
   useEffect(() => {
     if (trades.length > 0) {
@@ -43,12 +46,12 @@ export function StatsDisplay({ balance, monthlyPnL, trades }: StatsDisplayProps)
       <MonthlyPnLCard monthlyPnL={monthlyPnL} />
       <YearlyPnLCard yearlyPnL={yearlyPnL} />
       
-      {/* Deuxième rangée: balance, profit factor, durée moyenne */}
+      {/* Deuxième rangée: balance, total gains, win rate */}
       {!isLoading ? (
         <>
           <BalanceCard balance={balance} monthlyPnL={monthlyPnL} />
-          <ProfitFactorCard profitFactor={stats.profitFactor} />
-          <AvgDurationCard avgDuration={stats.avgDuration} />
+          <TotalGainsCard totalGains={totalGains} />
+          <WinRateCard winRate={stats.winRate} />
         </>
       ) : (
         // Show loading cards while data is being processed
@@ -92,4 +95,11 @@ function calculateYearlyPnL(trades: any[]): number {
       return tradeDate.getFullYear() === currentYear;
     })
     .reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+}
+
+// Fonction pour calculer le total des gains depuis le début
+function calculateTotalGains(trades: any[]): number {
+  if (!trades || trades.length === 0) return 0;
+  
+  return trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
 }
