@@ -81,7 +81,7 @@ export function DailyPnLChart() {
             date: formattedDate,
             pnl,
             // Ajouter une couleur en fonction du P&L (positif ou négatif)
-            fill: pnl >= 0 ? CHART_CONFIG.success.theme.light : CHART_CONFIG.danger.theme.light
+            fill: pnl >= 0 ? CHART_CONFIG.secondary.theme.light : CHART_CONFIG.danger.theme.light
           };
         });
         
@@ -118,7 +118,7 @@ export function DailyPnLChart() {
       data.push({
         date: formattedDate,
         pnl,
-        fill: pnl >= 0 ? CHART_CONFIG.success.theme.light : CHART_CONFIG.danger.theme.light
+        fill: pnl >= 0 ? CHART_CONFIG.secondary.theme.light : CHART_CONFIG.danger.theme.light
       });
     }
     
