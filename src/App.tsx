@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import PremiumAnalytics from "./pages/PremiumAnalytics";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   const { user, isLoading } = useAuth();
@@ -38,7 +39,7 @@ function App() {
       <Router>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/login" element={<Login />} />
