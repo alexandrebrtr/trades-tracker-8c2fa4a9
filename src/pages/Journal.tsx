@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -203,6 +204,26 @@ export default function Journal() {
     }
   };
 
+  const handleUpdateTrade = (updatedTrade: Trade) => {
+    // Mettre à jour l'entrée dans la liste des trades
+    setEntries(prevEntries => 
+      prevEntries.map(entry => 
+        entry.id === updatedTrade.id ? updatedTrade : entry
+      )
+    );
+    
+    // This will trigger the useEffect to reapply filters
+    // and update the filteredEntries
+    setSelectedTrade(updatedTrade);
+    
+    // Immediately update the filtered entries as well to reflect changes
+    setFilteredEntries(prevFiltered => 
+      prevFiltered.map(entry => 
+        entry.id === updatedTrade.id ? updatedTrade : entry
+      )
+    );
+  };
+
   const openDeleteDialog = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
     setTradeToDelete(id);
@@ -269,6 +290,7 @@ export default function Journal() {
             <TradeDetail 
               trade={selectedTrade} 
               onClose={handleCloseTradeDetail}
+              onUpdate={handleUpdateTrade}
               onDelete={(id) => {
                 setIsDialogOpen(false);
                 setTimeout(() => {
