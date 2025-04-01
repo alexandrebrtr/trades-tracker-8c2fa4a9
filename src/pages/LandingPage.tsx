@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -17,9 +18,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function LandingPage() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const isMobile = useIsMobile();
 
   const features = [
     {
@@ -81,21 +84,21 @@ export default function LandingPage() {
     <AppLayout>
       <div className="flex flex-col">
         {/* Hero Section */}
-        <section className="bg-gradient-to-b from-background to-secondary/20 pb-16">
+        <section className="bg-gradient-to-b from-background to-secondary/20 pb-8 md:pb-16 pt-16 md:pt-24">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center text-center space-y-4 mb-8">
               <motion.h1 
-                className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter"
+                className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tighter"
                 initial="hidden"
                 animate="visible"
                 variants={fadeIn}
                 transition={{ duration: 0.5 }}
               >
-                Optimisez votre trading avec<br />
+                Optimisez votre trading avec{isMobile ? ' ' : <br />}
                 <span className="text-primary">Trades Tracker</span>
               </motion.h1>
               <motion.p 
-                className="text-xl md:text-2xl text-muted-foreground max-w-[800px]"
+                className="text-lg md:text-2xl text-muted-foreground max-w-[800px]"
                 initial="hidden"
                 animate="visible"
                 variants={fadeIn}
@@ -104,16 +107,16 @@ export default function LandingPage() {
                 Suivez vos performances, analysez vos trades et améliorez votre stratégie avec notre plateforme intuitive.
               </motion.p>
               <motion.div 
-                className="flex flex-col sm:flex-row gap-4 mt-8"
+                className="flex flex-col sm:flex-row gap-4 mt-6 md:mt-8 w-full sm:w-auto"
                 initial="hidden"
                 animate="visible"
                 variants={fadeIn}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
-                <Button asChild size="lg" className="rounded-full px-8">
+                <Button asChild size="lg" className="rounded-full px-8 w-full sm:w-auto">
                   <Link to="/login">Commencer gratuitement</Link>
                 </Button>
-                <Button variant="outline" size="lg" className="rounded-full px-8">
+                <Button variant="outline" size="lg" className="rounded-full px-8 w-full sm:w-auto">
                   <Link to="/dashboard">Voir la démo</Link>
                 </Button>
               </motion.div>
@@ -121,7 +124,7 @@ export default function LandingPage() {
             
             {/* Dashboard Preview */}
             <motion.div 
-              className="relative mx-auto max-w-5xl rounded-xl border shadow-2xl overflow-hidden bg-black/5 backdrop-blur"
+              className="relative mx-auto max-w-5xl rounded-xl border shadow-2xl overflow-hidden bg-black/5 backdrop-blur mt-8 md:mt-12"
               initial="hidden"
               animate="visible"
               variants={fadeIn}
@@ -161,18 +164,18 @@ export default function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-16 md:py-24">
+        <section className="py-12 md:py-24">
           <div className="container px-4 md:px-6">
-            <div className="text-center mb-10 md:mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+            <div className="text-center mb-8 md:mb-16">
+              <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-4">
                 Fonctionnalités principales
               </h2>
-              <p className="text-xl text-muted-foreground max-w-[800px] mx-auto">
+              <p className="text-lg md:text-xl text-muted-foreground max-w-[800px] mx-auto">
                 Tout ce dont vous avez besoin pour améliorer votre trading
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
@@ -196,9 +199,9 @@ export default function LandingPage() {
         </section>
 
         {/* Integration Section */}
-        <section className="py-16 md:py-24 bg-secondary/20">
+        <section className="py-12 md:py-24 bg-secondary/20">
           <div className="container px-4 md:px-6">
-            <div className="grid md:grid-cols-2 gap-10 items-center">
+            <div className="grid md:grid-cols-2 gap-8 md:gap-10 items-center">
               <motion.div
                 initial="hidden"
                 whileInView="visible"
@@ -206,10 +209,10 @@ export default function LandingPage() {
                 variants={fadeIn}
                 transition={{ duration: 0.5 }}
               >
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-4">
                   Connectez votre broker en toute sécurité
                 </h2>
-                <p className="text-xl text-muted-foreground mb-6">
+                <p className="text-base md:text-xl text-muted-foreground mb-6">
                   Grâce à notre intégration avec les principales plateformes de trading, importez automatiquement vos trades et suivez vos performances en temps réel.
                 </p>
                 <ul className="space-y-3 mb-8">
@@ -220,7 +223,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Button asChild>
+                <Button asChild className="w-full sm:w-auto">
                   <Link to="/trade-entry" className="inline-flex items-center">
                     <span>Connectez votre compte</span>
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -233,9 +236,9 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 variants={fadeIn}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="flex justify-center"
+                className="flex justify-center mt-8 md:mt-0"
               >
-                <div className="relative max-w-md">
+                <div className="relative max-w-md w-full">
                   <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-lg blur opacity-25"></div>
                   <div className="relative bg-card rounded-lg overflow-hidden p-6 shadow-xl">
                     <h3 className="text-xl font-semibold mb-4">Connectez votre broker</h3>
@@ -267,18 +270,18 @@ export default function LandingPage() {
         </section>
 
         {/* Testimonials */}
-        <section className="py-16 md:py-24">
+        <section className="py-12 md:py-24">
           <div className="container px-4 md:px-6">
-            <div className="text-center mb-10 md:mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+            <div className="text-center mb-8 md:mb-16">
+              <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-4">
                 Ce que disent nos utilisateurs
               </h2>
-              <p className="text-xl text-muted-foreground max-w-[800px] mx-auto">
+              <p className="text-lg md:text-xl text-muted-foreground max-w-[800px] mx-auto">
                 Découvrez comment Trades Tracker aide les traders à améliorer leurs performances
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
               {testimonials.map((testimonial, index) => (
                 <motion.div
                   key={index}
@@ -322,7 +325,7 @@ export default function LandingPage() {
                 Pour en bénéficier, il vous suffit d'envoyer un message via notre page contact en précisant votre intérêt 
                 pour l'accès premium gratuit.
               </p>
-              <Button asChild className="rounded-full px-8">
+              <Button asChild className="rounded-full px-8 w-full sm:w-auto">
                 <Link to="/contact">Contacter l'équipe</Link>
               </Button>
             </div>
@@ -351,7 +354,7 @@ export default function LandingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 md:py-24 bg-primary text-primary-foreground">
+        <section className="py-12 md:py-24 bg-primary text-primary-foreground">
           <div className="container px-4 md:px-6 text-center">
             <motion.div
               initial="hidden"
@@ -361,13 +364,13 @@ export default function LandingPage() {
               transition={{ duration: 0.5 }}
               className="max-w-[800px] mx-auto"
             >
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+              <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-4">
                 Prêt à transformer votre trading ?
               </h2>
-              <p className="text-xl opacity-90 mb-8">
+              <p className="text-base md:text-xl opacity-90 mb-6 md:mb-8">
                 Rejoignez des milliers de traders qui ont amélioré leurs performances grâce à Trades Tracker.
               </p>
-              <Button size="lg" variant="secondary" asChild className="rounded-full px-8">
+              <Button size="lg" variant="secondary" asChild className="rounded-full px-8 w-full sm:w-auto">
                 <Link to="/login">Commencer gratuitement</Link>
               </Button>
             </motion.div>
@@ -375,10 +378,10 @@ export default function LandingPage() {
         </section>
 
         {/* Footer */}
-        <footer className="py-10 border-t">
+        <footer className="py-8 md:py-10 border-t">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="mb-4 md:mb-0">
+              <div className="mb-6 md:mb-0 text-center md:text-left">
                 <h3 className="text-primary font-semibold text-xl mb-2">
                   Trades Tracker
                 </h3>
@@ -386,7 +389,7 @@ export default function LandingPage() {
                   Votre compagnon de trading au quotidien
                 </p>
               </div>
-              <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+              <div className="flex flex-wrap justify-center md:flex-row md:items-center gap-4 md:gap-8">
                 <Link to="/contact" className="text-muted-foreground hover:text-foreground">
                   Contact
                 </Link>
@@ -398,7 +401,7 @@ export default function LandingPage() {
                 </Link>
               </div>
             </div>
-            <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
+            <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t text-center text-sm text-muted-foreground">
               <p>© {new Date().getFullYear()} Trades Tracker. Tous droits réservés.</p>
             </div>
           </div>

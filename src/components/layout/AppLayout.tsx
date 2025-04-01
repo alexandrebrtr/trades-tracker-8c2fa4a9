@@ -6,27 +6,24 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { useAuth } from '@/context/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AppLayoutProps {
   children: ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    
     // Check sidebar state from localStorage on mount
     const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState) {
       setSidebarCollapsed(JSON.parse(storedState));
     } else {
-      setSidebarCollapsed(window.innerWidth < 1024);
+      setSidebarCollapsed(isMobile);
     }
     
     // Listen for sidebar toggle events from Sidebar component
@@ -34,24 +31,22 @@ export function AppLayout({ children }: AppLayoutProps) {
       setSidebarCollapsed(e.detail.collapsed);
     };
     
-    window.addEventListener('resize', handleResize);
     window.addEventListener('sidebar-toggle', handleSidebarToggle as EventListener);
     
     return () => {
-      window.removeEventListener('resize', handleResize);
       window.removeEventListener('sidebar-toggle', handleSidebarToggle as EventListener);
     };
-  }, []);
+  }, [isMobile]);
 
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
       <main className={cn(
-        "transition-all duration-300",
-        sidebarCollapsed ? "ml-20" : "ml-64"
+        "transition-all duration-300 pt-16 md:pt-0",
+        sidebarCollapsed ? "ml-0 md:ml-20" : "ml-0 md:ml-64"
       )}>
         <Header />
-        <div className="container py-6 max-w-7xl">
+        <div className="container py-4 md:py-6 px-4 max-w-7xl mx-auto">
           {children}
         </div>
       </main>

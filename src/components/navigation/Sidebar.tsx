@@ -20,6 +20,7 @@ import { useAuth } from '@/context/AuthContext';
 import { usePremium } from '@/context/PremiumContext';
 import { SidebarNavItem } from './SidebarNavItem';
 import { SidebarUserSection } from './SidebarUserSection';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface NavItem {
   name: string;
@@ -31,29 +32,26 @@ interface NavItem {
 export function Sidebar() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const isMobile = useIsMobile();
   const { user } = useAuth();
   const { isPremium } = usePremium();
   
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 1024;
-      setIsMobile(mobile);
-      if (mobile) setCollapsed(true);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   useEffect(() => {
     const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState) {
       setCollapsed(JSON.parse(storedState));
     } else {
-      setCollapsed(window.innerWidth < 1024);
+      setCollapsed(isMobile);
     }
-  }, []);
+  }, [isMobile]);
+
+  useEffect(() => {
+    // Auto-collapse on mobile when navigating
+    if (isMobile) {
+      setCollapsed(true);
+      localStorage.setItem('sidebarCollapsed', 'true');
+    }
+  }, [location.pathname, isMobile]);
 
   const toggleSidebar = () => {
     const newState = !collapsed;
@@ -66,6 +64,17 @@ export function Sidebar() {
     });
     window.dispatchEvent(event);
   };
+
+  // Hide sidebar on mobile when not on /dashboard routes
+  if (isMobile && !location.pathname.includes('/dashboard') && 
+      !location.pathname.includes('/statistics') && 
+      !location.pathname.includes('/trade-entry') && 
+      !location.pathname.includes('/calendar') && 
+      !location.pathname.includes('/journal') && 
+      !location.pathname.includes('/portfolio') && 
+      !location.pathname.includes('/settings')) {
+    return null;
+  }
 
   const navItems: NavItem[] = [
     {
@@ -124,7 +133,7 @@ export function Sidebar() {
     <aside 
       className={cn(
         'fixed top-0 left-0 z-40 h-screen transition-all duration-300 bg-sidebar border-r border-sidebar-border',
-        collapsed ? 'w-20' : 'w-64'
+        collapsed ? "w-0 md:w-20 -translate-x-full md:translate-x-0" : "w-64"
       )}
     >
       <div className="flex h-full flex-col">
