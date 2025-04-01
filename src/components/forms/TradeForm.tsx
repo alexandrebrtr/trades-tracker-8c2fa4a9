@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, DollarSign, Clock, ArrowUp, ArrowDown, Info, Calculator, Search } from 'lucide-react';
+import { Calendar, DollarSign, Clock, ArrowUp, ArrowDown, Info, Calculator, Search, Flag, Target } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -66,6 +66,11 @@ export function TradeForm() {
   const [manualPnL, setManualPnL] = useState('');
   const [useManualPnL, setUseManualPnL] = useState(false);
   const [isCustomAsset, setIsCustomAsset] = useState(false);
+  
+  const [stopLoss, setStopLoss] = useState('');
+  const [takeProfit, setTakeProfit] = useState('');
+  const [useStopLoss, setUseStopLoss] = useState(false);
+  const [useTakeProfit, setUseTakeProfit] = useState(false);
 
   useEffect(() => {
     const now = new Date();
@@ -161,6 +166,9 @@ export function TradeForm() {
         symbolToUse = assets.find(a => a.value === asset)?.label || asset;
       }
       
+      const stopLossValue = useStopLoss && stopLoss ? parseFloat(stopLoss.replace(',', '.')) : null;
+      const takeProfitValue = useTakeProfit && takeProfit ? parseFloat(takeProfit.replace(',', '.')) : null;
+      
       const newTrade = {
         user_id: user.id,
         date: new Date(entryDate).toISOString(),
@@ -172,7 +180,9 @@ export function TradeForm() {
         size: parseFloat(size.replace(',', '.')),
         fees: fees ? parseFloat(fees.replace(',', '.')) : 0,
         pnl: finalPnL,
-        notes: notes
+        notes: notes,
+        stop_loss: stopLossValue,
+        take_profit: takeProfitValue
       };
       
       const { error } = await supabase
@@ -194,6 +204,10 @@ export function TradeForm() {
       setResult(null);
       setManualPnL('');
       setUseManualPnL(false);
+      setStopLoss('');
+      setTakeProfit('');
+      setUseStopLoss(false);
+      setUseTakeProfit(false);
       
       setTimeout(() => {
         navigate('/journal');
@@ -385,6 +399,35 @@ export function TradeForm() {
               value={size}
               onChange={(e) => setSize(e.target.value)}
               required
+            />
+          </div>
+          
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="stopLoss" className="flex items-center gap-2">
+                <Flag className="w-4 h-4 text-muted-foreground" />
+                Stop Loss
+              </Label>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="useStopLoss"
+                  checked={useStopLoss}
+                  onCheckedChange={setUseStopLoss}
+                />
+                <Label htmlFor="useStopLoss" className="text-xs text-muted-foreground">
+                  {useStopLoss ? 'Activé' : 'Désactivé'}
+                </Label>
+              </div>
+            </div>
+            <Input
+              id="stopLoss"
+              type="text"
+              pattern="[0-9]*[.,]?[0-9]*"
+              placeholder="0.00000"
+              className={`mt-1 ${!useStopLoss ? 'opacity-50' : ''}`}
+              value={stopLoss}
+              onChange={(e) => setStopLoss(e.target.value)}
+              disabled={!useStopLoss}
             />
           </div>
         </div>
