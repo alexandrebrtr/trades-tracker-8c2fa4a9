@@ -20,7 +20,7 @@ export function PerformanceChart({ className, timeframe = '1M', userId }: Perfor
   return (
     <div className={`glass-card ${className}`}>
       <div className={`${isMobile ? 'flex flex-col space-y-3' : 'flex justify-between'} mb-6`}>
-        <h3 className="text-lg font-semibold">Performance du compte</h3>
+        <h2 className="text-lg font-semibold">Performance du compte</h2>
         <TimeframeSelector 
           selectedTimeframe={selectedTimeframe} 
           onTimeframeChange={setSelectedTimeframe} 
