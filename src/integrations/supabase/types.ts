@@ -241,8 +241,10 @@ export type Database = {
           notes: string | null
           pnl: number | null
           size: number
+          stop_loss: number | null
           strategy: string | null
           symbol: string
+          take_profit: number | null
           type: string
           updated_at: string | null
           user_id: string
@@ -257,8 +259,10 @@ export type Database = {
           notes?: string | null
           pnl?: number | null
           size: number
+          stop_loss?: number | null
           strategy?: string | null
           symbol: string
+          take_profit?: number | null
           type: string
           updated_at?: string | null
           user_id: string
@@ -273,8 +277,10 @@ export type Database = {
           notes?: string | null
           pnl?: number | null
           size?: number
+          stop_loss?: number | null
           strategy?: string | null
           symbol?: string
+          take_profit?: number | null
           type?: string
           updated_at?: string | null
           user_id?: string
