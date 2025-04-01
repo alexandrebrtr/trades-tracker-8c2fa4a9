@@ -35,8 +35,10 @@ export function Sidebar() {
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { isPremium } = usePremium();
+  const [isVisible, setIsVisible] = useState(true);
   
   useEffect(() => {
+    // Initialize sidebar state
     const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState) {
       setCollapsed(JSON.parse(storedState));
@@ -53,6 +55,29 @@ export function Sidebar() {
     }
   }, [location.pathname, isMobile]);
 
+  // Use this effect to handle visibility based on scroll direction on mobile
+  useEffect(() => {
+    if (!isMobile) return;
+    
+    let lastScrollY = window.scrollY;
+    
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Hide sidebar when scrolling down, show when scrolling up
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+      
+      lastScrollY = currentScrollY;
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isMobile]);
+
   const toggleSidebar = () => {
     const newState = !collapsed;
     setCollapsed(newState);
@@ -65,7 +90,7 @@ export function Sidebar() {
     window.dispatchEvent(event);
   };
 
-  // Hide sidebar on mobile when not on /dashboard routes
+  // Hide sidebar on mobile when not on dashboard routes
   if (isMobile && !location.pathname.includes('/dashboard') && 
       !location.pathname.includes('/statistics') && 
       !location.pathname.includes('/trade-entry') && 
@@ -129,13 +154,15 @@ export function Sidebar() {
   // Modification: Afficher tous les éléments de navigation, même ceux premium
   const filteredNavItems = navItems;
 
+  // Determine CSS classes based on mobile state and visibility
+  const sidebarClasses = cn(
+    'fixed top-0 left-0 z-40 h-screen transition-all duration-300 bg-sidebar border-r border-sidebar-border',
+    collapsed ? "w-0 md:w-20 -translate-x-full md:translate-x-0" : "w-64",
+    isMobile && !isVisible ? "-translate-y-full" : "translate-y-0"
+  );
+
   return (
-    <aside 
-      className={cn(
-        'fixed top-0 left-0 z-40 h-screen transition-all duration-300 bg-sidebar border-r border-sidebar-border',
-        collapsed ? "w-0 md:w-20 -translate-x-full md:translate-x-0" : "w-64"
-      )}
-    >
+    <aside className={sidebarClasses}>
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
           {!collapsed && (
@@ -147,15 +174,18 @@ export function Sidebar() {
             variant="ghost" 
             size="icon" 
             onClick={toggleSidebar}
-            className={collapsed ? "w-full" : "ml-auto"}
+            className={cn(
+              collapsed ? "w-full" : "ml-auto",
+              isMobile && "p-2 h-auto"
+            )}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
           </Button>
         </div>
 
-        <nav className="flex-1 py-6 overflow-y-auto">
-          <ul className="space-y-3 px-3">
+        <nav className="flex-1 py-4 overflow-y-auto">
+          <ul className="space-y-2 px-2">
             {filteredNavItems.map((item) => (
               <SidebarNavItem 
                 key={item.path}
