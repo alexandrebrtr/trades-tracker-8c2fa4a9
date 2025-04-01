@@ -430,6 +430,35 @@ export function TradeForm() {
               disabled={!useStopLoss}
             />
           </div>
+          
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="takeProfit" className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-muted-foreground" />
+                Take Profit
+              </Label>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="useTakeProfit"
+                  checked={useTakeProfit}
+                  onCheckedChange={setUseTakeProfit}
+                />
+                <Label htmlFor="useTakeProfit" className="text-xs text-muted-foreground">
+                  {useTakeProfit ? 'Activé' : 'Désactivé'}
+                </Label>
+              </div>
+            </div>
+            <Input
+              id="takeProfit"
+              type="text"
+              pattern="[0-9]*[.,]?[0-9]*"
+              placeholder="0.00000"
+              className={`mt-1 ${!useTakeProfit ? 'opacity-50' : ''}`}
+              value={takeProfit}
+              onChange={(e) => setTakeProfit(e.target.value)}
+              disabled={!useTakeProfit}
+            />
+          </div>
         </div>
         
         <div className="space-y-4">
