@@ -13,6 +13,7 @@ interface SidebarNavItemProps {
   collapsed: boolean;
   isPremiumFeature?: boolean;
   userHasPremium?: boolean;
+  onItemClick?: () => void; // Ajout d'un callback pour la fermeture sur mobile
 }
 
 export function SidebarNavItem({ 
@@ -21,11 +22,18 @@ export function SidebarNavItem({
   icon, 
   collapsed,
   isPremiumFeature = false,
-  userHasPremium = false
+  userHasPremium = false,
+  onItemClick
 }: SidebarNavItemProps) {
   const location = useLocation();
   const isActive = location.pathname === path;
   const isMobile = useIsMobile();
+  
+  const handleClick = () => {
+    if (isMobile && onItemClick) {
+      onItemClick();
+    }
+  };
   
   // Simplify item content for mobile
   const itemContent = (
@@ -34,7 +42,7 @@ export function SidebarNavItem({
       isActive 
         ? 'bg-primary text-primary-foreground' 
         : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-      isMobile && !collapsed && 'py-3',
+      isMobile && !collapsed && 'py-3 text-base',
     )}>
       <span className="flex-shrink-0">{icon}</span>
       {!collapsed && (
@@ -54,11 +62,11 @@ export function SidebarNavItem({
     ? "Fonctionnalité premium"
     : name;
     
-  // For mobile, we don't need tooltips as they can cause UX issues
+  // Pour mobile, pas de tooltips et ajout du gestionnaire de clic
   if (isMobile) {
     return (
       <li>
-        <Link to={path} aria-label={name}>
+        <Link to={path} aria-label={name} onClick={handleClick}>
           {itemContent}
         </Link>
       </li>

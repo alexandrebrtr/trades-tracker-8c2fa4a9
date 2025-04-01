@@ -26,6 +26,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     if (storedState) {
       setSidebarCollapsed(JSON.parse(storedState));
     } else {
+      // Sur mobile, démarrer avec sidebar repliée
       setSidebarCollapsed(isMobile);
     }
     
@@ -44,7 +45,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     };
   }, [isMobile]);
 
-  // Handle mobile menu toggle
+  // Handle mobile menu toggle with debouncing
   const toggleMobileMenu = () => {
     setShowMobileMenu(!showMobileMenu);
     // Also update the sidebar state to reflect this
@@ -67,6 +68,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           size="icon"
           className="fixed top-4 left-4 z-50 md:hidden"
           onClick={toggleMobileMenu}
+          aria-label="Toggle menu"
         >
           <Menu className="h-5 w-5" />
           <span className="sr-only">Toggle menu</span>
@@ -77,10 +79,16 @@ export function AppLayout({ children }: AppLayoutProps) {
       <main className={cn(
         "transition-all duration-300 pt-16 md:pt-0",
         sidebarCollapsed ? "ml-0 md:ml-20" : "ml-0 md:ml-64",
-        isMobile && "pt-14" // Reduce top padding on mobile
+        isMobile && "pt-14", // Reduce top padding on mobile
+        // Améliorer transition sur mobile
+        isMobile ? "ease-in-out" : ""
       )}>
         <Header />
-        <div className="container py-3 md:py-6 px-3 md:px-4 max-w-7xl mx-auto">
+        <div className={cn(
+          "container py-3 md:py-6 px-3 md:px-4 max-w-7xl mx-auto",
+          // Améliorer le padding sur mobile
+          isMobile && "px-4 py-4"
+        )}>
           {children}
         </div>
       </main>

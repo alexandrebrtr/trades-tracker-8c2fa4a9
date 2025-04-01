@@ -21,14 +21,31 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/context/AuthContext';
 import { usePremium } from '@/context/PremiumContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-export function SidebarUserSection({ collapsed }: { collapsed: boolean }) {
+interface SidebarUserSectionProps {
+  collapsed: boolean;
+  onUserAction?: () => void;
+}
+
+export function SidebarUserSection({ collapsed, onUserAction }: SidebarUserSectionProps) {
   const { user, profile, signOut } = useAuth();
   const { isPremium } = usePremium();
   const [isOpen, setIsOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
     await signOut();
+    if (isMobile && onUserAction) {
+      onUserAction();
+    }
+  };
+
+  const handleLinkClick = () => {
+    if (isMobile && onUserAction) {
+      onUserAction();
+    }
+    setIsOpen(false);
   };
 
   const userInitials = user?.email 
@@ -51,19 +68,19 @@ export function SidebarUserSection({ collapsed }: { collapsed: boolean }) {
             <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/profile" className="flex w-full cursor-default">
+              <Link to="/profile" className="flex w-full cursor-default" onClick={handleLinkClick}>
                 <User className="mr-2 h-4 w-4" />
                 <span>Profil</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/settings" className="flex w-full cursor-default">
+              <Link to="/settings" className="flex w-full cursor-default" onClick={handleLinkClick}>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Paramètres</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/premium" className="flex w-full cursor-default">
+              <Link to="/premium" className="flex w-full cursor-default" onClick={handleLinkClick}>
                 <CreditCard className="mr-2 h-4 w-4" />
                 <span>{isPremium ? "Gérer l'abonnement" : "Passer au Premium"}</span>
                 {isPremium && <Shield className="ml-2 h-3 w-3 text-yellow-500" />}
@@ -97,19 +114,19 @@ export function SidebarUserSection({ collapsed }: { collapsed: boolean }) {
           <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link to="/profile" className="flex w-full cursor-default">
+            <Link to="/profile" className="flex w-full cursor-default" onClick={handleLinkClick}>
               <User className="mr-2 h-4 w-4" />
               <span>Profil</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link to="/settings" className="flex w-full cursor-default">
+            <Link to="/settings" className="flex w-full cursor-default" onClick={handleLinkClick}>
               <Settings className="mr-2 h-4 w-4" />
               <span>Paramètres</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link to="/premium" className="flex w-full cursor-default">
+            <Link to="/premium" className="flex w-full cursor-default" onClick={handleLinkClick}>
               <CreditCard className="mr-2 h-4 w-4" />
               <span>{isPremium ? "Gérer l'abonnement" : "Passer au Premium"}</span>
               {isPremium && <Shield className="ml-2 h-3 w-3 text-yellow-500" />}

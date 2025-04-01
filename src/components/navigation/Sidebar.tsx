@@ -47,28 +47,30 @@ export function Sidebar() {
     }
   }, [isMobile]);
 
-  useEffect(() => {
-    // Auto-collapse on mobile when navigating
-    if (isMobile) {
-      setCollapsed(true);
-      localStorage.setItem('sidebarCollapsed', 'true');
-    }
-  }, [location.pathname, isMobile]);
+  // Optimisation: Ne pas auto-masquer la sidebar sur changement de route
+  // Nous utiliserons un callback explicite à la place
 
-  // Use this effect to handle visibility based on scroll direction on mobile
+  // Amélioration du comportement de scroll sur mobile
   useEffect(() => {
     if (!isMobile) return;
     
     let lastScrollY = window.scrollY;
+    let lastScrollTime = Date.now();
     
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      const currentTime = Date.now();
       
-      // Hide sidebar when scrolling down, show when scrolling up
-      if (currentScrollY > lastScrollY && currentScrollY > 50) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
+      // Ne réagir qu'aux défilements significatifs et pas trop fréquents
+      if (Math.abs(currentScrollY - lastScrollY) > 15 && currentTime - lastScrollTime > 100) {
+        // Masquer sidebar quand on scrolle vers le bas, montrer quand on scrolle vers le haut
+        if (currentScrollY > lastScrollY + 5) {
+          setIsVisible(false);
+        } else if (currentScrollY < lastScrollY - 5) {
+          setIsVisible(true);
+        }
+        
+        lastScrollTime = currentTime;
       }
       
       lastScrollY = currentScrollY;
@@ -90,7 +92,14 @@ export function Sidebar() {
     window.dispatchEvent(event);
   };
 
-  // Hide sidebar on mobile when not on dashboard routes
+  // Callback pour fermer la sidebar sur mobile après clic sur un item
+  const handleNavItemClick = () => {
+    if (isMobile && !collapsed) {
+      toggleSidebar();
+    }
+  };
+
+  // Ne pas afficher la sidebar sur certaines routes mobiles
   if (isMobile && !location.pathname.includes('/dashboard') && 
       !location.pathname.includes('/statistics') && 
       !location.pathname.includes('/trade-entry') && 
@@ -151,57 +160,71 @@ export function Sidebar() {
     }
   ];
 
-  // Modification: Afficher tous les éléments de navigation, même ceux premium
+  // Montrer tous les éléments de navigation
   const filteredNavItems = navItems;
 
-  // Determine CSS classes based on mobile state and visibility
+  // Déterminer les classes CSS en fonction de l'état mobile et de la visibilité
   const sidebarClasses = cn(
     'fixed top-0 left-0 z-40 h-screen transition-all duration-300 bg-sidebar border-r border-sidebar-border',
     collapsed ? "w-0 md:w-20 -translate-x-full md:translate-x-0" : "w-64",
-    isMobile && !isVisible ? "-translate-y-full" : "translate-y-0"
+    isMobile && !isVisible ? "-translate-y-full" : "translate-y-0",
+    // Overlay en mode mobile quand sidebar est ouverte
+    isMobile && !collapsed ? "shadow-xl" : ""
   );
 
   return (
-    <aside className={sidebarClasses}>
-      <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
-          {!collapsed && (
-            <Link to="/" className="flex items-center">
-              <span className="text-primary font-bold text-xl">Trades Tracker</span>
-            </Link>
-          )}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleSidebar}
-            className={cn(
-              collapsed ? "w-full" : "ml-auto",
-              isMobile && "p-2 h-auto"
+    <>
+      {/* Overlay sombre en arrière-plan lors de l'ouverture sidebar mobile */}
+      {isMobile && !collapsed && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 transition-opacity duration-300"
+          onClick={toggleSidebar}
+          aria-hidden="true"
+        />
+      )}
+      
+      <aside className={sidebarClasses}>
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
+            {!collapsed && (
+              <Link to="/" className="flex items-center">
+                <span className="text-primary font-bold text-xl">Trades Tracker</span>
+              </Link>
             )}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
-          </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleSidebar}
+              className={cn(
+                collapsed ? "w-full" : "ml-auto",
+                isMobile && "p-2 h-auto"
+              )}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {collapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
+            </Button>
+          </div>
+
+          <nav className="flex-1 py-4 overflow-y-auto">
+            <ul className="space-y-2 px-2">
+              {filteredNavItems.map((item) => (
+                <SidebarNavItem 
+                  key={item.path}
+                  name={item.name}
+                  path={item.path}
+                  icon={item.icon}
+                  collapsed={collapsed}
+                  isPremiumFeature={item.requirePremium}
+                  userHasPremium={isPremium}
+                  onItemClick={handleNavItemClick}
+                />
+              ))}
+            </ul>
+          </nav>
+
+          <SidebarUserSection collapsed={collapsed} onUserAction={handleNavItemClick} />
         </div>
-
-        <nav className="flex-1 py-4 overflow-y-auto">
-          <ul className="space-y-2 px-2">
-            {filteredNavItems.map((item) => (
-              <SidebarNavItem 
-                key={item.path}
-                name={item.name}
-                path={item.path}
-                icon={item.icon}
-                collapsed={collapsed}
-                isPremiumFeature={item.requirePremium}
-                userHasPremium={isPremium}
-              />
-            ))}
-          </ul>
-        </nav>
-
-        <SidebarUserSection collapsed={collapsed} />
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }
