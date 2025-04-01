@@ -212,7 +212,7 @@ export default function LandingPage() {
                   Grâce à notre intégration avec les principales plateformes de trading, importez automatiquement vos trades et suivez vos performances en temps réel.
                 </p>
                 <ul className="space-y-3 mb-8">
-                  {["Binance", "Binance", "FTX", "Coinbase", "Kraken"].map((broker, index) => (
+                  {["Binance", "FTX", "Coinbase", "Kraken"].map((broker, index) => (
                     <li key={index} className="flex items-center">
                       <CheckCircle2 className="h-5 w-5 text-primary mr-2" />
                       <span>{broker}</span>
