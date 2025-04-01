@@ -10,7 +10,8 @@ import {
   CheckCircle2,
   ExternalLink,
   ArrowRight,
-  AlertTriangle
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -303,6 +304,27 @@ export default function LandingPage() {
                   </Card>
                 </motion.div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Beta Version Information Section - NEW */}
+        <section className="py-10 bg-primary/10">
+          <div className="container px-4 md:px-6">
+            <div className="max-w-[800px] mx-auto text-center">
+              <Info className="h-10 w-10 mx-auto mb-4 text-primary" />
+              <h2 className="text-2xl font-bold mb-4">Version Bêta - Premium Offert !</h2>
+              <p className="text-muted-foreground mb-4">
+                Vous utilisez actuellement la version bêta de Trades Tracker. Pendant cette période, 
+                <strong className="text-primary"> nous offrons l'accès premium gratuitement</strong> à tous nos utilisateurs !
+              </p>
+              <p className="text-muted-foreground mb-6">
+                Pour en bénéficier, il vous suffit d'envoyer un message via notre page contact en précisant votre intérêt 
+                pour l'accès premium gratuit.
+              </p>
+              <Button asChild className="rounded-full px-8">
+                <Link to="/contact">Contacter l'équipe</Link>
+              </Button>
             </div>
           </div>
         </section>
