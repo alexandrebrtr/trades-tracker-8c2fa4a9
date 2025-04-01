@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -121,7 +122,7 @@ export function TradeForm() {
       return;
     }
     
-    if (!orderType || !strategy || !entryPrice || !exitPrice || !size || !entryDate || !exitDate) {
+    if (!asset || (asset === 'custom' && !customAsset) || !orderType || !strategy || !entryPrice || !exitPrice || !size || !entryDate || !exitDate) {
       toast({
         title: "Formulaire incomplet",
         description: "Veuillez remplir tous les champs obligatoires.",
@@ -130,72 +131,78 @@ export function TradeForm() {
       return;
     }
 
-    if (!asset || (asset === 'custom' && !customAsset)) {
-      toast({
-        title: "Actif manquant",
-        description: "Veuillez sélectionner un actif ou saisir un actif personnalisé.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    let finalPnL;
-    
-    if (useManualPnL && manualPnL) {
-      finalPnL = parseFloat(manualPnL.replace(',', '.'));
-    } else {
-      const calculatedPnL = calculateResult();
-      if (calculatedPnL === null) {
-        toast({
-          title: "Erreur de calcul",
-          description: "Impossible de calculer le résultat du trade.",
-          variant: "destructive",
-        });
-        return;
-      }
-      finalPnL = calculatedPnL;
-    }
-    
     setIsSubmitting(true);
     
     try {
+      // Parse numeric values properly
+      const entry = parseFloat(entryPrice.replace(',', '.'));
+      const exit = parseFloat(exitPrice.replace(',', '.'));
+      const positionSize = parseFloat(size.replace(',', '.'));
+      const feesAmount = fees ? parseFloat(fees.replace(',', '.')) : 0;
+      
+      // Calculate PnL
+      let finalPnL;
+      if (useManualPnL && manualPnL) {
+        finalPnL = parseFloat(manualPnL.replace(',', '.'));
+      } else {
+        if (direction === 'long') {
+          finalPnL = (exit - entry) * positionSize - feesAmount;
+        } else {
+          finalPnL = (entry - exit) * positionSize - feesAmount;
+        }
+      }
+      
+      // Determine symbol to use
       let symbolToUse;
       if (asset === 'custom') {
-        symbolToUse = customAsset;
+        symbolToUse = customAsset.trim();
       } else {
         symbolToUse = assets.find(a => a.value === asset)?.label || asset;
       }
       
+      // Parse optional stop loss and take profit
       const stopLossValue = useStopLoss && stopLoss ? parseFloat(stopLoss.replace(',', '.')) : null;
       const takeProfitValue = useTakeProfit && takeProfit ? parseFloat(takeProfit.replace(',', '.')) : null;
       
+      // Create trade object
       const newTrade = {
         user_id: user.id,
         date: new Date(entryDate).toISOString(),
         symbol: symbolToUse,
         type: direction,
         strategy,
-        entry_price: parseFloat(entryPrice.replace(',', '.')),
-        exit_price: parseFloat(exitPrice.replace(',', '.')),
-        size: parseFloat(size.replace(',', '.')),
-        fees: fees ? parseFloat(fees.replace(',', '.')) : 0,
+        entry_price: entry,
+        exit_price: exit,
+        size: positionSize,
+        fees: feesAmount,
         pnl: finalPnL,
         notes: notes,
         stop_loss: stopLossValue,
-        take_profit: takeProfitValue
+        take_profit: takeProfitValue,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       
-      const { error } = await supabase
-        .from('trades')
-        .insert([newTrade]);
+      console.log("Submitting trade:", newTrade);
       
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from('trades')
+        .insert([newTrade])
+        .select();
+      
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
+      
+      console.log("Trade added successfully:", data);
       
       toast({
         title: "Trade enregistré",
         description: "Votre trade a été enregistré avec succès.",
       });
       
+      // Reset form fields
       setEntryPrice('');
       setExitPrice('');
       setSize('');
@@ -213,11 +220,11 @@ export function TradeForm() {
         navigate('/journal');
       }, 1500);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de l\'enregistrement du trade:', error);
       toast({
         title: "Erreur",
-        description: "Impossible d'enregistrer le trade. Veuillez réessayer.",
+        description: error.message || "Impossible d'enregistrer le trade. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
