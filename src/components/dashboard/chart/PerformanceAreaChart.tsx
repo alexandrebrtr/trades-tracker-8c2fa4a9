@@ -89,7 +89,7 @@ export const PerformanceAreaChart: React.FC<PerformanceAreaChartProps> = ({ data
   );
 
   return isMobile ? (
-    <ScrollArea className="h-full w-full" orientation="horizontal">
+    <ScrollArea className="h-full w-full">
       <div className="h-full min-w-full" style={{ width: typeof chartWidth === 'number' ? `${chartWidth}px` : '100%' }}>
         {chart}
       </div>
