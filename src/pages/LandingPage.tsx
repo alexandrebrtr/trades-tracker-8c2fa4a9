@@ -139,7 +139,7 @@ export default function LandingPage() {
                   <iframe 
                     width="100%" 
                     height="100%" 
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" 
+                    src="" 
                     title="Dashboard Preview" 
                     frameBorder="0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -212,7 +212,7 @@ export default function LandingPage() {
                   Grâce à notre intégration avec les principales plateformes de trading, importez automatiquement vos trades et suivez vos performances en temps réel.
                 </p>
                 <ul className="space-y-3 mb-8">
-                  {["Binance", "FTX", "Coinbase", "Kraken", "MetaTrader 4", "MetaTrader 5"].map((broker, index) => (
+                  {["Binance", "Binance", "FTX", "Coinbase", "Kraken"].map((broker, index) => (
                     <li key={index} className="flex items-center">
                       <CheckCircle2 className="h-5 w-5 text-primary mr-2" />
                       <span>{broker}</span>
@@ -246,7 +246,6 @@ export default function LandingPage() {
                           <option>FTX</option>
                           <option>Coinbase</option>
                           <option>Kraken</option>
-                          <option>MetaTrader 4</option>
                         </select>
                       </div>
                       <div>
