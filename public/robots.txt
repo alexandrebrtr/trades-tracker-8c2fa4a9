@@ -1,5 +1,5 @@
 
-# robots.txt pour Trades Tracker - Journal de Trading
+# robots.txt pour Trades Tracker
 User-agent: *
 Allow: /
 
@@ -7,7 +7,6 @@ Allow: /
 Disallow: /login
 Disallow: /settings
 Disallow: /reset-password
-Disallow: /admin*
 
 # Sitemap
 Sitemap: https://trades-tracker.com/sitemap.xml
