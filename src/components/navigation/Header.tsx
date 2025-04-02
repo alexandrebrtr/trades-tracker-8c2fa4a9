@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -23,6 +22,15 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+      <div className="flex-shrink-0 mr-auto">
+        <Link to="/" className="flex items-center gap-2" aria-label="Trades Tracker - Journal de Trading">
+          <img src="/lovable-uploads/0e632e9a-e44f-4b6e-aab1-8f8757c08470.png" alt="Trades Tracker Logo" className="h-8 w-auto" />
+          <span className="text-primary font-semibold text-xl hidden sm:inline-block">
+            Trades Tracker
+          </span>
+        </Link>
+      </div>
+      
       <div className="flex flex-1 items-center justify-end gap-4">
         <Button 
           variant="ghost" 
