@@ -8,6 +8,7 @@ import {
   PlusCircle, 
   BarChart3, 
   Book, 
+  Menu,
   X,
   Wallet,
   Contact,
@@ -34,6 +35,7 @@ export function Sidebar() {
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { isPremium } = usePremium();
+  const [isVisible, setIsVisible] = useState(true);
   
   useEffect(() => {
     // Initialize sidebar state
@@ -43,17 +45,40 @@ export function Sidebar() {
     } else {
       setCollapsed(isMobile);
     }
+  }, [isMobile]);
+
+  // Amélioration du comportement de scroll sur mobile
+  useEffect(() => {
+    if (!isMobile) return;
     
-    // Listen for sidebar toggle events
-    const handleSidebarToggle = (e: CustomEvent) => {
-      setCollapsed(e.detail.collapsed);
+    let lastScrollY = window.scrollY;
+    let lastScrollTime = Date.now();
+    let ticking = false;
+    
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const currentTime = Date.now();
+      
+      if (!ticking && currentTime - lastScrollTime > 100) {
+        window.requestAnimationFrame(() => {
+          // Masquer sidebar quand on scrolle vers le bas, montrer quand on scrolle vers le haut
+          if (currentScrollY > lastScrollY + 10) {
+            setIsVisible(false);
+          } else if (currentScrollY < lastScrollY - 10) {
+            setIsVisible(true);
+          }
+          
+          lastScrollY = currentScrollY;
+          lastScrollTime = currentTime;
+          ticking = false;
+        });
+        
+        ticking = true;
+      }
     };
     
-    window.addEventListener('sidebar-toggle', handleSidebarToggle as EventListener);
-    
-    return () => {
-      window.removeEventListener('sidebar-toggle', handleSidebarToggle as EventListener);
-    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [isMobile]);
 
   const toggleSidebar = () => {
@@ -74,6 +99,17 @@ export function Sidebar() {
       toggleSidebar();
     }
   };
+
+  // Ne pas afficher la sidebar sur certaines routes mobiles
+  if (isMobile && !location.pathname.includes('/dashboard') && 
+      !location.pathname.includes('/statistics') && 
+      !location.pathname.includes('/trade-entry') && 
+      !location.pathname.includes('/calendar') && 
+      !location.pathname.includes('/journal') && 
+      !location.pathname.includes('/portfolio') && 
+      !location.pathname.includes('/settings')) {
+    return null;
+  }
 
   const navItems: NavItem[] = [
     {
@@ -125,10 +161,14 @@ export function Sidebar() {
     }
   ];
 
+  // Montrer tous les éléments de navigation
+  const filteredNavItems = navItems;
+
   // Déterminer les classes CSS en fonction de l'état mobile et de la visibilité
   const sidebarClasses = cn(
-    'fixed top-0 left-0 z-40 h-screen transition-all duration-300 ease-in-out bg-sidebar border-r border-sidebar-border',
+    'fixed top-0 left-0 z-40 h-screen transition-all duration-300 bg-sidebar border-r border-sidebar-border',
     collapsed ? "w-0 md:w-20 -translate-x-full md:translate-x-0" : "w-64",
+    isMobile && !isVisible ? "-translate-y-full" : "translate-y-0",
     // Overlay en mode mobile quand sidebar est ouverte
     isMobile && !collapsed ? "shadow-xl" : ""
   );
@@ -151,7 +191,7 @@ export function Sidebar() {
         aria-label="Navigation principale"
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-sidebar-border">
+          <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
             {!collapsed && (
               <Link 
                 to="/" 
@@ -173,13 +213,13 @@ export function Sidebar() {
               aria-label={collapsed ? "Développer le menu" : "Réduire le menu"}
               aria-expanded={!collapsed}
             >
-              {collapsed ? <Home className="h-5 w-5" aria-hidden="true" /> : <X className="h-5 w-5" aria-hidden="true" />}
+              {collapsed ? <Menu className="h-5 w-5" aria-hidden="true" /> : <X className="h-5 w-5" aria-hidden="true" />}
             </Button>
           </div>
 
           <nav className="flex-1 py-4 overflow-y-auto scrollbar-thin">
             <ul className="space-y-2 px-2">
-              {navItems.map((item) => (
+              {filteredNavItems.map((item) => (
                 <SidebarNavItem 
                   key={item.path}
                   name={item.name}

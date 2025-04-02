@@ -7,6 +7,8 @@ import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { PremiumProvider } from './context/PremiumContext'
 
+// Add a custom scrollbar style to index.css - already handled in index.css now
+
 // Add passive event listeners to touch events for better performance
 if (typeof window !== 'undefined') {
   const passiveOption = { passive: true };
