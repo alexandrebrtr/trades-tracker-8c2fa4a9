@@ -21,7 +21,6 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     // Check sidebar state from localStorage on mount
@@ -29,7 +28,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     if (storedState) {
       setSidebarCollapsed(JSON.parse(storedState));
     } else {
-      // Sur mobile, démarrer avec sidebar repliée
+      // Default to collapsed on mobile
       setSidebarCollapsed(isMobile);
     }
     
@@ -43,9 +42,6 @@ export function AppLayout({ children }: AppLayoutProps) {
     
     window.addEventListener('sidebar-toggle', handleSidebarToggle as EventListener);
     
-    // Set loading to false after initialization
-    setIsLoading(false);
-    
     return () => {
       window.removeEventListener('sidebar-toggle', handleSidebarToggle as EventListener);
     };
@@ -57,6 +53,8 @@ export function AppLayout({ children }: AppLayoutProps) {
     // Also update the sidebar state to reflect this
     const newCollapsedState = showMobileMenu;
     setSidebarCollapsed(newCollapsedState);
+    
+    // Communicate the change to the Sidebar component
     localStorage.setItem('sidebarCollapsed', JSON.stringify(newCollapsedState));
     
     const event = new CustomEvent('sidebar-toggle', { 
@@ -92,7 +90,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           "transition-all duration-300 pt-16 md:pt-0",
           sidebarCollapsed ? "ml-0 md:ml-20" : "ml-0 md:ml-64",
           isMobile && "pt-14", // Reduce top padding on mobile
-          // Améliorer transition sur mobile
           isMobile ? "ease-in-out" : ""
         )}
         id="main-content"
@@ -102,7 +99,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         <Header />
         <div className={cn(
           "container py-3 md:py-6 px-3 md:px-4 max-w-7xl mx-auto",
-          // Améliorer le padding sur mobile
           isMobile && "px-4 py-4"
         )}>
           {children}

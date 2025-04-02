@@ -10,7 +10,7 @@ export function useIsMobile() {
   })
 
   React.useEffect(() => {
-    // Ensure correct detection on different devices
+    // Function to handle viewport changes and set mobile state
     const handleResize = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
@@ -18,7 +18,7 @@ export function useIsMobile() {
     // Use matchMedia for better performance
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
     
-    // Use appropriate events based on browser
+    // Handle media query list events
     const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
       setIsMobile(e.matches)
     }
@@ -26,14 +26,14 @@ export function useIsMobile() {
     // Initial check
     handleMediaChange(mql)
     
-    // Add appropriate listener based on browser compatibility
+    // Add proper event listener based on browser compatibility
     if (mql.addEventListener) {
       mql.addEventListener('change', handleMediaChange)
       return () => mql.removeEventListener('change', handleMediaChange)
     } else {
       // Fallback for older browsers
-      mql.addListener(handleMediaChange as any)
-      return () => mql.removeListener(handleMediaChange as any)
+      window.addEventListener('resize', handleResize, { passive: true })
+      return () => window.removeEventListener('resize', handleResize)
     }
   }, [])
 
