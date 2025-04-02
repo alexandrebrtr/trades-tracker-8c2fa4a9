@@ -21,7 +21,6 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     // Check sidebar state from localStorage on mount
@@ -29,7 +28,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     if (storedState) {
       setSidebarCollapsed(JSON.parse(storedState));
     } else {
-      // Sur mobile, démarrer avec sidebar repliée
+      // On mobile, start with sidebar collapsed
       setSidebarCollapsed(isMobile);
     }
     
@@ -42,9 +41,6 @@ export function AppLayout({ children }: AppLayoutProps) {
     };
     
     window.addEventListener('sidebar-toggle', handleSidebarToggle as EventListener);
-    
-    // Set loading to false after initialization
-    setIsLoading(false);
     
     return () => {
       window.removeEventListener('sidebar-toggle', handleSidebarToggle as EventListener);
@@ -59,6 +55,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     setSidebarCollapsed(newCollapsedState);
     localStorage.setItem('sidebarCollapsed', JSON.stringify(newCollapsedState));
     
+    // Dispatch an event to also update the sidebar component
     const event = new CustomEvent('sidebar-toggle', { 
       detail: { collapsed: newCollapsedState } 
     });
@@ -67,43 +64,22 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      {/* Mobile menu toggle button - only visible on mobile */}
-      {isMobile && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="fixed top-4 left-4 z-50 md:hidden focus-visible:ring-2 focus-visible:ring-primary"
-          onClick={toggleMobileMenu}
-          aria-label="Toggle menu"
-          aria-expanded={showMobileMenu}
-          aria-controls="sidebar"
-        >
-          <Menu className="h-5 w-5" aria-hidden="true" />
-          <span className="sr-only">Toggle menu</span>
-        </Button>
-      )}
-      
       <Suspense fallback={null}>
         <Sidebar />
       </Suspense>
       
       <main 
         className={cn(
-          "transition-all duration-300 pt-16 md:pt-0",
-          sidebarCollapsed ? "ml-0 md:ml-20" : "ml-0 md:ml-64",
-          isMobile && "pt-14", // Reduce top padding on mobile
-          // Améliorer transition sur mobile
-          isMobile ? "ease-in-out" : ""
+          "transition-all duration-300 ease-in-out pt-14",
+          sidebarCollapsed ? "ml-0 md:ml-20" : "ml-0 md:ml-64"
         )}
         id="main-content"
         role="main"
         aria-label="Contenu principal"
       >
-        <Header />
+        <Header toggleSidebar={toggleMobileMenu} showMobileMenu={showMobileMenu} />
         <div className={cn(
-          "container py-3 md:py-6 px-3 md:px-4 max-w-7xl mx-auto",
-          // Améliorer le padding sur mobile
-          isMobile && "px-4 py-4"
+          "container py-3 md:py-6 px-4 max-w-7xl mx-auto"
         )}>
           {children}
         </div>

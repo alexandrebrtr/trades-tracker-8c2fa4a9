@@ -6,10 +6,15 @@ import { HeaderBalance } from "@/components/HeaderBalance";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Settings, User, Moon, Sun, LogIn } from "lucide-react";
+import { LogOut, Settings, User, Moon, Sun, LogIn, Menu, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export function Header() {
+interface HeaderProps {
+  toggleSidebar: () => void;
+  showMobileMenu: boolean;
+}
+
+export function Header({ toggleSidebar, showMobileMenu }: HeaderProps) {
   const { user, profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -25,22 +30,35 @@ export function Header() {
 
   return (
     <header 
-      className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur-sm px-4 md:px-6" 
+      className="sticky top-0 z-50 flex h-14 md:h-16 items-center gap-2 border-b bg-background/95 backdrop-blur-sm px-2 md:px-6" 
       role="banner"
       aria-label="En-tête du site"
     >
-      <div className="flex flex-1 items-center justify-end gap-2 sm:gap-4">
+      {/* Sidebar toggle button - visible on all pages on mobile */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 md:h-9 md:w-9 mr-1 focus-visible:ring-2 focus-visible:ring-primary"
+        onClick={toggleSidebar}
+        aria-label={showMobileMenu ? "Fermer le menu" : "Ouvrir le menu"}
+        aria-expanded={showMobileMenu}
+        aria-controls="sidebar"
+      >
+        {showMobileMenu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </Button>
+      
+      <div className="flex-1 flex items-center justify-end gap-2">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={toggleTheme} 
           aria-label={theme === 'dark' ? "Passer au mode clair" : "Passer au mode sombre"}
-          className="focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-8 w-8 md:h-9 md:w-9 focus-visible:ring-2 focus-visible:ring-primary"
         >
-          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          {theme === 'dark' ? <Sun className="h-4 w-4 md:h-5 md:w-5" /> : <Moon className="h-4 w-4 md:h-5 md:w-5" />}
         </Button>
         
-        <div className={isMobile ? "hidden sm:block" : ""}>
+        <div className="hidden sm:block">
           <HeaderBalance />
         </div>
         
@@ -49,10 +67,10 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="ghost" 
-                className="relative h-9 w-9 rounded-full focus-visible:ring-2 focus-visible:ring-primary" 
+                className="relative h-8 w-8 md:h-9 md:w-9 rounded-full focus-visible:ring-2 focus-visible:ring-primary" 
                 aria-label="Menu utilisateur"
               >
-                <Avatar className="h-9 w-9">
+                <Avatar className="h-8 w-8 md:h-9 md:w-9">
                   <AvatarImage src={profile?.avatar_url || ''} alt={`Avatar de ${displayName}`} />
                   <AvatarFallback aria-hidden="true">
                     {displayName.charAt(0).toUpperCase()}
@@ -94,7 +112,7 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button asChild size="sm" className="focus-visible:ring-2 focus-visible:ring-primary">
+          <Button asChild size="sm" className="h-8 md:h-9 focus-visible:ring-2 focus-visible:ring-primary">
             <Link to="/login">
               <LogIn className="mr-2 h-4 w-4" aria-hidden="true" />
               Connexion
