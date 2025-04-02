@@ -14,39 +14,62 @@ export const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({
 }) => {
   const isMobile = useIsMobile();
   
-  // Périodes disponibles
+  // Available periods
   const periods = ['1W', '1M', '3M', '6M', '1Y', 'ALL'] as const;
   
-  // Si mobile, utiliser ScrollArea pour permettre de faire défiler horizontalement
+  const periodLabels = {
+    '1W': '1 Semaine',
+    '1M': '1 Mois',
+    '3M': '3 Mois',
+    '6M': '6 Mois',
+    '1Y': '1 An',
+    'ALL': 'Tout'
+  };
+  
+  // If mobile, use ScrollArea for horizontal scrolling
   return isMobile ? (
-    <ScrollArea className="w-full max-w-[calc(100vw-3rem)]">
-      <div className="flex space-x-2 pr-4">
-        {periods.map((period) => (
-          <button
-            key={period}
-            className={`px-2 py-1 text-xs rounded-md transition-colors whitespace-nowrap ${
-              selectedTimeframe === period 
-                ? 'bg-primary text-white' 
-                : 'bg-secondary text-muted-foreground hover:bg-secondary/70'
-            }`}
-            onClick={() => onTimeframeChange(period)}
-          >
-            {period}
-          </button>
-        ))}
-      </div>
-    </ScrollArea>
+    <div 
+      className="w-full" 
+      role="group" 
+      aria-label="Sélection de période"
+    >
+      <ScrollArea className="w-full max-w-[calc(100vw-3rem)]">
+        <div className="flex space-x-3 pr-4">
+          {periods.map((period) => (
+            <button
+              key={period}
+              className={`px-3 py-2 text-sm rounded-md transition-colors whitespace-nowrap min-w-[48px] min-h-[44px] ${
+                selectedTimeframe === period 
+                  ? 'bg-primary text-primary-foreground font-medium' 
+                  : 'bg-secondary text-foreground hover:bg-secondary/70'
+              }`}
+              onClick={() => onTimeframeChange(period)}
+              aria-label={`Période: ${periodLabels[period]}`}
+              aria-pressed={selectedTimeframe === period}
+            >
+              {period}
+            </button>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
   ) : (
-    <div className="flex space-x-2">
+    <div 
+      className="flex space-x-2" 
+      role="group" 
+      aria-label="Sélection de période"
+    >
       {periods.map((period) => (
         <button
           key={period}
-          className={`px-2 py-1 text-xs rounded-md transition-colors ${
+          className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
             selectedTimeframe === period 
-              ? 'bg-primary text-white' 
-              : 'bg-secondary text-muted-foreground hover:bg-secondary/70'
+              ? 'bg-primary text-primary-foreground font-medium' 
+              : 'bg-secondary text-foreground hover:bg-secondary/70'
           }`}
           onClick={() => onTimeframeChange(period)}
+          aria-label={`Période: ${periodLabels[period]}`}
+          aria-pressed={selectedTimeframe === period}
         >
           {period}
         </button>

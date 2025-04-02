@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
@@ -21,6 +22,7 @@ const SelectTrigger = React.forwardRef<
       className
     )}
     {...props}
+    aria-label={props['aria-label'] || "Select an option"}
   >
     {children}
     <SelectPrimitive.Icon asChild>

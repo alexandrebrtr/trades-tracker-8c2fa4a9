@@ -16,8 +16,30 @@
     {
       "src": "/apple-touch-icon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
-  "categories": ["finance", "trading", "productivity"]
+  "categories": ["finance", "trading", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/dashboard",
+      "description": "Accéder rapidement à votre tableau de bord"
+    },
+    {
+      "name": "Ajouter un trade",
+      "url": "/trade-entry",
+      "description": "Ajouter une nouvelle entrée de trading"
+    }
+  ],
+  "lang": "fr-FR",
+  "dir": "ltr",
+  "prefer_related_applications": false
 }

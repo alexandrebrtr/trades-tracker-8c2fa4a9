@@ -3,13 +3,14 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Trades Tracker - Suivez et analysez vos trades pour améliorer vos performances</title>
     <meta name="description" content="Plateforme de suivi et d'analyse de trading permettant aux traders de visualiser leurs performances, gérer leur portefeuille et améliorer leur stratégie." />
     <meta name="keywords" content="trading, analyse trading, journal de trading, performance trading, suivi trades, statistiques trading" />
     <meta name="author" content="Trades Tracker" />
+    <meta name="theme-color" content="#0078FF" />
     
-    <!-- Performance optimization -->
+    <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
@@ -35,9 +36,10 @@
     <link rel="canonical" href="https://trades-tracker.com/" />
     
     <!-- Accessibility -->
-    <meta name="theme-color" content="#0078FF" />
+    <meta name="theme-color" content="#0078FF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#222222" media="(prefers-color-scheme: dark)" />
     
-    <!-- Données structurées JSON-LD -->
+    <!-- Structured data JSON-LD -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -60,6 +62,10 @@
     
     <!-- Web Application Manifest -->
     <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Font preload to improve performance -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
   </head>
 
   <body>
@@ -67,6 +73,11 @@
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
-    <noscript>Vous devez activer JavaScript pour utiliser cette application.</noscript>
+    <noscript>
+      <div style="padding: 20px; text-align: center; max-width: 500px; margin: 40px auto;">
+        <h1>JavaScript requis</h1>
+        <p>Vous devez activer JavaScript pour utiliser Trades Tracker. Cette application offre des fonctionnalités d'analyse et de suivi de trading qui nécessitent JavaScript pour fonctionner.</p>
+      </div>
+    </noscript>
   </body>
 </html>

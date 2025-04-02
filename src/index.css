@@ -96,6 +96,23 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
+  /* Improved focus styles for better accessibility */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+
+  /* Improved touch targets for mobile */
+  @media (max-width: 768px) {
+    button, 
+    [role="button"],
+    a,
+    input,
+    select,
+    textarea {
+      @apply min-h-[44px] min-w-[44px];
+    }
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
@@ -107,18 +124,23 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-neutral-200 dark:bg-neutral-700 rounded-full;
+    @apply bg-neutral-300 dark:bg-neutral-600 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-neutral-300 dark:bg-neutral-600;
+    @apply bg-neutral-400 dark:bg-neutral-500;
+  }
+
+  /* Skip to content link for keyboard users */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-background focus:text-foreground focus:outline-none focus:ring-2 focus:ring-primary;
   }
 }
 
 /* Common utility classes */
 @layer components {
   .glass-panel {
-    @apply bg-white/80 dark:bg-black/30 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg rounded-xl;
+    @apply bg-white/90 dark:bg-black/40 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg rounded-xl;
   }
 
   .glass-card {
@@ -130,11 +152,11 @@
   }
 
   .section-heading {
-    @apply text-2xl font-semibold text-foreground/90 mb-6;
+    @apply text-2xl font-semibold text-foreground mb-6;
   }
 
   .subsection-heading {
-    @apply text-lg font-medium text-foreground/80 mb-4;
+    @apply text-lg font-medium text-foreground mb-4;
   }
 
   .text-success {
@@ -145,16 +167,17 @@
     @apply text-loss font-medium;
   }
 
+  /* Improved badge contrast */
   .badge-success {
-    @apply bg-profit/10 text-profit font-medium px-2 py-0.5 rounded-full text-xs;
+    @apply bg-profit/20 text-profit font-medium px-2 py-0.5 rounded-full text-xs;
   }
 
   .badge-error {
-    @apply bg-loss/10 text-loss font-medium px-2 py-0.5 rounded-full text-xs;
+    @apply bg-loss/20 text-loss font-medium px-2 py-0.5 rounded-full text-xs;
   }
 
   .badge-neutral {
-    @apply bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium px-2 py-0.5 rounded-full text-xs;
+    @apply bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 font-medium px-2 py-0.5 rounded-full text-xs;
   }
 
   .page-transition {
@@ -163,5 +186,37 @@
 
   .page-container {
     @apply max-w-7xl mx-auto px-4 sm:px-6 py-8;
+  }
+
+  /* Improved button touch targets for mobile */
+  .mobile-touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+}
+
+/* Performance optimizations */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  a {
+    text-decoration: underline;
+    color: blue !important;
   }
 }

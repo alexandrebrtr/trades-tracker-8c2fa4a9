@@ -5,33 +5,33 @@ const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean>(() => {
-    // Initialisation immédiate pour éviter un flash de contenu
+    // Initialization without flash of content
     return typeof window !== 'undefined' ? window.innerWidth < MOBILE_BREAKPOINT : false
   })
 
   React.useEffect(() => {
-    // Pour assurer que la détection soit correcte sur différents appareils
-    const checkIfMobile = () => {
+    // Ensure correct detection on different devices
+    const handleResize = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
     
-    // Utiliser matchMedia pour une meilleure performance
+    // Use matchMedia for better performance
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
     
-    // Utiliser les événements appropriés selon le navigateur
+    // Use appropriate events based on browser
     const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
       setIsMobile(e.matches)
     }
     
-    // Vérification initiale
+    // Initial check
     handleMediaChange(mql)
     
-    // Ajouter le listener approprié selon la compatibilité du navigateur
+    // Add appropriate listener based on browser compatibility
     if (mql.addEventListener) {
       mql.addEventListener('change', handleMediaChange)
       return () => mql.removeEventListener('change', handleMediaChange)
     } else {
-      // Fallback pour les anciens navigateurs
+      // Fallback for older browsers
       mql.addListener(handleMediaChange as any)
       return () => mql.removeListener(handleMediaChange as any)
     }
