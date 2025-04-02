@@ -22,38 +22,16 @@ export default function Payment() {
   
   const [step, setStep] = useState<'plan' | 'payment' | 'confirmation'>('plan');
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual'>('monthly');
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'crypto'>('card');
-  const [selectedCrypto, setSelectedCrypto] = useState<'bitcoin' | 'ethereum' | 'usdc'>('bitcoin');
+  const [paymentMethod, setPaymentMethod] = useState<'card'>('card');
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvc, setCvc] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const cryptoWallets = {
-    bitcoin: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
-    ethereum: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-    usdc: '0x9A67F1940164d0318612b497E8e6038f902a00a4'
-  };
-  
   const prices = {
     monthly: 9.99,
     annual: 99.99
-  };
-
-  const cryptoPrices = {
-    bitcoin: { 
-      monthly: 0.00024, 
-      annual: 0.0024
-    },
-    ethereum: { 
-      monthly: 0.0034, 
-      annual: 0.034
-    },
-    usdc: { 
-      monthly: 9.99, 
-      annual: 99.99
-    }
   };
 
   const copyToClipboard = (text: string) => {
