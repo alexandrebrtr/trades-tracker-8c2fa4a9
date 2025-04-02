@@ -23,13 +23,6 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-      <div className="flex items-center md:hidden">
-        <img 
-          src="/public/lovable-uploads/80ba05ae-ec00-4477-935d-9995a8a7fb48.png" 
-          alt="Trades Tracker Logo" 
-          className="h-8 w-auto mr-2"
-        />
-      </div>
       <div className="flex flex-1 items-center justify-end gap-4">
         <Button 
           variant="ghost" 

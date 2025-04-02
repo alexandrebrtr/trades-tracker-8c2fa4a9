@@ -85,11 +85,6 @@ export function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center space-x-2 z-10">
-            <img 
-              src="/public/lovable-uploads/80ba05ae-ec00-4477-935d-9995a8a7fb48.png" 
-              alt="Trades Tracker Logo" 
-              className="h-8 w-auto"
-            />
             <span className="text-primary font-semibold text-xl">
               Trades Tracker
             </span>
