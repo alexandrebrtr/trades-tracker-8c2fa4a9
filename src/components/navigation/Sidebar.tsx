@@ -187,7 +187,12 @@ export function Sidebar() {
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
             {!collapsed && (
-              <Link to="/" className="flex items-center">
+              <Link to="/" className="flex items-center space-x-2">
+                <img 
+                  src="/public/lovable-uploads/80ba05ae-ec00-4477-935d-9995a8a7fb48.png" 
+                  alt="Trades Tracker Logo" 
+                  className="h-8 w-auto"
+                />
                 <span className="text-primary font-bold text-xl">Trades Tracker</span>
               </Link>
             )}
