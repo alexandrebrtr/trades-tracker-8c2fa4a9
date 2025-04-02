@@ -13,7 +13,7 @@ interface SidebarNavItemProps {
   collapsed: boolean;
   isPremiumFeature?: boolean;
   userHasPremium?: boolean;
-  onItemClick?: () => void; // Ajout d'un callback pour la fermeture sur mobile
+  onItemClick?: () => void;
 }
 
 export function SidebarNavItem({ 
@@ -35,7 +35,7 @@ export function SidebarNavItem({
     }
   };
   
-  // Simplify item content for mobile
+  // Item content with appropriate ARIA attributes
   const itemContent = (
     <div className={cn(
       'flex items-center gap-2 rounded-md px-3 py-2.5', 
@@ -43,15 +43,16 @@ export function SidebarNavItem({
         ? 'bg-primary text-primary-foreground' 
         : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
       isMobile && !collapsed && 'py-3 text-base',
+      'focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none'
     )}>
-      <span className="flex-shrink-0">{icon}</span>
+      <span className="flex-shrink-0" aria-hidden="true">{icon}</span>
       {!collapsed && (
         <div className="flex items-center justify-between w-full">
           <span className={cn("text-sm font-medium", isMobile && "text-base")}>
             {name}
           </span>
           {isPremiumFeature && !userHasPremium && (
-            <Lock className="h-3.5 w-3.5 text-yellow-500" />
+            <Lock className="h-3.5 w-3.5 text-yellow-500" aria-label="Fonction premium" />
           )}
         </div>
       )}
@@ -63,10 +64,15 @@ export function SidebarNavItem({
     : name;
     
   // Pour mobile, pas de tooltips et ajout du gestionnaire de clic
-  if (isMobile) {
+  if (isMobile || !collapsed) {
     return (
       <li>
-        <Link to={path} aria-label={name} onClick={handleClick}>
+        <Link 
+          to={path} 
+          aria-label={name} 
+          aria-current={isActive ? 'page' : undefined}
+          onClick={handleClick}
+        >
           {itemContent}
         </Link>
       </li>
@@ -76,13 +82,17 @@ export function SidebarNavItem({
   return (
     <li>
       <TooltipProvider>
-        <Tooltip>
+        <Tooltip delayDuration={300}>
           <TooltipTrigger asChild>
-            <Link to={path} aria-label={name}>
+            <Link 
+              to={path}
+              aria-label={name}
+              aria-current={isActive ? 'page' : undefined}
+            >
               {itemContent}
             </Link>
           </TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent side="right">
             <p>{tooltipContent}</p>
           </TooltipContent>
         </Tooltip>

@@ -15,23 +15,25 @@ export function useIsMobile() {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
     
-    // Vérification immédiate
-    checkIfMobile()
-    
-    // Utiliser à la fois matchMedia et resize pour une meilleure fiabilité
+    // Utiliser matchMedia pour une meilleure performance
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
     
-    // Fonction de callback pour les deux types d'événements
-    const handleResize = () => checkIfMobile()
-    const handleMediaChange = () => checkIfMobile()
+    // Utiliser les événements appropriés selon le navigateur
+    const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      setIsMobile(e.matches)
+    }
     
-    // Utiliser à la fois resize et mediaQuery pour plus de fiabilité
-    window.addEventListener("resize", handleResize)
-    mql.addEventListener("change", handleMediaChange)
+    // Vérification initiale
+    handleMediaChange(mql)
     
-    return () => {
-      window.removeEventListener("resize", handleResize)
-      mql.removeEventListener("change", handleMediaChange)
+    // Ajouter le listener approprié selon la compatibilité du navigateur
+    if (mql.addEventListener) {
+      mql.addEventListener('change', handleMediaChange)
+      return () => mql.removeEventListener('change', handleMediaChange)
+    } else {
+      // Fallback pour les anciens navigateurs
+      mql.addListener(handleMediaChange as any)
+      return () => mql.removeListener(handleMediaChange as any)
     }
   }, [])
 

@@ -35,7 +35,7 @@ export function Navbar() {
       setScrolled(window.scrollY > 20);
     };
     
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -43,32 +43,32 @@ export function Navbar() {
     {
       name: 'Dashboard',
       path: '/dashboard',
-      icon: <LayoutDashboard className="w-4 h-4" />
+      icon: <LayoutDashboard className="w-4 h-4" aria-hidden="true" />
     },
     {
       name: 'Calendrier',
       path: '/calendar',
-      icon: <Calendar className="w-4 h-4" />
+      icon: <Calendar className="w-4 h-4" aria-hidden="true" />
     },
     {
       name: 'Nouveau Trade',
       path: '/trade-entry',
-      icon: <PlusCircle className="w-4 h-4" />
+      icon: <PlusCircle className="w-4 h-4" aria-hidden="true" />
     },
     {
       name: 'Statistiques',
       path: '/statistics',
-      icon: <BarChart3 className="w-4 h-4" />
+      icon: <BarChart3 className="w-4 h-4" aria-hidden="true" />
     },
     {
       name: 'Journal',
       path: '/journal',
-      icon: <Book className="w-4 h-4" />
+      icon: <Book className="w-4 h-4" aria-hidden="true" />
     },
     {
       name: 'Paramètres',
       path: '/settings',
-      icon: <Settings className="w-4 h-4" />
+      icon: <Settings className="w-4 h-4" aria-hidden="true" />
     }
   ];
 
@@ -77,21 +77,26 @@ export function Navbar() {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300', 
         scrolled 
-          ? 'bg-white/80 dark:bg-background/80 backdrop-blur-md shadow-sm' 
+          ? 'bg-white/90 dark:bg-background/90 backdrop-blur-md shadow-sm' 
           : 'bg-transparent'
       )}
+      role="banner"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/dashboard" className="flex items-center space-x-2 z-10">
+          <Link 
+            to="/dashboard" 
+            className="flex items-center space-x-2 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+            aria-label="Accueil Trades Tracker"
+          >
             <span className="text-primary font-semibold text-xl">
               Trades Tracker
             </span>
           </Link>
 
           {/* Navigation - Desktop */}
-          <nav className="hidden md:flex space-x-1">
+          <nav className="hidden md:flex space-x-1" role="navigation" aria-label="Navigation principale">
             {navItems.map((item) => (
               <NavLink 
                 key={item.path} 
@@ -105,13 +110,25 @@ export function Navbar() {
           {isMobile && (
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="h-6 w-6" />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="md:hidden focus-visible:ring-2 focus-visible:ring-primary"
+                  aria-label="Menu"
+                  aria-expanded={mobileMenuOpen}
+                  aria-controls="mobile-menu"
+                >
+                  <Menu className="h-6 w-6" aria-hidden="true" />
                   <span className="sr-only">Menu</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[80%] sm:w-[350px] pt-12">
-                <nav className="flex flex-col space-y-4 mt-8">
+                <nav 
+                  className="flex flex-col space-y-4 mt-8" 
+                  id="mobile-menu" 
+                  role="navigation" 
+                  aria-label="Menu mobile"
+                >
                   {navItems.map((item) => (
                     <Link
                       key={item.path}
@@ -123,6 +140,7 @@ export function Navbar() {
                           : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                       )}
                       onClick={() => setMobileMenuOpen(false)}
+                      aria-current={location.pathname === item.path ? 'page' : undefined}
                     >
                       {item.icon}
                       <span>{item.name}</span>
@@ -135,11 +153,14 @@ export function Navbar() {
 
           {/* User Menu (Simplified) */}
           <div className="flex items-center">
-            <button className="flex items-center space-x-2 p-2 rounded-full hover:bg-secondary transition-colors">
+            <button 
+              className="flex items-center space-x-2 p-2 rounded-full hover:bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Menu utilisateur"
+            >
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
                 T
               </div>
-              <ChevronDown className="w-4 h-4 text-muted-foreground hidden md:block" />
+              <ChevronDown className="w-4 h-4 text-muted-foreground hidden md:block" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -158,11 +179,12 @@ function NavLink({ item, isActive }: NavLinkProps) {
     <Link
       to={item.path}
       className={cn(
-        'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+        'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
         isActive 
           ? 'bg-primary text-white' 
           : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
       )}
+      aria-current={isActive ? 'page' : undefined}
     >
       {item.icon}
       <span>{item.name}</span>

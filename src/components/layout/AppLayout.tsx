@@ -1,6 +1,5 @@
 
-import { ReactNode, useEffect, useState } from 'react';
-import { Sidebar } from '@/components/navigation/Sidebar';
+import { ReactNode, useEffect, useState, lazy, Suspense } from 'react';
 import { Header } from '@/components/navigation/Header';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
@@ -9,6 +8,9 @@ import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// Lazily load the Sidebar component to improve initial load performance
+const Sidebar = lazy(() => import('../navigation/Sidebar').then(mod => ({ default: mod.Sidebar })));
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -19,6 +21,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     // Check sidebar state from localStorage on mount
@@ -40,12 +43,15 @@ export function AppLayout({ children }: AppLayoutProps) {
     
     window.addEventListener('sidebar-toggle', handleSidebarToggle as EventListener);
     
+    // Set loading to false after initialization
+    setIsLoading(false);
+    
     return () => {
       window.removeEventListener('sidebar-toggle', handleSidebarToggle as EventListener);
     };
   }, [isMobile]);
 
-  // Handle mobile menu toggle with debouncing
+  // Handle mobile menu toggle
   const toggleMobileMenu = () => {
     setShowMobileMenu(!showMobileMenu);
     // Also update the sidebar state to reflect this
@@ -60,29 +66,39 @@ export function AppLayout({ children }: AppLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Mobile menu toggle button - only visible on mobile */}
       {isMobile && (
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 md:hidden"
+          className="fixed top-4 left-4 z-50 md:hidden focus-visible:ring-2 focus-visible:ring-primary"
           onClick={toggleMobileMenu}
           aria-label="Toggle menu"
+          aria-expanded={showMobileMenu}
+          aria-controls="sidebar"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-5 w-5" aria-hidden="true" />
           <span className="sr-only">Toggle menu</span>
         </Button>
       )}
       
-      <Sidebar />
-      <main className={cn(
-        "transition-all duration-300 pt-16 md:pt-0",
-        sidebarCollapsed ? "ml-0 md:ml-20" : "ml-0 md:ml-64",
-        isMobile && "pt-14", // Reduce top padding on mobile
-        // Améliorer transition sur mobile
-        isMobile ? "ease-in-out" : ""
-      )}>
+      <Suspense fallback={null}>
+        <Sidebar />
+      </Suspense>
+      
+      <main 
+        className={cn(
+          "transition-all duration-300 pt-16 md:pt-0",
+          sidebarCollapsed ? "ml-0 md:ml-20" : "ml-0 md:ml-64",
+          isMobile && "pt-14", // Reduce top padding on mobile
+          // Améliorer transition sur mobile
+          isMobile ? "ease-in-out" : ""
+        )}
+        id="main-content"
+        role="main"
+        aria-label="Contenu principal"
+      >
         <Header />
         <div className={cn(
           "container py-3 md:py-6 px-3 md:px-4 max-w-7xl mx-auto",

@@ -47,33 +47,34 @@ export function Sidebar() {
     }
   }, [isMobile]);
 
-  // Optimisation: Ne pas auto-masquer la sidebar sur changement de route
-  // Nous utiliserons un callback explicite à la place
-
   // Amélioration du comportement de scroll sur mobile
   useEffect(() => {
     if (!isMobile) return;
     
     let lastScrollY = window.scrollY;
     let lastScrollTime = Date.now();
+    let ticking = false;
     
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       const currentTime = Date.now();
       
-      // Ne réagir qu'aux défilements significatifs et pas trop fréquents
-      if (Math.abs(currentScrollY - lastScrollY) > 15 && currentTime - lastScrollTime > 100) {
-        // Masquer sidebar quand on scrolle vers le bas, montrer quand on scrolle vers le haut
-        if (currentScrollY > lastScrollY + 5) {
-          setIsVisible(false);
-        } else if (currentScrollY < lastScrollY - 5) {
-          setIsVisible(true);
-        }
+      if (!ticking && currentTime - lastScrollTime > 100) {
+        window.requestAnimationFrame(() => {
+          // Masquer sidebar quand on scrolle vers le bas, montrer quand on scrolle vers le haut
+          if (currentScrollY > lastScrollY + 10) {
+            setIsVisible(false);
+          } else if (currentScrollY < lastScrollY - 10) {
+            setIsVisible(true);
+          }
+          
+          lastScrollY = currentScrollY;
+          lastScrollTime = currentTime;
+          ticking = false;
+        });
         
-        lastScrollTime = currentTime;
+        ticking = true;
       }
-      
-      lastScrollY = currentScrollY;
     };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -114,49 +115,49 @@ export function Sidebar() {
     {
       name: 'Accueil',
       path: '/',
-      icon: <Home className="w-5 h-5" />
+      icon: <Home className="w-5 h-5" aria-hidden="true" />
     },
     {
       name: 'Tableau de bord',
       path: '/dashboard',
-      icon: <LayoutDashboard className="w-5 h-5" />
+      icon: <LayoutDashboard className="w-5 h-5" aria-hidden="true" />
     },
     {
       name: 'Calendrier',
       path: '/calendar',
-      icon: <Calendar className="w-5 h-5" />,
+      icon: <Calendar className="w-5 h-5" aria-hidden="true" />,
       requirePremium: true
     },
     {
       name: 'Nouveau Trade',
       path: '/trade-entry',
-      icon: <PlusCircle className="w-5 h-5" />
+      icon: <PlusCircle className="w-5 h-5" aria-hidden="true" />
     },
     {
       name: 'Portefeuille',
       path: '/portfolio',
-      icon: <Wallet className="w-5 h-5" />
+      icon: <Wallet className="w-5 h-5" aria-hidden="true" />
     },
     {
       name: 'Statistiques',
       path: '/statistics',
-      icon: <BarChart3 className="w-5 h-5" />,
+      icon: <BarChart3 className="w-5 h-5" aria-hidden="true" />,
       requirePremium: true
     },
     {
       name: 'Journal',
       path: '/journal',
-      icon: <Book className="w-5 h-5" />
+      icon: <Book className="w-5 h-5" aria-hidden="true" />
     },
     {
       name: 'Contact',
       path: '/contact',
-      icon: <Contact className="w-5 h-5" />
+      icon: <Contact className="w-5 h-5" aria-hidden="true" />
     },
     {
       name: 'Paramètres',
       path: '/settings',
-      icon: <Settings className="w-5 h-5" />
+      icon: <Settings className="w-5 h-5" aria-hidden="true" />
     }
   ];
 
@@ -183,11 +184,20 @@ export function Sidebar() {
         />
       )}
       
-      <aside className={sidebarClasses}>
+      <aside 
+        className={sidebarClasses} 
+        id="sidebar" 
+        role="navigation" 
+        aria-label="Navigation principale"
+      >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
             {!collapsed && (
-              <Link to="/" className="flex items-center">
+              <Link 
+                to="/" 
+                className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+                aria-label="Accueil"
+              >
                 <span className="text-primary font-bold text-xl">Trades Tracker</span>
               </Link>
             )}
@@ -197,15 +207,17 @@ export function Sidebar() {
               onClick={toggleSidebar}
               className={cn(
                 collapsed ? "w-full" : "ml-auto",
-                isMobile && "p-2 h-auto"
+                isMobile && "p-2 h-auto",
+                "focus-visible:ring-2 focus-visible:ring-primary"
               )}
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={collapsed ? "Développer le menu" : "Réduire le menu"}
+              aria-expanded={!collapsed}
             >
-              {collapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
+              {collapsed ? <Menu className="h-5 w-5" aria-hidden="true" /> : <X className="h-5 w-5" aria-hidden="true" />}
             </Button>
           </div>
 
-          <nav className="flex-1 py-4 overflow-y-auto">
+          <nav className="flex-1 py-4 overflow-y-auto scrollbar-thin">
             <ul className="space-y-2 px-2">
               {filteredNavItems.map((item) => (
                 <SidebarNavItem 
