@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -24,31 +25,45 @@ export function Header() {
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <div className="flex-shrink-0 mr-auto">
         <Link to="/" className="flex items-center gap-2" aria-label="Trades Tracker - Journal de Trading">
-          <img src="/lovable-uploads/0e632e9a-e44f-4b6e-aab1-8f8757c08470.png" alt="Trades Tracker Logo" className="h-8 w-auto" />
-          <span className="text-primary font-semibold text-xl hidden sm:inline-block">
+          <img 
+            src="/lovable-uploads/0e632e9a-e44f-4b6e-aab1-8f8757c08470.png" 
+            alt="Trades Tracker Logo" 
+            className="h-8 w-auto" 
+            width="32" 
+            height="32" 
+          />
+          <span className="text-primary font-semibold text-lg sm:text-xl hidden sm:inline-block">
             Trades Tracker
           </span>
         </Link>
       </div>
       
-      <div className="flex flex-1 items-center justify-end gap-4">
+      <div className="flex items-center justify-end gap-2 sm:gap-4">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={toggleTheme} 
-          aria-label="Toggle theme"
+          aria-label={theme === 'dark' ? "Activer le mode clair" : "Activer le mode sombre"}
+          className="focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
         >
           {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </Button>
         
-        <HeaderBalance />
+        <div className="hidden sm:block">
+          <HeaderBalance />
+        </div>
         
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full" aria-label="Menu utilisateur">
+              <Button 
+                variant="ghost" 
+                className="relative h-9 w-9 rounded-full" 
+                aria-label="Menu utilisateur"
+                aria-haspopup="true"
+              >
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={profile?.avatar_url || ''} alt="Avatar" />
+                  <AvatarImage src={profile?.avatar_url || ''} alt={`Avatar de ${displayName}`} />
                   <AvatarFallback>
                     {displayName.charAt(0).toUpperCase()}
                   </AvatarFallback>
@@ -81,16 +96,16 @@ export function Header() {
                 Déconnexion
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <div className="p-2">
+              <div className="sm:hidden p-2">
                 <HeaderBalance />
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button asChild size="sm">
+          <Button asChild size="sm" className="focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background">
             <Link to="/login">
               <LogIn className="mr-2 h-4 w-4" />
-              Connexion
+              <span className="hidden sm:inline-block">Connexion</span>
             </Link>
           </Button>
         )}
