@@ -177,14 +177,14 @@ export function Sidebar() {
             </div>
           )}
 
-          {/* Bouton de fermeture pour mobile */}
+          {/* Bouton de fermeture amélioré pour mobile */}
           {isMobile && (
-            <div className="flex justify-end px-3 py-2">
+            <div className="sticky top-0 flex justify-end px-3 py-2 bg-background/80 backdrop-blur-sm z-10 border-b border-sidebar-border">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={toggleSidebar}
-                className="h-8 w-8 focus-visible:ring-2 focus-visible:ring-primary"
+                className="h-8 w-8 focus-visible:ring-2 focus-visible:ring-primary rounded-full"
                 aria-label="Fermer le menu"
               >
                 <X className="h-5 w-5" aria-hidden="true" />

@@ -74,11 +74,11 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Bouton de basculement du menu mobile - visible uniquement sur mobile */}
-      <div className="fixed top-0 left-0 right-0 flex justify-between items-center z-40 px-4 h-14 bg-background/95 backdrop-blur-sm border-b md:hidden">
+      <div className="fixed top-0 left-0 right-0 flex justify-between items-center z-40 px-2 sm:px-4 h-14 bg-background/95 backdrop-blur-sm border-b md:hidden">
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-9 w-9 focus-visible:ring-2 focus-visible:ring-primary"
           onClick={toggleMobileMenu}
           aria-label="Toggle menu"
           aria-expanded={showMobileMenu}

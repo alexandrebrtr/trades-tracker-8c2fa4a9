@@ -15,18 +15,19 @@ import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTradesFetcher } from '@/hooks/useTradesFetcher';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const NoDataView = ({ tabName }: { tabName: string }) => {
   return (
-    <Card className="py-16">
+    <Card className="py-8 md:py-16">
       <CardContent className="flex flex-col items-center justify-center">
-        <Database className="h-12 w-12 text-muted-foreground/50 mb-4" />
-        <CardTitle className="text-xl mb-2">Aucune donnée disponible</CardTitle>
-        <p className="text-muted-foreground text-center max-w-md mb-6">
+        <Database className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground/50 mb-3 md:mb-4" />
+        <CardTitle className="text-lg md:text-xl mb-2 text-center">Aucune donnée disponible</CardTitle>
+        <p className="text-muted-foreground text-center max-w-md mb-4 md:mb-6 text-sm md:text-base px-2">
           Vous n'avez pas encore de trades ou d'informations pour {tabName.toLowerCase()}. 
           Commencez par ajouter des trades dans votre portefeuille pour voir apparaitre des statistiques.
         </p>
-        <Button asChild>
+        <Button asChild size="sm" className="w-full md:w-auto">
           <Link to="/portfolio">Ajouter des trades</Link>
         </Button>
       </CardContent>
@@ -40,6 +41,7 @@ const Statistics = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('general');
+  const isMobile = useIsMobile();
 
   // Récupérer les trades pour vérifier si l'utilisateur a des données
   const { isLoading, trades } = useTradesFetcher(user?.id, 'all');
@@ -68,37 +70,51 @@ const Statistics = () => {
   return (
     <AppLayout>
       <div className="page-transition">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">Statistiques & Analyse</h1>
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-4 md:mb-8">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Statistiques & Analyse</h1>
           </div>
-          <div className="flex gap-4">
-            <Button variant="outline" asChild>
-              <Link to="/portfolio" className="flex items-center gap-2">
+          <div className="flex gap-2 md:gap-4">
+            <Button variant="outline" asChild size={isMobile ? "sm" : "default"} className="w-full md:w-auto">
+              <Link to="/portfolio" className="flex items-center gap-1 md:gap-2">
                 <Wallet className="h-4 w-4" />
-                <span>Gérer le portefeuille</span>
+                <span>{isMobile ? "Portefeuille" : "Gérer le portefeuille"}</span>
               </Link>
             </Button>
           </div>
         </div>
         
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid grid-cols-4 mb-8">
-            <TabsTrigger value="general">Vue Générale</TabsTrigger>
-            <TabsTrigger value="strategy">Analyse Stratégies</TabsTrigger>
-            <TabsTrigger value="performance">Métriques Performance</TabsTrigger>
-            <TabsTrigger value="advanced" disabled={!isPremium} className="relative">
-              Analyses Avancées
-              {!isPremium && (
-                <Lock className="h-3 w-3 ml-1 text-yellow-500" />
-              )}
-            </TabsTrigger>
+          <TabsList className={`grid ${isMobile ? "grid-cols-2 gap-1 mb-4" : "grid-cols-4 mb-8"} w-full`}>
+            <TabsTrigger value="general" className="text-xs md:text-sm">Vue Générale</TabsTrigger>
+            <TabsTrigger value="strategy" className="text-xs md:text-sm">Analyse Stratégies</TabsTrigger>
+            {!isMobile && <TabsTrigger value="performance" className="text-xs md:text-sm">Métriques Performance</TabsTrigger>}
+            {!isMobile && (
+              <TabsTrigger value="advanced" disabled={!isPremium} className="text-xs md:text-sm relative">
+                Analyses Avancées
+                {!isPremium && (
+                  <Lock className="h-3 w-3 ml-1 text-yellow-500" />
+                )}
+              </TabsTrigger>
+            )}
           </TabsList>
           
-          <TabsContent value="general" className="mt-6">
+          {isMobile && (
+            <TabsList className="grid grid-cols-2 gap-1 mb-4 w-full mt-1">
+              <TabsTrigger value="performance" className="text-xs md:text-sm">Métriques Performance</TabsTrigger>
+              <TabsTrigger value="advanced" disabled={!isPremium} className="text-xs md:text-sm relative">
+                Analyses Avancées
+                {!isPremium && (
+                  <Lock className="h-3 w-3 ml-1 text-yellow-500" />
+                )}
+              </TabsTrigger>
+            </TabsList>
+          )}
+          
+          <TabsContent value="general" className="mt-4 md:mt-6">
             {isLoading ? (
-              <div className="flex justify-center items-center py-24">
-                <div className="animate-spin h-8 w-8 border-4 border-primary border-r-transparent rounded-full"></div>
+              <div className="flex justify-center items-center py-16 md:py-24">
+                <div className="animate-spin h-6 w-6 md:h-8 md:w-8 border-4 border-primary border-r-transparent rounded-full"></div>
               </div>
             ) : hasData ? (
               <AnalyticsView />
@@ -107,10 +123,10 @@ const Statistics = () => {
             )}
           </TabsContent>
           
-          <TabsContent value="strategy" className="mt-6">
+          <TabsContent value="strategy" className="mt-4 md:mt-6">
             {isLoading ? (
-              <div className="flex justify-center items-center py-24">
-                <div className="animate-spin h-8 w-8 border-4 border-primary border-r-transparent rounded-full"></div>
+              <div className="flex justify-center items-center py-16 md:py-24">
+                <div className="animate-spin h-6 w-6 md:h-8 md:w-8 border-4 border-primary border-r-transparent rounded-full"></div>
               </div>
             ) : hasData ? (
               <StrategyAnalysis />
@@ -119,10 +135,10 @@ const Statistics = () => {
             )}
           </TabsContent>
           
-          <TabsContent value="performance" className="mt-6">
+          <TabsContent value="performance" className="mt-4 md:mt-6">
             {isLoading ? (
-              <div className="flex justify-center items-center py-24">
-                <div className="animate-spin h-8 w-8 border-4 border-primary border-r-transparent rounded-full"></div>
+              <div className="flex justify-center items-center py-16 md:py-24">
+                <div className="animate-spin h-6 w-6 md:h-8 md:w-8 border-4 border-primary border-r-transparent rounded-full"></div>
               </div>
             ) : hasData ? (
               <PerformanceMetrics />
@@ -131,11 +147,11 @@ const Statistics = () => {
             )}
           </TabsContent>
           
-          <TabsContent value="advanced" className="mt-6">
+          <TabsContent value="advanced" className="mt-4 md:mt-6">
             {isPremium ? (
               isLoading ? (
-                <div className="flex justify-center items-center py-24">
-                  <div className="animate-spin h-8 w-8 border-4 border-primary border-r-transparent rounded-full"></div>
+                <div className="flex justify-center items-center py-16 md:py-24">
+                  <div className="animate-spin h-6 w-6 md:h-8 md:w-8 border-4 border-primary border-r-transparent rounded-full"></div>
                 </div>
               ) : hasData ? (
                 <AdvancedAnalytics />
@@ -143,13 +159,13 @@ const Statistics = () => {
                 <NoDataView tabName="les analyses avancées" />
               )
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-muted-foreground/30 rounded-lg">
-                <Lock className="h-12 w-12 text-yellow-500 mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Fonctionnalité Premium</h3>
-                <p className="text-muted-foreground text-center mb-6 max-w-md">
+              <div className="flex flex-col items-center justify-center py-8 md:py-12 px-4 border-2 border-dashed border-muted-foreground/30 rounded-lg">
+                <Lock className="h-8 w-8 md:h-12 md:w-12 text-yellow-500 mb-3 md:mb-4" />
+                <h3 className="text-lg md:text-xl font-semibold mb-2 text-center">Fonctionnalité Premium</h3>
+                <p className="text-muted-foreground text-center mb-4 md:mb-6 max-w-md text-sm md:text-base">
                   L'analyse avancée est réservée aux utilisateurs premium. Passez à l'offre premium pour accéder à des métriques et analyses approfondies.
                 </p>
-                <Button asChild>
+                <Button asChild size={isMobile ? "sm" : "default"} className="w-full md:w-auto">
                   <Link to="/premium">Passer au Premium</Link>
                 </Button>
               </div>
