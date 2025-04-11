@@ -96,7 +96,10 @@ export function AppLayout({ children }: AppLayoutProps) {
           Trades Tracker
         </div>
         
-        <div className="w-10"></div> {/* Espace pour équilibrer le layout */}
+        {/* Nous rendons maintenant le Header mobile ici */}
+        <div className="flex items-center">
+          <Header mobileMode={true} />
+        </div>
       </div>
       
       {/* Overlay pour fermer le menu quand cliqué à l'extérieur sur mobile */}

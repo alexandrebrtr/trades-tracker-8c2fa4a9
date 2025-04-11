@@ -13,7 +13,8 @@ import {
   Settings, 
   Home, 
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -172,6 +173,21 @@ export function Sidebar() {
                 aria-expanded={!collapsed}
               >
                 {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+              </Button>
+            </div>
+          )}
+
+          {/* Bouton de fermeture pour mobile */}
+          {isMobile && (
+            <div className="flex justify-end px-3 py-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleSidebar}
+                className="h-8 w-8 focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label="Fermer le menu"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
               </Button>
             </div>
           )}
