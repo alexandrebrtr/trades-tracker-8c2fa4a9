@@ -74,7 +74,7 @@ export default function Contact() {
               <CardContent>
                 <div className="flex flex-wrap gap-4">
                   <Button variant="outline" size="icon" asChild>
-                    <a href="https://facebook.com/Alexandre Tracker" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                    <a href="https://www.facebook.com/profile.php?id=61574739156962" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                       <Facebook className="h-5 w-5" />
                     </a>
                   </Button>
