@@ -8,12 +8,12 @@ import {
   PlusCircle, 
   BarChart3, 
   Book, 
-  Menu,
-  X,
-  Wallet,
-  Contact,
-  Settings,
-  Home
+  Wallet, 
+  Contact, 
+  Settings, 
+  Home, 
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -35,50 +35,26 @@ export function Sidebar() {
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { isPremium } = usePremium();
-  const [isVisible, setIsVisible] = useState(true);
   
   useEffect(() => {
-    // Initialize sidebar state
+    // Initialisation de l'état de la sidebar
     const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState) {
       setCollapsed(JSON.parse(storedState));
     } else {
       setCollapsed(isMobile);
     }
-  }, [isMobile]);
 
-  // Amélioration du comportement de scroll sur mobile
-  useEffect(() => {
-    if (!isMobile) return;
-    
-    let lastScrollY = window.scrollY;
-    let lastScrollTime = Date.now();
-    let ticking = false;
-    
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const currentTime = Date.now();
-      
-      if (!ticking && currentTime - lastScrollTime > 100) {
-        window.requestAnimationFrame(() => {
-          // Masquer sidebar quand on scrolle vers le bas, montrer quand on scrolle vers le haut
-          if (currentScrollY > lastScrollY + 10) {
-            setIsVisible(false);
-          } else if (currentScrollY < lastScrollY - 10) {
-            setIsVisible(true);
-          }
-          
-          lastScrollY = currentScrollY;
-          lastScrollTime = currentTime;
-          ticking = false;
-        });
-        
-        ticking = true;
-      }
+    // Écouter les événements de basculement externe de la sidebar
+    const handleSidebarToggleEvent = (e: CustomEvent) => {
+      setCollapsed(e.detail.collapsed);
     };
     
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('sidebar-toggle', handleSidebarToggleEvent as EventListener);
+    
+    return () => {
+      window.removeEventListener('sidebar-toggle', handleSidebarToggleEvent as EventListener);
+    };
   }, [isMobile]);
 
   const toggleSidebar = () => {
@@ -99,17 +75,6 @@ export function Sidebar() {
       toggleSidebar();
     }
   };
-
-  // Ne pas afficher la sidebar sur certaines routes mobiles
-  if (isMobile && !location.pathname.includes('/dashboard') && 
-      !location.pathname.includes('/statistics') && 
-      !location.pathname.includes('/trade-entry') && 
-      !location.pathname.includes('/calendar') && 
-      !location.pathname.includes('/journal') && 
-      !location.pathname.includes('/portfolio') && 
-      !location.pathname.includes('/settings')) {
-    return null;
-  }
 
   const navItems: NavItem[] = [
     {
@@ -161,64 +126,58 @@ export function Sidebar() {
     }
   ];
 
-  // Montrer tous les éléments de navigation
+  // Filtrer les éléments de navigation en fonction des autorisations
   const filteredNavItems = navItems;
 
-  // Déterminer les classes CSS en fonction de l'état mobile et de la visibilité
+  // Déterminer les classes CSS en fonction de l'état mobile
   const sidebarClasses = cn(
     'fixed top-0 left-0 z-40 h-screen transition-all duration-300 bg-sidebar border-r border-sidebar-border',
-    collapsed ? "w-0 md:w-20 -translate-x-full md:translate-x-0" : "w-64",
-    isMobile && !isVisible ? "-translate-y-full" : "translate-y-0",
-    // Overlay en mode mobile quand sidebar est ouverte
-    isMobile && !collapsed ? "shadow-xl" : ""
+    collapsed ? "w-0 md:w-16" : "w-64",
+    isMobile && collapsed ? "-translate-x-full" : "translate-x-0",
+    isMobile ? "pt-14" : "pt-0" // Espace pour le header mobile
   );
 
-  return (
-    <>
-      {/* Overlay sombre en arrière-plan lors de l'ouverture sidebar mobile */}
-      {isMobile && !collapsed && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-30 transition-opacity duration-300"
-          onClick={toggleSidebar}
-          aria-hidden="true"
-        />
-      )}
-      
-      <aside 
-        className={sidebarClasses} 
-        id="sidebar" 
-        role="navigation" 
-        aria-label="Navigation principale"
-      >
-        <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between px-4 py-5 border-b border-sidebar-border">
-            {!collapsed && (
-              <Link 
-                to="/" 
-                className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
-                aria-label="Accueil"
-              >
-                <span className="text-primary font-bold text-xl">Trades Tracker</span>
-              </Link>
-            )}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={toggleSidebar}
-              className={cn(
-                collapsed ? "w-full" : "ml-auto",
-                isMobile && "p-2 h-auto",
-                "focus-visible:ring-2 focus-visible:ring-primary"
-              )}
-              aria-label={collapsed ? "Développer le menu" : "Réduire le menu"}
-              aria-expanded={!collapsed}
-            >
-              {collapsed ? <Menu className="h-5 w-5" aria-hidden="true" /> : <X className="h-5 w-5" aria-hidden="true" />}
-            </Button>
-          </div>
+  // N'affiche pas le contenu si complètement fermé sur mobile
+  const contentVisible = !(isMobile && collapsed);
 
-          <nav className="flex-1 py-4 overflow-y-auto scrollbar-thin">
-            <ul className="space-y-2 px-2">
+  return (
+    <aside 
+      className={sidebarClasses} 
+      id="sidebar" 
+      role="navigation" 
+      aria-label="Navigation principale"
+    >
+      {contentVisible && (
+        <div className="flex h-full flex-col">
+          {!isMobile && (
+            <div className="flex items-center justify-between px-3 py-3 border-b border-sidebar-border">
+              {!collapsed && (
+                <Link 
+                  to="/" 
+                  className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+                  aria-label="Accueil"
+                >
+                  <span className="text-primary font-bold text-lg truncate">Trades Tracker</span>
+                </Link>
+              )}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={toggleSidebar}
+                className={cn(
+                  collapsed ? "w-full" : "ml-auto",
+                  "h-8 w-8 focus-visible:ring-2 focus-visible:ring-primary"
+                )}
+                aria-label={collapsed ? "Développer le menu" : "Réduire le menu"}
+                aria-expanded={!collapsed}
+              >
+                {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+              </Button>
+            </div>
+          )}
+
+          <nav className="flex-1 py-3 overflow-y-auto scrollbar-thin">
+            <ul className="space-y-1 px-2">
               {filteredNavItems.map((item) => (
                 <SidebarNavItem 
                   key={item.path}
@@ -236,7 +195,7 @@ export function Sidebar() {
 
           <SidebarUserSection collapsed={collapsed} onUserAction={handleNavItemClick} />
         </div>
-      </aside>
-    </>
+      )}
+    </aside>
   );
 }

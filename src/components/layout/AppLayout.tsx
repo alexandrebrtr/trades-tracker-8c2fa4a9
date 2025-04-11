@@ -6,10 +6,10 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Lazily load the Sidebar component to improve initial load performance
+// Chargement paresseux du Sidebar pour améliorer les performances initiales
 const Sidebar = lazy(() => import('../navigation/Sidebar').then(mod => ({ default: mod.Sidebar })));
 
 interface AppLayoutProps {
@@ -23,16 +23,16 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   
   useEffect(() => {
-    // Check sidebar state from localStorage on mount
+    // Vérification de l'état de la sidebar depuis localStorage
     const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState) {
       setSidebarCollapsed(JSON.parse(storedState));
     } else {
-      // Default to collapsed on mobile
+      // Par défaut, sidebar fermée sur mobile
       setSidebarCollapsed(isMobile);
     }
     
-    // Listen for sidebar toggle events from Sidebar component
+    // Écouter les événements de basculement de sidebar
     const handleSidebarToggle = (e: CustomEvent) => {
       setSidebarCollapsed(e.detail.collapsed);
       if (isMobile) {
@@ -47,38 +47,65 @@ export function AppLayout({ children }: AppLayoutProps) {
     };
   }, [isMobile]);
 
-  // Handle mobile menu toggle
+  // Gestion du basculement du menu mobile
   const toggleMobileMenu = () => {
-    setShowMobileMenu(!showMobileMenu);
-    // Also update the sidebar state to reflect this
-    const newCollapsedState = showMobileMenu;
-    setSidebarCollapsed(newCollapsedState);
+    const newMenuState = !showMobileMenu;
+    setShowMobileMenu(newMenuState);
     
-    // Communicate the change to the Sidebar component
-    localStorage.setItem('sidebarCollapsed', JSON.stringify(newCollapsedState));
+    // Mettre à jour l'état de la sidebar pour refléter ce changement
+    setSidebarCollapsed(!newMenuState);
+    
+    // Communiquer le changement au composant Sidebar
+    localStorage.setItem('sidebarCollapsed', JSON.stringify(!newMenuState));
     
     const event = new CustomEvent('sidebar-toggle', { 
-      detail: { collapsed: newCollapsedState } 
+      detail: { collapsed: !newMenuState } 
     });
     window.dispatchEvent(event);
   };
 
+  // Fonction pour fermer le menu si cliqué en dehors
+  const handleOverlayClick = () => {
+    if (showMobileMenu && isMobile) {
+      toggleMobileMenu();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      {/* Mobile menu toggle button - only visible on mobile */}
-      {isMobile && (
+      {/* Bouton de basculement du menu mobile - visible uniquement sur mobile */}
+      <div className="fixed top-0 left-0 right-0 flex justify-between items-center z-40 px-4 h-14 bg-background/95 backdrop-blur-sm border-b md:hidden">
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 md:hidden focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-10 w-10 focus-visible:ring-2 focus-visible:ring-primary"
           onClick={toggleMobileMenu}
           aria-label="Toggle menu"
           aria-expanded={showMobileMenu}
           aria-controls="sidebar"
         >
-          <Menu className="h-5 w-5" aria-hidden="true" />
+          {showMobileMenu ? (
+            <X className="h-5 w-5" aria-hidden="true" />
+          ) : (
+            <Menu className="h-5 w-5" aria-hidden="true" />
+          )}
           <span className="sr-only">Toggle menu</span>
         </Button>
+        
+        <div className="text-primary font-semibold">
+          Trades Tracker
+        </div>
+        
+        <div className="w-10"></div> {/* Espace pour équilibrer le layout */}
+      </div>
+      
+      {/* Overlay pour fermer le menu quand cliqué à l'extérieur sur mobile */}
+      {showMobileMenu && isMobile && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 md:hidden" 
+          onClick={handleOverlayClick}
+          aria-hidden="true"
+        />
       )}
       
       <Suspense fallback={null}>
@@ -87,18 +114,18 @@ export function AppLayout({ children }: AppLayoutProps) {
       
       <main 
         className={cn(
-          "transition-all duration-300 pt-16 md:pt-0",
-          sidebarCollapsed ? "ml-0 md:ml-20" : "ml-0 md:ml-64",
-          isMobile && "pt-14", // Reduce top padding on mobile
+          "transition-all duration-300",
+          sidebarCollapsed ? "ml-0 md:ml-16" : "ml-0 md:ml-64",
+          isMobile ? "pt-14" : "pt-0", // Ajustement de l'espace en haut pour mobile
           isMobile ? "ease-in-out" : ""
         )}
         id="main-content"
         role="main"
         aria-label="Contenu principal"
       >
-        <Header />
+        {!isMobile && <Header />}
         <div className={cn(
-          "container py-3 md:py-6 px-3 md:px-4 max-w-7xl mx-auto",
+          "container py-3 md:py-6 px-3 md:px-6 max-w-7xl mx-auto",
           isMobile && "px-4 py-4"
         )}>
           {children}

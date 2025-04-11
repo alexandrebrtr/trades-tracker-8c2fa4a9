@@ -14,11 +14,11 @@ export const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({
 }) => {
   const isMobile = useIsMobile();
   
-  // Available periods
+  // Périodes disponibles
   const periods = ['1W', '1M', '3M', '6M', '1Y', 'ALL'] as const;
   
   const periodLabels = {
-    '1W': '1 Semaine',
+    '1W': '1 Sem',
     '1M': '1 Mois',
     '3M': '3 Mois',
     '6M': '6 Mois',
@@ -26,7 +26,7 @@ export const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({
     'ALL': 'Tout'
   };
   
-  // If mobile, use ScrollArea for horizontal scrolling
+  // Si mobile, utiliser ScrollArea pour défilement horizontal
   return isMobile ? (
     <div 
       className="w-full" 
@@ -34,11 +34,11 @@ export const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({
       aria-label="Sélection de période"
     >
       <ScrollArea className="w-full max-w-[calc(100vw-3rem)]">
-        <div className="flex space-x-3 pr-4">
+        <div className="flex space-x-2 pr-4">
           {periods.map((period) => (
             <button
               key={period}
-              className={`px-3 py-2 text-sm rounded-md transition-colors whitespace-nowrap min-w-[48px] min-h-[44px] ${
+              className={`px-3 py-2 text-xs rounded-md transition-colors whitespace-nowrap min-w-[40px] ${
                 selectedTimeframe === period 
                   ? 'bg-primary text-primary-foreground font-medium' 
                   : 'bg-secondary text-foreground hover:bg-secondary/70'

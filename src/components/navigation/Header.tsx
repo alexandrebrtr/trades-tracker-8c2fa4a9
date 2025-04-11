@@ -20,39 +20,37 @@ export function Header() {
     navigate('/login');
   };
 
-  // Calculate display name - prioritize username from profile
+  // Calculer le nom à afficher - priorité au nom d'utilisateur du profil
   const displayName = profile?.username || (user?.email ? user.email.split('@')[0] : 'Utilisateur');
 
   return (
     <header 
-      className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur-sm px-4 md:px-6" 
+      className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background/95 backdrop-blur-sm px-4" 
       role="banner"
       aria-label="En-tête du site"
     >
-      <div className="flex flex-1 items-center justify-end gap-2 sm:gap-4">
+      <div className="flex flex-1 items-center justify-end gap-2">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={toggleTheme} 
           aria-label={theme === 'dark' ? "Passer au mode clair" : "Passer au mode sombre"}
-          className="focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-8 w-8 focus-visible:ring-2 focus-visible:ring-primary"
         >
-          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
         
-        <div className={isMobile ? "hidden sm:block" : ""}>
-          <HeaderBalance />
-        </div>
+        {!isMobile && <HeaderBalance />}
         
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="ghost" 
-                className="relative h-9 w-9 rounded-full focus-visible:ring-2 focus-visible:ring-primary" 
+                className="relative h-8 w-8 rounded-full focus-visible:ring-2 focus-visible:ring-primary" 
                 aria-label="Menu utilisateur"
               >
-                <Avatar className="h-9 w-9">
+                <Avatar className="h-8 w-8">
                   <AvatarImage src={profile?.avatar_url || ''} alt={`Avatar de ${displayName}`} />
                   <AvatarFallback aria-hidden="true">
                     {displayName.charAt(0).toUpperCase()}
@@ -87,14 +85,18 @@ export function Header() {
                 <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
                 Déconnexion
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <div className="p-2 sm:hidden">
-                <HeaderBalance />
-              </div>
+              {isMobile && (
+                <>
+                  <DropdownMenuSeparator />
+                  <div className="p-2">
+                    <HeaderBalance />
+                  </div>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button asChild size="sm" className="focus-visible:ring-2 focus-visible:ring-primary">
+          <Button asChild size="sm" className="focus-visible:ring-2 focus-visible:ring-primary h-8">
             <Link to="/login">
               <LogIn className="mr-2 h-4 w-4" aria-hidden="true" />
               Connexion

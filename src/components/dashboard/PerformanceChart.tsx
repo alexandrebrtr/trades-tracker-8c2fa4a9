@@ -19,7 +19,7 @@ export function PerformanceChart({ className, timeframe = '1M', userId }: Perfor
 
   return (
     <div className={`glass-card ${className}`}>
-      <div className={`${isMobile ? 'flex flex-col space-y-3' : 'flex justify-between'} mb-6`}>
+      <div className={`${isMobile ? 'flex flex-col space-y-3' : 'flex justify-between items-center'} mb-6`}>
         <h2 className="text-lg font-semibold">Performance du compte</h2>
         <TimeframeSelector 
           selectedTimeframe={selectedTimeframe} 
@@ -27,11 +27,11 @@ export function PerformanceChart({ className, timeframe = '1M', userId }: Perfor
         />
       </div>
       
-      <div className="h-64 overflow-hidden">
+      <div className={`${isMobile ? 'h-52' : 'h-64'} overflow-hidden`}>
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <span className="ml-2 text-muted-foreground">Chargement des données...</span>
+            <span className="ml-2 text-muted-foreground">Chargement...</span>
           </div>
         ) : (
           <PerformanceAreaChart data={data} isPositive={isPositive} />

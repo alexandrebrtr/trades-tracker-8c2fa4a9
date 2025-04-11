@@ -30,29 +30,29 @@ export function SidebarNavItem({
   const isMobile = useIsMobile();
   
   const handleClick = () => {
-    if (isMobile && onItemClick) {
+    if (onItemClick) {
       onItemClick();
     }
   };
   
-  // Item content with appropriate ARIA attributes
+  // Contenu de l'élément avec attributs ARIA appropriés
   const itemContent = (
     <div className={cn(
-      'flex items-center gap-2 rounded-md px-3 py-2.5', 
+      'flex items-center gap-2 rounded-md px-3 py-2', 
       isActive 
         ? 'bg-primary text-primary-foreground' 
-        : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-      isMobile && !collapsed && 'py-3 text-base',
+        : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+      isMobile && !collapsed && 'py-2.5 text-base',
       'focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none'
     )}>
       <span className="flex-shrink-0" aria-hidden="true">{icon}</span>
       {!collapsed && (
         <div className="flex items-center justify-between w-full">
-          <span className={cn("text-sm font-medium", isMobile && "text-base")}>
+          <span className={cn("text-sm font-medium truncate", isMobile && "text-base")}>
             {name}
           </span>
           {isPremiumFeature && !userHasPremium && (
-            <Lock className="h-3.5 w-3.5 text-yellow-500" aria-label="Fonction premium" />
+            <Lock className="h-3.5 w-3.5 text-yellow-500 flex-shrink-0" aria-label="Fonction premium" />
           )}
         </div>
       )}
@@ -63,7 +63,7 @@ export function SidebarNavItem({
     ? "Fonctionnalité premium"
     : name;
     
-  // Pour mobile, pas de tooltips et ajout du gestionnaire de clic
+  // Pour mobile ou quand la sidebar n'est pas repliée, pas besoin de tooltips
   if (isMobile || !collapsed) {
     return (
       <li>
@@ -79,6 +79,7 @@ export function SidebarNavItem({
     );
   }
 
+  // Version desktop avec tooltip quand la sidebar est repliée
   return (
     <li>
       <TooltipProvider>
@@ -88,11 +89,12 @@ export function SidebarNavItem({
               to={path}
               aria-label={name}
               aria-current={isActive ? 'page' : undefined}
+              onClick={handleClick}
             >
               {itemContent}
             </Link>
           </TooltipTrigger>
-          <TooltipContent side="right">
+          <TooltipContent side="right" className="bg-popover text-popover-foreground border border-border">
             <p>{tooltipContent}</p>
           </TooltipContent>
         </Tooltip>

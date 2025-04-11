@@ -18,15 +18,15 @@ export function JournalHeader({ dateRange, setDateRange, setIsFilterDialogOpen }
   const isMobile = useIsMobile();
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <h1 className="text-3xl font-bold tracking-tight">Journal de Trading</h1>
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Journal de Trading</h1>
       <div className={`flex ${isMobile ? 'flex-col space-y-2 w-full' : 'items-center space-x-2'}`}>
         <Popover>
           <PopoverTrigger asChild>
             <Button 
               variant="outline" 
               size={isMobile ? "default" : "sm"}
-              className={isMobile ? "w-full min-h-[44px] justify-start" : ""}
+              className={isMobile ? "w-full justify-start" : ""}
               aria-label="Sélectionner une plage de dates"
             >
               <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -76,7 +76,7 @@ export function JournalHeader({ dateRange, setDateRange, setIsFilterDialogOpen }
           variant="outline" 
           size={isMobile ? "default" : "sm"}
           onClick={() => setIsFilterDialogOpen(true)}
-          className={isMobile ? "w-full min-h-[44px] justify-start" : ""}
+          className={isMobile ? "w-full justify-start" : ""}
           aria-label="Ouvrir les filtres"
         >
           <Filter className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -86,7 +86,7 @@ export function JournalHeader({ dateRange, setDateRange, setIsFilterDialogOpen }
         <Button 
           size={isMobile ? "default" : "sm"} 
           asChild
-          className={isMobile ? "w-full min-h-[44px] justify-start" : ""}
+          className={isMobile ? "w-full justify-start" : ""}
         >
           <Link to="/trade-entry" aria-label="Ajouter une nouvelle entrée de trade">
             <PlusCircle className="mr-2 h-4 w-4" aria-hidden="true" />

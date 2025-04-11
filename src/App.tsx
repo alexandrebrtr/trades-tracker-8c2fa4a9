@@ -3,28 +3,55 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
+  useLocation
 } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useAuth } from "./context/AuthContext";
-import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import Profile from "./pages/Profile";
-import Journal from "./pages/Journal";
-import TradeEntry from "./pages/TradeEntry";
-import Portfolio from "./pages/Portfolio";
-import Statistics from "./pages/Statistics";
-import Calendar from "./pages/Calendar";
-import Contact from "./pages/Contact";
-import Premium from "./pages/Premium";
-import Payment from "./pages/Payment";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
-import PremiumAnalytics from "./pages/PremiumAnalytics";
-import LandingPage from "./pages/LandingPage";
+import { Loader2 } from 'lucide-react';
+
+// Chargement des pages avec lazy loading pour améliorer les performances
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Journal = lazy(() => import("./pages/Journal"));
+const TradeEntry = lazy(() => import("./pages/TradeEntry"));
+const Portfolio = lazy(() => import("./pages/Portfolio"));
+const Statistics = lazy(() => import("./pages/Statistics"));
+const Calendar = lazy(() => import("./pages/Calendar"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Premium = lazy(() => import("./pages/Premium"));
+const Payment = lazy(() => import("./pages/Payment"));
+const Settings = lazy(() => import("./pages/Settings"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const PremiumAnalytics = lazy(() => import("./pages/PremiumAnalytics"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+
+// Composant de chargement
+function LoadingSpinner() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex flex-col items-center space-y-4">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="text-lg font-medium text-muted-foreground">Chargement...</p>
+      </div>
+    </div>
+  );
+}
+
+// Composant pour faire défiler vers le haut lors des changements de page
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 function App() {
   const { user, isLoading } = useAuth();
@@ -34,32 +61,39 @@ function App() {
     setIsLoggedIn(!!user);
   }, [user]);
 
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <div className="app">
       <Router>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/portfolio" element={<Portfolio />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/contact" element={<Contact />} />
-          
-          {/* Protected routes */}
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
-          <Route path="/trade/:id" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
-          <Route path="/trade-entry" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
-          <Route path="/calendar" element={<ProtectedRoute requirePremium={true}><Calendar /></ProtectedRoute>} />
-          <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
-          <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/statistics" element={<ProtectedRoute requirePremium={true}><Statistics /></ProtectedRoute>} />
-          <Route path="/premium-analytics" element={<ProtectedRoute requirePremium={true}><PremiumAnalytics /></ProtectedRoute>} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <ScrollToTop />
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            {/* Routes publiques */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/contact" element={<Contact />} />
+            
+            {/* Routes protégées */}
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
+            <Route path="/trade/:id" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
+            <Route path="/trade-entry" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
+            <Route path="/calendar" element={<ProtectedRoute requirePremium={true}><Calendar /></ProtectedRoute>} />
+            <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
+            <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/statistics" element={<ProtectedRoute requirePremium={true}><Statistics /></ProtectedRoute>} />
+            <Route path="/premium-analytics" element={<ProtectedRoute requirePremium={true}><PremiumAnalytics /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </Router>
       <Toaster />
     </div>
