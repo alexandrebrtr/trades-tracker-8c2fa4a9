@@ -193,7 +193,7 @@ export function Sidebar() {
           )}
 
           <nav className="flex-1 py-3 overflow-y-auto scrollbar-thin">
-            <ul className="space-y-1 px-2">
+            <ul className="space-y-3 px-2">
               {filteredNavItems.map((item) => (
                 <SidebarNavItem 
                   key={item.path}
