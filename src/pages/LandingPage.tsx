@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -12,7 +11,10 @@ import {
   ExternalLink,
   ArrowRight,
   AlertTriangle,
-  Info
+  Info,
+  Play,
+  Video,
+  AspectRatio
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -80,6 +82,10 @@ export default function LandingPage() {
     visible: { opacity: 1, y: 0 }
   };
 
+  const handlePlayVideo = () => {
+    setIsVideoPlaying(true);
+  };
+
   return (
     <AppLayout>
       <div className="flex flex-col">
@@ -122,43 +128,42 @@ export default function LandingPage() {
               </motion.div>
             </div>
             
-            {/* Dashboard Preview */}
+            {/* Video Section - Amélioré */}
             <motion.div 
-              className="relative mx-auto max-w-5xl rounded-xl border shadow-2xl overflow-hidden bg-black/5 backdrop-blur mt-8 md:mt-12"
+              className="relative mx-auto max-w-5xl rounded-xl border shadow-2xl overflow-hidden mt-8 md:mt-12"
               initial="hidden"
               animate="visible"
               variants={fadeIn}
               transition={{ duration: 0.5, delay: 0.6 }}
             >
-              <div 
-                className="aspect-[16/9] bg-cover bg-center bg-no-repeat"
-                style={{ 
-                  backgroundImage: !isVideoPlaying ? 
-                    "url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=2070&auto=format&fit=crop')" : 
-                    "none"
-                }}
-                onClick={() => setIsVideoPlaying(true)}
-              >
-                {isVideoPlaying && (
+              <AspectRatio ratio={16/9} className="bg-black">
+                {isVideoPlaying ? (
                   <iframe 
                     width="100%" 
                     height="100%" 
-                    src="https://youtu.be/0f6Y863mHcY" 
-                    title="Dashboard Preview" 
+                    src="https://www.youtube.com/embed/0f6Y863mHcY?autoplay=1" 
+                    title="Présentation de Trades Tracker" 
                     frameBorder="0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                     allowFullScreen
+                    className="absolute inset-0 w-full h-full"
                   ></iframe>
-                )}
-                {!isVideoPlaying && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Button variant="default" size="lg" className="rounded-full">
-                      <span className="mr-2">Voir la démo</span>
-                      <ExternalLink className="h-4 w-4" />
+                ) : (
+                  <div className="absolute inset-0 bg-cover bg-center flex items-center justify-center" 
+                       style={{ backgroundImage: "url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=2070&auto=format&fit=crop')" }}>
+                    <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+                    <Button 
+                      variant="default" 
+                      size="lg" 
+                      className="relative z-10 rounded-full px-8 hover:scale-105 transition-transform duration-300 flex items-center gap-2"
+                      onClick={handlePlayVideo}
+                    >
+                      <Play className="h-6 w-6" />
+                      <span>Regarder la vidéo</span>
                     </Button>
                   </div>
                 )}
-              </div>
+              </AspectRatio>
             </motion.div>
           </div>
         </section>
