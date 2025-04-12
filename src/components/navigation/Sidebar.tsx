@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -38,7 +37,6 @@ export function Sidebar() {
   const { isPremium } = usePremium();
   
   useEffect(() => {
-    // Initialisation de l'état de la sidebar
     const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState) {
       setCollapsed(JSON.parse(storedState));
@@ -46,7 +44,6 @@ export function Sidebar() {
       setCollapsed(isMobile);
     }
 
-    // Écouter les événements de basculement externe de la sidebar
     const handleSidebarToggleEvent = (e: CustomEvent) => {
       setCollapsed(e.detail.collapsed);
     };
@@ -70,7 +67,6 @@ export function Sidebar() {
     window.dispatchEvent(event);
   };
 
-  // Callback pour fermer la sidebar sur mobile après clic sur un item
   const handleNavItemClick = () => {
     if (isMobile && !collapsed) {
       toggleSidebar();
@@ -127,18 +123,15 @@ export function Sidebar() {
     }
   ];
 
-  // Filtrer les éléments de navigation en fonction des autorisations
   const filteredNavItems = navItems;
 
-  // Déterminer les classes CSS en fonction de l'état mobile
   const sidebarClasses = cn(
     'fixed top-0 left-0 z-40 h-screen transition-all duration-300 bg-sidebar border-r border-sidebar-border',
     collapsed ? "w-0 md:w-16" : "w-64",
     isMobile && collapsed ? "-translate-x-full" : "translate-x-0",
-    isMobile ? "pt-14" : "pt-0" // Espace pour le header mobile
+    isMobile ? "pt-14" : "pt-0"
   );
 
-  // N'affiche pas le contenu si complètement fermé sur mobile
   const contentVisible = !(isMobile && collapsed);
 
   return (
@@ -177,7 +170,6 @@ export function Sidebar() {
             </div>
           )}
 
-          {/* Bouton de fermeture amélioré pour mobile */}
           {isMobile && (
             <div className="sticky top-0 flex justify-end px-3 py-2 bg-background/80 backdrop-blur-sm z-10 border-b border-sidebar-border">
               <Button
@@ -192,7 +184,7 @@ export function Sidebar() {
             </div>
           )}
 
-          <nav className="flex-1 py-3 overflow-y-auto scrollbar-thin">
+          <nav className="flex-1 py-4 overflow-y-auto scrollbar-thin">
             <ul className="space-y-3 px-2">
               {filteredNavItems.map((item) => (
                 <SidebarNavItem 

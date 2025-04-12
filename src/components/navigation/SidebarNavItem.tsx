@@ -38,17 +38,21 @@ export function SidebarNavItem({
   // Contenu de l'élément avec attributs ARIA appropriés
   const itemContent = (
     <div className={cn(
-      'flex items-center gap-2 rounded-md px-3 py-2', 
+      'flex items-center gap-2 rounded-md px-3 py-2.5', // Slightly increased vertical padding
       isActive 
         ? 'bg-primary text-primary-foreground' 
         : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-      isMobile && !collapsed && 'py-2.5 text-base',
+      isMobile && !collapsed && 'py-3 text-base', // Increased padding for mobile
       'focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none'
     )}>
-      <span className="flex-shrink-0" aria-hidden="true">{icon}</span>
+      <span className="flex-shrink-0 w-5 h-5" aria-hidden="true">{icon}</span>
       {!collapsed && (
         <div className="flex items-center justify-between w-full">
-          <span className={cn("text-sm font-medium truncate", isMobile && "text-base")}>
+          <span className={cn(
+            "text-sm font-medium truncate", 
+            isMobile && "text-base",
+            "ml-2" // Added left margin for better spacing
+          )}>
             {name}
           </span>
           {isPremiumFeature && !userHasPremium && (
@@ -102,3 +106,4 @@ export function SidebarNavItem({
     </li>
   );
 }
+
