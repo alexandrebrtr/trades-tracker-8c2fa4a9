@@ -80,7 +80,7 @@ function calculateDailyPnL(trades: any[]): number {
       tradeDate.setHours(0, 0, 0, 0);
       return tradeDate.getTime() === today.getTime();
     })
-    .reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+    .reduce((sum, trade) => sum + (Number(trade.pnl) || 0), 0);
 }
 
 // Fonction pour calculer les gains annuels
@@ -94,12 +94,16 @@ function calculateYearlyPnL(trades: any[]): number {
       const tradeDate = new Date(trade.date);
       return tradeDate.getFullYear() === currentYear;
     })
-    .reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+    .reduce((sum, trade) => sum + (Number(trade.pnl) || 0), 0);
 }
 
 // Fonction pour calculer le total des gains depuis le début
 function calculateTotalGains(trades: any[]): number {
   if (!trades || trades.length === 0) return 0;
   
-  return trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+  return trades.reduce((sum, trade) => {
+    // Ensure trade.pnl is a number and handle any potential invalid values
+    const pnl = Number(trade.pnl);
+    return sum + (isFinite(pnl) ? pnl : 0);
+  }, 0);
 }

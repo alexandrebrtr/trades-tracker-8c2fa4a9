@@ -8,12 +8,15 @@ interface TotalGainsCardProps {
 }
 
 export function TotalGainsCard({ totalGains }: TotalGainsCardProps) {
+  // Ensure totalGains is a finite number to avoid display issues
+  const safeGains = isFinite(totalGains) ? totalGains : 0;
+  
   return (
     <DataCard
       title="Gains totaux"
-      value={formatCurrency(totalGains)}
+      value={formatCurrency(safeGains)}
       icon={<BarChart className="w-4 h-4" />}
-      valueClassName={totalGains >= 0 ? "text-profit" : "text-loss"}
+      valueClassName={safeGains >= 0 ? "text-profit" : "text-loss"}
     />
   );
 }
