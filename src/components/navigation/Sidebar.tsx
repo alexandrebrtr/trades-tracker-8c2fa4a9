@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -153,7 +152,7 @@ export function Sidebar() {
                   aria-label="Accueil"
                 >
                   <img 
-                    src="/lovable-uploads/8805ed74-f29b-43c2-a317-b0c60214c441.png" 
+                    src="/lovable-uploads/95f2c558-bdb2-4458-8406-1bda889fae9f.png" 
                     alt="Trades Tracker Logo" 
                     className={cn(
                       "h-8 w-auto object-contain", 
