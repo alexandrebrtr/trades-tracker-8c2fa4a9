@@ -151,14 +151,7 @@ export function Sidebar() {
                   className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
                   aria-label="Accueil"
                 >
-                  <img 
-                    src="/lovable-uploads/95f2c558-bdb2-4458-8406-1bda889fae9f.png" 
-                    alt="Trades Tracker Logo" 
-                    className={cn(
-                      "h-8 w-auto object-contain", 
-                      collapsed ? "hidden" : "block"
-                    )} 
-                  />
+                  <span className="text-primary font-bold text-lg truncate">Trades Tracker</span>
                 </Link>
               )}
               <Button 
