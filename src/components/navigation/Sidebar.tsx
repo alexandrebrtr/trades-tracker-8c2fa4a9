@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -151,7 +152,14 @@ export function Sidebar() {
                   className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
                   aria-label="Accueil"
                 >
-                  <span className="text-primary font-bold text-lg truncate">Trades Tracker</span>
+                  <img 
+                    src="/lovable-uploads/8805ed74-f29b-43c2-a317-b0c60214c441.png" 
+                    alt="Trades Tracker Logo" 
+                    className={cn(
+                      "h-8 w-auto object-contain", 
+                      collapsed ? "hidden" : "block"
+                    )} 
+                  />
                 </Link>
               )}
               <Button 
