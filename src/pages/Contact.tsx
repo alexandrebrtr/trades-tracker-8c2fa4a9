@@ -78,7 +78,7 @@ export default function Contact() {
                   </Button>
                   <Button variant="outline" size="icon" asChild>
                     <a href="https://twitter.com/trades_track_of" target="_blank" rel="noopener noreferrer" aria-label="X">
-                      <X className="h-5 w-5" />
+                      <Twitter className="h-5 w-5" />
                     </a>
                   </Button>
                   <Button variant="outline" size="icon" asChild>
