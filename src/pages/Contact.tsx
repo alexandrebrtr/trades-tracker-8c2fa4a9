@@ -1,7 +1,6 @@
-
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Phone, MapPin, Globe, Facebook, Twitter, Instagram, MessageCircle } from "lucide-react";
+import { Mail, Phone, MapPin, Globe, Facebook, X, Instagram, MessageCircle } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 
@@ -12,7 +11,6 @@ export default function Contact() {
         <h1 className="text-3xl font-bold mb-6">Contactez-nous</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Coordonnées */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
@@ -79,8 +77,8 @@ export default function Contact() {
                     </a>
                   </Button>
                   <Button variant="outline" size="icon" asChild>
-                    <a href="https://twitter.com/trades_track_of" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                      <Twitter className="h-5 w-5" />
+                    <a href="https://twitter.com/trades_track_of" target="_blank" rel="noopener noreferrer" aria-label="X">
+                      <X className="h-5 w-5" />
                     </a>
                   </Button>
                   <Button variant="outline" size="icon" asChild>
@@ -93,7 +91,6 @@ export default function Contact() {
             </Card>
           </div>
           
-          {/* FAQ */}
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
