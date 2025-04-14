@@ -33,6 +33,7 @@ const Dashboard = () => {
   const loadUserData = async () => {
     setIsLoading(true);
     try {
+      // Récupérer toutes les données utilisateur sans filtrage par date
       const data = await DashboardData.fetchUserData(user!.id);
       
       setPortfolioBalance(data.portfolioBalance);

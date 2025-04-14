@@ -25,7 +25,7 @@ export function StatsDisplay({ balance, monthlyPnL, trades }: StatsDisplayProps)
   const dailyPnL = calculateDailyPnL(trades);
   const yearlyPnL = calculateYearlyPnL(trades);
   
-  // Calculate total lifetime gains
+  // Calculate total lifetime gains from all trades without any time filter
   const totalGains = calculateTotalGains(trades);
   
   // Add a loading effect for better UX
@@ -101,6 +101,7 @@ function calculateYearlyPnL(trades: any[]): number {
 function calculateTotalGains(trades: any[]): number {
   if (!trades || trades.length === 0) return 0;
   
+  // Ne pas filtrer par année, prendre tous les trades pour calculer le total des gains
   return trades.reduce((sum, trade) => {
     // Ensure trade.pnl is a number and handle any potential invalid values
     const pnl = Number(trade.pnl);
