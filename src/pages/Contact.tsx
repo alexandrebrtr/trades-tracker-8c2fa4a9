@@ -77,13 +77,18 @@ export default function Contact() {
                     </a>
                   </Button>
                   <Button variant="outline" size="icon" asChild>
-                    <a href="https://twitter.com/trades_track_of" target="_blank" rel="noopener noreferrer" aria-label="X">
+                    <a href="https://twitter.com/trades_track_of" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
                       <Twitter className="h-5 w-5" />
                     </a>
                   </Button>
                   <Button variant="outline" size="icon" asChild>
                     <a href="https://instagram.com/trades_tracker_official" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                       <Instagram className="h-5 w-5" />
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="icon" asChild>
+                    <a href="https://www.tiktok.com/@trades_tracker_official" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                      <TikTok className="h-5 w-5" />
                     </a>
                   </Button>
                 </div>
