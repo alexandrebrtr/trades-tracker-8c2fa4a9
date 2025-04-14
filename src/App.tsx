@@ -11,8 +11,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { Loader2 } from 'lucide-react';
 
+// Import Dashboard directement pour éviter les problèmes de chargement dynamique
+import Dashboard from "./pages/Dashboard";
+
 // Chargement des pages avec lazy loading pour améliorer les performances
-const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Login = lazy(() => import("./pages/Login"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
