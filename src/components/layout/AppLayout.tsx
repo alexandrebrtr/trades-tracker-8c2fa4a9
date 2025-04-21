@@ -9,6 +9,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIosAdapter } from '@/adapters/iosAdapter';
+import { Capacitor } from '@capacitor/core';
 
 // Chargement paresseux du Sidebar pour améliorer les performances initiales
 const Sidebar = lazy(() => import('../navigation/Sidebar').then(mod => ({ default: mod.Sidebar })));
@@ -77,7 +78,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   // Déterminer si nous sommes sur iOS dans un environnement natif
   const isIosNative = typeof window !== 'undefined' && 
-                      window.Capacitor?.isNativePlatform() && 
+                      Capacitor.isNativePlatform() && 
                       /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   return (

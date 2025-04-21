@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { App as CapacitorApp } from '@capacitor/core';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * Hook pour adapter l'application au comportement iOS
@@ -11,7 +11,7 @@ export const useIosAdapter = () => {
 
   useEffect(() => {
     // Vérifier si l'application s'exécute dans un environnement Capacitor/iOS
-    const isCapacitorEnvironment = window.Capacitor?.isNativePlatform() || false;
+    const isCapacitorEnvironment = Capacitor.isNativePlatform();
     
     if (isCapacitorEnvironment) {
       // Adaptation aux gestes iOS (swipe back, etc.)
@@ -30,7 +30,11 @@ export const useIosAdapter = () => {
           if (window.location.pathname !== '/dashboard' && window.location.pathname !== '/') {
             window.history.back();
           } else {
-            CapacitorApp.exitApp();
+            // Utiliser la méthode appropriée de Capacitor pour quitter l'application
+            if (Capacitor.isNativePlatform()) {
+              // Cette action sera traitée par le plugin natif
+              document.dispatchEvent(new CustomEvent('exitApp'));
+            }
           }
         });
       });
