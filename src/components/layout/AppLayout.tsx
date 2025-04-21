@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useIosAdapter } from '@/adapters/iosAdapter';
 
 // Chargement paresseux du Sidebar pour améliorer les performances initiales
 const Sidebar = lazy(() => import('../navigation/Sidebar').then(mod => ({ default: mod.Sidebar })));
@@ -21,6 +22,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  
+  // Utilisation de l'adaptateur iOS
+  useIosAdapter();
   
   useEffect(() => {
     // Vérification de l'état de la sidebar depuis localStorage
@@ -71,8 +75,16 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   };
 
+  // Déterminer si nous sommes sur iOS dans un environnement natif
+  const isIosNative = typeof window !== 'undefined' && 
+                      window.Capacitor?.isNativePlatform() && 
+                      /iPad|iPhone|iPod/.test(navigator.userAgent);
+
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className={cn(
+      "min-h-screen bg-background overflow-x-hidden",
+      isIosNative && "fullscreen-page ios-device"
+    )}>
       {/* Bouton de basculement du menu mobile - visible uniquement sur mobile */}
       <div className="fixed top-0 left-0 right-0 flex justify-between items-center z-40 px-2 sm:px-4 h-14 bg-background/95 backdrop-blur-sm border-b md:hidden">
         <Button
@@ -120,7 +132,8 @@ export function AppLayout({ children }: AppLayoutProps) {
           "transition-all duration-300",
           sidebarCollapsed ? "ml-0 md:ml-16" : "ml-0 md:ml-64",
           isMobile ? "pt-14" : "pt-0", // Ajustement de l'espace en haut pour mobile
-          isMobile ? "ease-in-out" : ""
+          isMobile ? "ease-in-out" : "",
+          isIosNative && "ios-main-content" // Classe spécifique pour le contenu iOS
         )}
         id="main-content"
         role="main"

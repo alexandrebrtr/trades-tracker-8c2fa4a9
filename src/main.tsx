@@ -3,9 +3,14 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import './styles/ios.css'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { PremiumProvider } from './context/PremiumContext'
+import { applyIosStyles } from './adapters/iosAdapter'
+
+// Appliquer les styles iOS si nécessaire
+applyIosStyles();
 
 // Activer les écouteurs d'événements passifs pour améliorer les performances
 if (typeof window !== 'undefined') {
