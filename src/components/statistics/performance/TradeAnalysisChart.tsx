@@ -48,19 +48,22 @@ export default function TradeAnalysisChart({ type, userId, period, showAsBar = f
         const groupedData: Record<string, { count: number, totalPnL: number, winCount: number }> = {};
         
         trades.forEach(trade => {
-          const key = type === "strategy" 
-            ? (trade.strategy || "Non définie") 
-            : type === "symbol" 
-              ? trade.symbol 
-              : trade.type;
+          let key = "";
+          if (type === "strategy") {
+            key = trade.strategy || "Non définie";
+          } else if (type === "symbol") {
+            key = trade.symbol || "Inconnu";
+          } else {
+            key = trade.type || "Inconnu";
+          }
               
           if (!groupedData[key]) {
             groupedData[key] = { count: 0, totalPnL: 0, winCount: 0 };
           }
           
           groupedData[key].count += 1;
-          groupedData[key].totalPnL += (trade.pnl || 0);
-          if (trade.pnl > 0) {
+          groupedData[key].totalPnL += (Number(trade.pnl) || 0);
+          if (Number(trade.pnl) > 0) {
             groupedData[key].winCount += 1;
           }
         });
@@ -70,7 +73,7 @@ export default function TradeAnalysisChart({ type, userId, period, showAsBar = f
           name,
           value: stats.count,
           pnl: stats.totalPnL,
-          winRate: Math.round((stats.winCount / stats.count) * 100)
+          winRate: stats.count > 0 ? Math.round((stats.winCount / stats.count) * 100) : 0
         }));
         
         setData(chartData);

@@ -1,3 +1,4 @@
+
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -80,7 +81,7 @@ const Statistics = () => {
           </div>
         </div>
         
-        <Tabs defaultValue="general" onValueChange={handleTabChange} className="w-full">
+        <Tabs defaultValue="general" value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className={`grid ${isMobile ? "grid-cols-3 gap-1 mb-4" : "grid-cols-3 mb-8"} w-full`}>
             <TabsTrigger value="general" className="text-xs md:text-sm">Vue Générale</TabsTrigger>
             <TabsTrigger value="strategy" className="text-xs md:text-sm">Analyse Stratégique</TabsTrigger>
