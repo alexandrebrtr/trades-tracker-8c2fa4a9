@@ -1,4 +1,3 @@
-
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -42,12 +41,10 @@ const Statistics = () => {
   const [activeTab, setActiveTab] = useState('general');
   const isMobile = useIsMobile();
 
-  // Récupérer les trades pour vérifier si l'utilisateur a des données
   const { isLoading, trades } = useTradesFetcher(user?.id, 'all');
   const hasData = trades.length > 0;
 
   useEffect(() => {
-    // Extract tab from URL if present
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
     if (tab && ['general', 'strategy', 'advanced'].includes(tab)) {
@@ -83,7 +80,7 @@ const Statistics = () => {
           </div>
         </div>
         
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <Tabs defaultValue="general" onValueChange={handleTabChange} className="w-full">
           <TabsList className={`grid ${isMobile ? "grid-cols-3 gap-1 mb-4" : "grid-cols-3 mb-8"} w-full`}>
             <TabsTrigger value="general" className="text-xs md:text-sm">Vue Générale</TabsTrigger>
             <TabsTrigger value="strategy" className="text-xs md:text-sm">Analyse Stratégique</TabsTrigger>
@@ -113,7 +110,7 @@ const Statistics = () => {
                 <div className="animate-spin h-6 w-6 md:h-8 md:w-8 border-4 border-primary border-r-transparent rounded-full"></div>
               </div>
             ) : hasData ? (
-              <StrategyAnalysis />
+              <StrategyAnalysis userId={user?.id} />
             ) : (
               <NoDataView tabName="l'analyse des stratégies" />
             )}
