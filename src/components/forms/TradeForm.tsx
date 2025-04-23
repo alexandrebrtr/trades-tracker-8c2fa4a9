@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,6 +70,12 @@ export function TradeForm() {
   const [isCustomAsset, setIsCustomAsset] = useState(false);
   const [customStrategy, setCustomStrategy] = useState('');
   const [isCustomStrategy, setIsCustomStrategy] = useState(false);
+  
+  // Adding the missing state variables for stop loss and take profit
+  const [stopLoss, setStopLoss] = useState('');
+  const [takeProfit, setTakeProfit] = useState('');
+  const [useStopLoss, setUseStopLoss] = useState(false);
+  const [useTakeProfit, setUseTakeProfit] = useState(false);
 
   useEffect(() => {
     const now = new Date();
@@ -168,6 +175,10 @@ export function TradeForm() {
       } else {
         strategyToUse = strategy;
       }
+      
+      // Parse stop loss and take profit values if they're enabled
+      const stopLossValue = useStopLoss && stopLoss ? parseFloat(stopLoss.replace(',', '.')) : null;
+      const takeProfitValue = useTakeProfit && takeProfit ? parseFloat(takeProfit.replace(',', '.')) : null;
       
       const newTrade = {
         user_id: user.id,
