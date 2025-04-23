@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -17,7 +16,8 @@ import {
   FileText,
   Wallet,
   ChevronDown,
-  Contact
+  Contact,
+  CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -105,14 +105,12 @@ export function Sidebar() {
   const handleAccordionChange = (value: string) => {
     const newOpenState = { ...openAccordions };
     
-    // Correction de la logique pour permettre la fermeture des accordéons
-    if (value in newOpenState && newOpenState[value] === true) {
-      delete newOpenState[value];
+    if (value === Object.keys(newOpenState)[0]) {
+      setOpenAccordions({});
     } else {
-      newOpenState[value] = true;
+      setOpenAccordions({ [value]: true });
     }
     
-    setOpenAccordions(newOpenState);
     localStorage.setItem('sidebarOpenAccordions', JSON.stringify(newOpenState));
   };
 
@@ -139,6 +137,11 @@ export function Sidebar() {
       name: 'Portefeuille',
       path: '/portfolio',
       icon: <Wallet className="w-5 h-5" aria-hidden="true" />
+    },
+    {
+      name: 'Abonnement premium',
+      path: '/premium',
+      icon: <CreditCard className="w-5 h-5" aria-hidden="true" />
     },
     {
       name: 'Paramètres',
@@ -169,16 +172,17 @@ export function Sidebar() {
 
   const afterGroupsItems: NavItem[] = [
     {
-      name: 'Nouveau Trade',
-      path: '/trade-entry',
-      icon: <PlusCircle className="w-5 h-5" aria-hidden="true" />
-    },
-    {
       name: 'Contact',
       path: '/contact',
       icon: <Contact className="w-5 h-5" aria-hidden="true" />
     },
   ];
+
+  const newTradeItem: NavItem = {
+    name: 'Nouveau Trade',
+    path: '/trade-entry',
+    icon: <PlusCircle className="w-5 h-5" aria-hidden="true" />
+  };
 
   const renderAccordionGroup = (
     title: string, 
@@ -318,16 +322,6 @@ export function Sidebar() {
                 />
               ))}
               
-              {afterGroupsItems.slice(0, 1).map((item) => (
-                <li key={item.path}>
-                  <SidebarNavItem
-                    {...item}
-                    collapsed={collapsed}
-                    onItemClick={handleNavItemClick}
-                  />
-                </li>
-              ))}
-
               <li>
                 {renderAccordionGroup(
                   'Analyses',
@@ -335,6 +329,14 @@ export function Sidebar() {
                   <BarChart3 className="w-5 h-5" aria-hidden="true" />,
                   'analyses'
                 )}
+              </li>
+
+              <li>
+                <SidebarNavItem
+                  {...newTradeItem}
+                  collapsed={collapsed}
+                  onItemClick={handleNavItemClick}
+                />
               </li>
 
               <li>
@@ -346,7 +348,7 @@ export function Sidebar() {
                 )}
               </li>
 
-              {afterGroupsItems.slice(1).map((item) => (
+              {afterGroupsItems.map((item) => (
                 <li key={item.path}>
                   <SidebarNavItem
                     {...item}
