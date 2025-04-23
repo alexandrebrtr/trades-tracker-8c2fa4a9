@@ -68,7 +68,7 @@ export function ExportDataButton({ userId }: { userId: string }) {
       // Add profile sheet
       const profileWorksheet = XLSX.utils.json_to_sheet([{
         "Nom d'utilisateur": profileData.username || 'Non défini',
-        "Email": profileData.email || 'Non défini',
+        // Remove the email field since it's not available in the profiles table
         "Balance": profileData.balance || 0,
         "Premium": profileData.premium ? 'Oui' : 'Non',
         "Premium depuis": profileData.premium_since ? new Date(profileData.premium_since).toLocaleDateString('fr-FR') : 'Non applicable',
