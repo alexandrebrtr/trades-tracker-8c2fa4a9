@@ -7,10 +7,9 @@ import { usePremium } from '@/context/PremiumContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import AnalyticsView from '@/components/statistics/AnalyticsView';
+import GeneralView from '@/components/statistics/GeneralView';
 import StrategyAnalysis from '@/components/statistics/StrategyAnalysis';
-import PerformanceMetrics from '@/components/statistics/PerformanceMetrics';
-import AdvancedAnalytics from '@/components/statistics/AdvancedAnalytics';
+import CustomCharts from '@/components/statistics/CustomCharts';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,7 +50,7 @@ const Statistics = () => {
     // Extract tab from URL if present
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if (tab && ['general', 'strategy', 'performance', 'advanced'].includes(tab)) {
+    if (tab && ['general', 'strategy', 'advanced'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [location]);
@@ -85,31 +84,16 @@ const Statistics = () => {
         </div>
         
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className={`grid ${isMobile ? "grid-cols-2 gap-1 mb-4" : "grid-cols-4 mb-8"} w-full`}>
+          <TabsList className={`grid ${isMobile ? "grid-cols-3 gap-1 mb-4" : "grid-cols-3 mb-8"} w-full`}>
             <TabsTrigger value="general" className="text-xs md:text-sm">Vue Générale</TabsTrigger>
-            <TabsTrigger value="strategy" className="text-xs md:text-sm">Analyse Stratégies</TabsTrigger>
-            {!isMobile && <TabsTrigger value="performance" className="text-xs md:text-sm">Métriques Performance</TabsTrigger>}
-            {!isMobile && (
-              <TabsTrigger value="advanced" disabled={!isPremium} className="text-xs md:text-sm relative">
-                Analyses Avancées
-                {!isPremium && (
-                  <Lock className="h-3 w-3 ml-1 text-yellow-500" />
-                )}
-              </TabsTrigger>
-            )}
+            <TabsTrigger value="strategy" className="text-xs md:text-sm">Analyse Stratégique</TabsTrigger>
+            <TabsTrigger value="advanced" disabled={!isPremium} className="text-xs md:text-sm relative">
+              Analyses Avancées
+              {!isPremium && (
+                <Lock className="h-3 w-3 ml-1 text-yellow-500" />
+              )}
+            </TabsTrigger>
           </TabsList>
-          
-          {isMobile && (
-            <TabsList className="grid grid-cols-2 gap-1 mb-4 w-full mt-1">
-              <TabsTrigger value="performance" className="text-xs md:text-sm">Métriques Performance</TabsTrigger>
-              <TabsTrigger value="advanced" disabled={!isPremium} className="text-xs md:text-sm relative">
-                Analyses Avancées
-                {!isPremium && (
-                  <Lock className="h-3 w-3 ml-1 text-yellow-500" />
-                )}
-              </TabsTrigger>
-            </TabsList>
-          )}
           
           <TabsContent value="general" className="mt-4 md:mt-6">
             {isLoading ? (
@@ -117,7 +101,7 @@ const Statistics = () => {
                 <div className="animate-spin h-6 w-6 md:h-8 md:w-8 border-4 border-primary border-r-transparent rounded-full"></div>
               </div>
             ) : hasData ? (
-              <AnalyticsView />
+              <GeneralView trades={trades} />
             ) : (
               <NoDataView tabName="la vue générale" />
             )}
@@ -135,18 +119,6 @@ const Statistics = () => {
             )}
           </TabsContent>
           
-          <TabsContent value="performance" className="mt-4 md:mt-6">
-            {isLoading ? (
-              <div className="flex justify-center items-center py-16 md:py-24">
-                <div className="animate-spin h-6 w-6 md:h-8 md:w-8 border-4 border-primary border-r-transparent rounded-full"></div>
-              </div>
-            ) : hasData ? (
-              <PerformanceMetrics />
-            ) : (
-              <NoDataView tabName="les métriques de performance" />
-            )}
-          </TabsContent>
-          
           <TabsContent value="advanced" className="mt-4 md:mt-6">
             {isPremium ? (
               isLoading ? (
@@ -154,7 +126,7 @@ const Statistics = () => {
                   <div className="animate-spin h-6 w-6 md:h-8 md:w-8 border-4 border-primary border-r-transparent rounded-full"></div>
                 </div>
               ) : hasData ? (
-                <AdvancedAnalytics />
+                <CustomCharts userId={user?.id} />
               ) : (
                 <NoDataView tabName="les analyses avancées" />
               )
