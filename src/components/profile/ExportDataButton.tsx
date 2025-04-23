@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { FileExport } from "lucide-react";
+import { FileText } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from 'xlsx';
@@ -59,7 +59,7 @@ export function ExportDataButton({ userId }: { userId: string }) {
       variant="outline"
       className="w-full"
     >
-      <FileExport className="mr-2" />
+      <FileText className="mr-2" />
       Exporter mes données
     </Button>
   );
