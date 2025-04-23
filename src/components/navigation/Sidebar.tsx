@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -24,7 +25,12 @@ import { usePremium } from '@/context/PremiumContext';
 import { SidebarNavItem } from './SidebarNavItem';
 import { SidebarUserSection } from './SidebarUserSection';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface NavGroup {
   name: string;
@@ -46,10 +52,6 @@ export function Sidebar() {
   const { user } = useAuth();
   const { isPremium } = usePremium();
   
-  // État pour gérer les menus déroulants
-  const [openPersonnel, setOpenPersonnel] = useState(false);
-  const [openAnalyses, setOpenAnalyses] = useState(false);
-
   useEffect(() => {
     const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState) {
@@ -151,45 +153,47 @@ export function Sidebar() {
     },
   ];
 
-  // Fonction pour rendre un groupe de navigation déroulant
-  const renderCollapsibleGroup = (
+  // Fonction pour rendre un groupe de navigation déroulant avec Accordion (remplace Collapsible)
+  const renderAccordionGroup = (
     title: string, 
     items: NavItem[], 
-    isOpen: boolean, 
-    setIsOpen: (open: boolean) => void,
-    icon: React.ReactNode
+    icon: React.ReactNode,
+    value: string
   ) => {
-    return (
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger className="flex items-center w-full px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground gap-2">
+    if (collapsed) {
+      // Si la sidebar est repliée, afficher simplement l'icône sans contenu déroulant
+      return (
+        <div className="flex items-center w-full px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
           {icon}
-          {!collapsed && (
-            <>
-              <span className="flex-1 text-sm font-medium">{title}</span>
-              <ChevronDown className={cn(
-                "h-4 w-4 transition-transform duration-200",
-                isOpen ? "transform rotate-180" : ""
-              )} />
-            </>
-          )}
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <ul className="mt-1 space-y-1">
-            {items.map((item) => (
-              <SidebarNavItem
-                key={item.path}
-                name={item.name}
-                path={item.path}
-                icon={item.icon}
-                collapsed={collapsed}
-                isPremiumFeature={item.requirePremium}
-                userHasPremium={isPremium}
-                onItemClick={handleNavItemClick}
-              />
-            ))}
-          </ul>
-        </CollapsibleContent>
-      </Collapsible>
+        </div>
+      );
+    }
+    
+    return (
+      <Accordion type="single" collapsible className="w-full border-none">
+        <AccordionItem value={value} className="border-none">
+          <AccordionTrigger className="flex items-center w-full px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+            {icon}
+            <span className="flex-1 text-sm font-medium ml-2">{title}</span>
+          </AccordionTrigger>
+          <AccordionContent>
+            <ul className="mt-1 space-y-1">
+              {items.map((item) => (
+                <SidebarNavItem
+                  key={item.path}
+                  name={item.name}
+                  path={item.path}
+                  icon={item.icon}
+                  collapsed={collapsed}
+                  isPremiumFeature={item.requirePremium}
+                  userHasPremium={isPremium}
+                  onItemClick={handleNavItemClick}
+                />
+              ))}
+            </ul>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     );
   };
 
@@ -262,12 +266,11 @@ export function Sidebar() {
               
               {/* Personnel - Menu déroulant */}
               <li>
-                {renderCollapsibleGroup(
+                {renderAccordionGroup(
                   'Personnel',
                   personnelItems,
-                  openPersonnel,
-                  setOpenPersonnel,
-                  <User className="w-5 h-5" aria-hidden="true" />
+                  <User className="w-5 h-5" aria-hidden="true" />,
+                  'personnel'
                 )}
               </li>
 
@@ -283,12 +286,11 @@ export function Sidebar() {
 
               {/* Analyses - Menu déroulant */}
               <li>
-                {renderCollapsibleGroup(
+                {renderAccordionGroup(
                   'Analyses',
                   analysesItems,
-                  openAnalyses,
-                  setOpenAnalyses,
-                  <BarChart3 className="w-5 h-5" aria-hidden="true" />
+                  <BarChart3 className="w-5 h-5" aria-hidden="true" />,
+                  'analyses'
                 )}
               </li>
 
