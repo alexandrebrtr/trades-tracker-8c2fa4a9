@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -104,7 +105,8 @@ export function Sidebar() {
   const handleAccordionChange = (value: string) => {
     const newOpenState = { ...openAccordions };
     
-    if (value in newOpenState) {
+    // Correction de la logique pour permettre la fermeture des accordéons
+    if (value in newOpenState && newOpenState[value] === true) {
       delete newOpenState[value];
     } else {
       newOpenState[value] = true;
@@ -188,8 +190,9 @@ export function Sidebar() {
       return (
         <div className="relative group">
           <button
-            className="flex items-center w-full px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            className="flex items-center justify-center w-full px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             onClick={() => handleAccordionChange(value)}
+            aria-label={`Menu ${title}`}
           >
             {icon}
           </button>
