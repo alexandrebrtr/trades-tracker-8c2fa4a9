@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
@@ -23,6 +22,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { ArrowDown, ArrowUp, PieChart as PieChartIcon, BarChart2, LineChart as LineChartIcon, Zap } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -46,6 +47,7 @@ const StrategyAnalysis = () => {
   const [strategyCategoryData, setStrategyCategoryData] = useState<any[]>([]);
   const [timePerformanceData, setTimePerformanceData] = useState<any[]>([]);
   const [strategyMetrics, setStrategyMetrics] = useState<StrategyMetrics[]>([]);
+  const [trades, setTrades] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -60,7 +62,7 @@ const StrategyAnalysis = () => {
         const startDate = getStartDateFromTimeframe(selectedPeriod);
         
         // Fetch user trades
-        const { data: trades, error: tradesError } = await supabase
+        const { data: tradesData, error: tradesError } = await supabase
           .from('trades')
           .select('*')
           .eq('user_id', user.id)
@@ -70,7 +72,8 @@ const StrategyAnalysis = () => {
         if (tradesError) throw tradesError;
 
         // Process trades data for analysis
-        processTradesData(trades || []);
+        processTradesData(tradesData || []);
+        setTrades(tradesData || []);
         
       } catch (error: any) {
         console.error('Error fetching analytics data:', error.message);
@@ -358,80 +361,130 @@ const StrategyAnalysis = () => {
         </Select>
       </div>
 
-      {/* Detailed Strategy Cards */}
-      <div className="grid grid-cols-1 gap-6">
-        {strategyMetrics.map((strategy) => (
-          <Card key={strategy.name} className="overflow-hidden">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-primary" />
-                    {strategy.name}
-                  </CardTitle>
-                  <CardDescription>{strategy.totalTrades} trades sur cette stratégie</CardDescription>
-                </div>
-                <Badge 
-                  variant={strategy.winRate >= 50 ? "default" : "destructive"} 
-                  className="text-md px-3 py-1"
-                >
-                  {strategy.winRate}% taux de réussite
-                </Badge>
-              </div>
+      <Tabs defaultValue="strategies" className="w-full">
+        <TabsList className="grid grid-cols-2 w-full max-w-[400px] mx-auto mb-8">
+          <TabsTrigger value="strategies">Stratégies</TabsTrigger>
+          <TabsTrigger value="trades">Trades</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="strategies">
+          {/* Detailed Strategy Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {strategyMetrics.map((strategy) => (
+              <Card key={strategy.name} className="overflow-hidden aspect-square">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-xl flex items-center gap-2">
+                        <Zap className="h-5 w-5 text-primary" />
+                        {strategy.name}
+                      </CardTitle>
+                      <CardDescription>
+                        {strategy.totalTrades} trades sur cette stratégie
+                      </CardDescription>
+                    </div>
+                    <Badge 
+                      variant={strategy.winRate >= 50 ? "default" : "destructive"} 
+                      className="text-md px-3 py-1"
+                    >
+                      {strategy.winRate}% taux de réussite
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="bg-secondary/20 p-3 rounded-lg">
+                      <p className="text-xs text-muted-foreground">P&L Total</p>
+                      <p className={`text-lg font-semibold ${strategy.totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {formatCurrency(strategy.totalPnL)}
+                      </p>
+                    </div>
+                    <div className="bg-secondary/20 p-3 rounded-lg">
+                      <p className="text-xs text-muted-foreground">P&L Moyen</p>
+                      <p className={`text-lg font-semibold ${strategy.averagePnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {formatCurrency(strategy.averagePnL)}
+                      </p>
+                    </div>
+                    <div className="bg-secondary/20 p-3 rounded-lg">
+                      <p className="text-xs text-muted-foreground">Profit Factor</p>
+                      <p className={`text-lg font-semibold ${strategy.profitFactor >= 1 ? 'text-green-500' : 'text-red-500'}`}>
+                        {strategy.profitFactor}
+                      </p>
+                    </div>
+                    <div className="bg-secondary/20 p-3 rounded-lg">
+                      <p className="text-xs text-muted-foreground">Durée Moyenne</p>
+                      <p className="text-lg font-semibold">
+                        {strategy.averageDuration}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between border border-border p-3 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <ArrowUp className="h-5 w-5 text-green-500" />
+                        <span className="text-sm">Meilleur Trade</span>
+                      </div>
+                      <span className="text-lg font-semibold text-green-500">
+                        {formatCurrency(strategy.bestTrade)}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between border border-border p-3 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <ArrowDown className="h-5 w-5 text-red-500" />
+                        <span className="text-sm">Pire Trade</span>
+                      </div>
+                      <span className="text-lg font-semibold text-red-500">
+                        {formatCurrency(strategy.worstTrade)}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="trades">
+          <Card>
+            <CardHeader>
+              <CardTitle>Trades par Stratégie</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div className="bg-secondary/20 p-3 rounded-lg">
-                  <p className="text-xs text-muted-foreground">P&L Total</p>
-                  <p className={`text-lg font-semibold ${strategy.totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {formatCurrency(strategy.totalPnL)}
-                  </p>
-                </div>
-                <div className="bg-secondary/20 p-3 rounded-lg">
-                  <p className="text-xs text-muted-foreground">P&L Moyen</p>
-                  <p className={`text-lg font-semibold ${strategy.averagePnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {formatCurrency(strategy.averagePnL)}
-                  </p>
-                </div>
-                <div className="bg-secondary/20 p-3 rounded-lg">
-                  <p className="text-xs text-muted-foreground">Profit Factor</p>
-                  <p className={`text-lg font-semibold ${strategy.profitFactor >= 1 ? 'text-green-500' : 'text-red-500'}`}>
-                    {strategy.profitFactor}
-                  </p>
-                </div>
-                <div className="bg-secondary/20 p-3 rounded-lg">
-                  <p className="text-xs text-muted-foreground">Durée Moyenne</p>
-                  <p className="text-lg font-semibold">
-                    {strategy.averageDuration}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-between border border-border p-3 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <ArrowUp className="h-5 w-5 text-green-500" />
-                    <span className="text-sm">Meilleur Trade</span>
-                  </div>
-                  <span className="text-lg font-semibold text-green-500">
-                    {formatCurrency(strategy.bestTrade)}
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between border border-border p-3 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <ArrowDown className="h-5 w-5 text-red-500" />
-                    <span className="text-sm">Pire Trade</span>
-                  </div>
-                  <span className="text-lg font-semibold text-red-500">
-                    {formatCurrency(strategy.worstTrade)}
-                  </span>
-                </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Stratégie</TableHead>
+                      <TableHead>Symbol</TableHead>
+                      <TableHead className="text-right">Type</TableHead>
+                      <TableHead className="text-right">P&L</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {trades.map((trade) => (
+                      <TableRow key={trade.id}>
+                        <TableCell>{new Date(trade.date || '').toLocaleDateString('fr-FR')}</TableCell>
+                        <TableCell>{trade.strategy || 'Non définie'}</TableCell>
+                        <TableCell>{trade.symbol}</TableCell>
+                        <TableCell className="text-right">{trade.type}</TableCell>
+                        <TableCell className={cn(
+                          "text-right font-medium",
+                          trade.pnl && trade.pnl > 0 ? "text-green-500" : "text-red-500"
+                        )}>
+                          {formatCurrency(trade.pnl || 0)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+        </TabsContent>
+      </Tabs>
 
       <Tabs defaultValue="performance" className="w-full">
         <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto mb-6">
