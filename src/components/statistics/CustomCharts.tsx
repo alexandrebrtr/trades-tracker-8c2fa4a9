@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { DateRange } from "react-day-picker";
 
 interface CustomChartsProps {
   userId: string | undefined;
@@ -51,7 +52,7 @@ const dataFieldOptions = [
 
 export default function CustomCharts({ userId }: CustomChartsProps) {
   const [selectedTimeline, setSelectedTimeline] = useState<string>("3m");
-  const [dateRange, setDateRange] = useState<{from: Date | undefined; to: Date | undefined}>({
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: undefined,
     to: undefined,
   });
@@ -79,7 +80,7 @@ export default function CustomCharts({ userId }: CustomChartsProps) {
       let startDate: string | null = null;
       const now = new Date();
       
-      if (selectedTimeline === "custom" && dateRange.from && dateRange.to) {
+      if (selectedTimeline === "custom" && dateRange?.from && dateRange?.to) {
         startDate = dateRange.from.toISOString();
         const endDate = dateRange.to.toISOString();
         
@@ -277,7 +278,7 @@ export default function CustomCharts({ userId }: CustomChartsProps) {
         valueDimension,
         groupByDimension,
         timeline: selectedTimeline,
-        dateRange: dateRange.from && dateRange.to ? {
+        dateRange: dateRange?.from && dateRange?.to ? {
           from: dateRange.from.toISOString(),
           to: dateRange.to.toISOString()
         } : null
@@ -674,11 +675,11 @@ export default function CustomCharts({ userId }: CustomChartsProps) {
                               variant="outline"
                               className={cn(
                                 "w-full flex items-center justify-center text-sm md:text-base",
-                                !dateRange.from && !dateRange.to && "text-muted-foreground"
+                                !dateRange?.from && !dateRange?.to && "text-muted-foreground"
                               )}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {dateRange.from ? (
+                              {dateRange?.from ? (
                                 dateRange.to ? (
                                   <>
                                     {format(dateRange.from, "dd/MM/yy")} - {format(dateRange.to, "dd/MM/yy")}

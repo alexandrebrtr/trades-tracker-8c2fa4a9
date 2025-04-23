@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { CustomTooltip } from "../dashboard/chart/CustomTooltip";
-import { type DateRange } from "react-day-picker";
+import type { DateRange } from "react-day-picker";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
 
@@ -242,7 +243,7 @@ export default function GeneralView({ trades }: GeneralViewProps) {
     processPerformanceData(filtered);
     processDailyPnLData(filtered);
     setLoading(false);
-  }, [trades, selectedTimeline, dateRange]);
+  }, [trades, selectedTimeline, dateRange, pieChartType]);
 
   const TimelineSelector = () => (
     <div className="flex items-center space-x-2">
@@ -301,6 +302,7 @@ export default function GeneralView({ trades }: GeneralViewProps) {
               onSelect={setDateRange}
               numberOfMonths={2}
               locale={fr}
+              className={cn("p-3 pointer-events-auto")}
             />
           </PopoverContent>
         </Popover>
