@@ -105,12 +105,13 @@ export function Sidebar() {
   const handleAccordionChange = (value: string) => {
     const newOpenState = { ...openAccordions };
     
-    if (value === Object.keys(newOpenState)[0]) {
-      setOpenAccordions({});
+    if (value in newOpenState) {
+      delete newOpenState[value];
     } else {
-      setOpenAccordions({ [value]: true });
+      newOpenState[value] = true;
     }
     
+    setOpenAccordions(newOpenState);
     localStorage.setItem('sidebarOpenAccordions', JSON.stringify(newOpenState));
   };
 
