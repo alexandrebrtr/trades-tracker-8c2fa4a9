@@ -1,10 +1,9 @@
-
 import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { TradeForm } from '@/components/forms/TradeForm';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Zap, Book, X } from 'lucide-react';
+import { Zap, Book, X, Import } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { usePremium } from '@/context/PremiumContext';
 import { 
@@ -21,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/context/AuthContext';
 import { RealtimeService } from '@/services/RealtimeService';
+import { ImportTradesDialog } from '@/components/forms/ImportTradesDialog';
 
 const TradeEntry = () => {
   const { toast } = useToast();
@@ -32,6 +32,7 @@ const TradeEntry = () => {
   const [secretKey, setSecretKey] = useState(userSettings.broker?.secretKey || '');
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const handleConnectAccount = () => {
     if (!isPremium) {
@@ -100,11 +101,13 @@ const TradeEntry = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Nouveau Trade</h1>
           <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link to="/journal" className="flex items-center gap-2">
-                <Book className="h-4 w-4" />
-                <span>Voir le Journal</span>
-              </Link>
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={() => setImportDialogOpen(true)}
+            >
+              <FileUp className="h-4 w-4" />
+              <span>Importer des données</span>
             </Button>
             <Button 
               variant="outline" 
@@ -117,6 +120,11 @@ const TradeEntry = () => {
           </div>
         </div>
         <TradeForm />
+        
+        <ImportTradesDialog 
+          open={importDialogOpen}
+          onOpenChange={setImportDialogOpen}
+        />
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-md">
