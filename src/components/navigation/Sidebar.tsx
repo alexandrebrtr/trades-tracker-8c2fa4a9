@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -53,7 +54,7 @@ export function Sidebar() {
   const { isPremium } = usePremium();
   
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({});
-  
+
   useEffect(() => {
     const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState) {
@@ -104,13 +105,7 @@ export function Sidebar() {
 
   const handleAccordionChange = (value: string) => {
     const newOpenState = { ...openAccordions };
-    
-    if (value in newOpenState) {
-      delete newOpenState[value];
-    } else {
-      newOpenState[value] = true;
-    }
-    
+    newOpenState[value] = !newOpenState[value];
     setOpenAccordions(newOpenState);
     localStorage.setItem('sidebarOpenAccordions', JSON.stringify(newOpenState));
   };
@@ -223,11 +218,16 @@ export function Sidebar() {
     
     return (
       <Accordion 
-        type="single" 
-        collapsible 
+        type="multiple" 
+        value={Object.keys(openAccordions).filter(k => openAccordions[k])}
+        onValueChange={(values) => {
+          if (values.includes(value)) {
+            handleAccordionChange(value);
+          } else {
+            handleAccordionChange(value);
+          }
+        }}
         className="w-full border-none"
-        value={openAccordions[value] ? value : ""}
-        onValueChange={(val) => handleAccordionChange(val)}
       >
         <AccordionItem value={value} className="border-none">
           <AccordionTrigger className="flex items-center w-full px-3 py-2.5 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
