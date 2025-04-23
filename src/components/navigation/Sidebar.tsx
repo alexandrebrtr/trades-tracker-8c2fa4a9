@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -153,7 +152,6 @@ export function Sidebar() {
     },
   ];
 
-  // Fonction pour rendre un groupe de navigation déroulant avec Accordion (remplace Collapsible)
   const renderAccordionGroup = (
     title: string, 
     items: NavItem[], 
@@ -161,7 +159,6 @@ export function Sidebar() {
     value: string
   ) => {
     if (collapsed) {
-      // Si la sidebar est repliée, afficher simplement l'icône sans contenu déroulant
       return (
         <div className="flex items-center w-full px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
           {icon}
@@ -172,12 +169,14 @@ export function Sidebar() {
     return (
       <Accordion type="single" collapsible className="w-full border-none">
         <AccordionItem value={value} className="border-none">
-          <AccordionTrigger className="flex items-center w-full px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-            {icon}
-            <span className="flex-1 text-sm font-medium ml-2">{title}</span>
+          <AccordionTrigger className="flex items-center w-full px-3 py-2.5 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+            <div className="flex items-center gap-2 text-left">
+              {icon}
+              <span className="text-sm font-medium">{title}</span>
+            </div>
           </AccordionTrigger>
           <AccordionContent>
-            <ul className="mt-1 space-y-1">
+            <ul className="mt-1 space-y-1.5 pl-7">
               {items.map((item) => (
                 <SidebarNavItem
                   key={item.path}
@@ -253,8 +252,7 @@ export function Sidebar() {
           )}
 
           <nav className="flex-1 py-4 overflow-y-auto scrollbar-thin">
-            <ul className="space-y-3 px-2">
-              {/* Menu principal */}
+            <ul className="space-y-2 px-2">
               {mainNavItems.map((item) => (
                 <SidebarNavItem
                   key={item.path}
@@ -264,8 +262,7 @@ export function Sidebar() {
                 />
               ))}
               
-              {/* Personnel - Menu déroulant */}
-              <li>
+              <li className="py-1">
                 {renderAccordionGroup(
                   'Personnel',
                   personnelItems,
@@ -274,18 +271,17 @@ export function Sidebar() {
                 )}
               </li>
 
-              {/* Items du milieu */}
               {afterGroupsItems.slice(0, 1).map((item) => (
-                <SidebarNavItem
-                  key={item.path}
-                  {...item}
-                  collapsed={collapsed}
-                  onItemClick={handleNavItemClick}
-                />
+                <li className="py-1" key={item.path}>
+                  <SidebarNavItem
+                    {...item}
+                    collapsed={collapsed}
+                    onItemClick={handleNavItemClick}
+                  />
+                </li>
               ))}
 
-              {/* Analyses - Menu déroulant */}
-              <li>
+              <li className="py-1">
                 {renderAccordionGroup(
                   'Analyses',
                   analysesItems,
@@ -294,14 +290,14 @@ export function Sidebar() {
                 )}
               </li>
 
-              {/* Dernier item (Contact) */}
               {afterGroupsItems.slice(1).map((item) => (
-                <SidebarNavItem
-                  key={item.path}
-                  {...item}
-                  collapsed={collapsed}
-                  onItemClick={handleNavItemClick}
-                />
+                <li className="py-1" key={item.path}>
+                  <SidebarNavItem
+                    {...item}
+                    collapsed={collapsed}
+                    onItemClick={handleNavItemClick}
+                  />
+                </li>
               ))}
             </ul>
           </nav>
