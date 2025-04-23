@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // Imported components
 import { ProfileInfo } from '@/components/profile/ProfileInfo';
 import { AccountInfo } from '@/components/profile/AccountInfo';
+import { ExportDataButton } from '@/components/profile/ExportDataButton';
 
 export default function Profile() {
   const { isPremium, premiumExpires } = usePremium();
@@ -164,14 +165,18 @@ export default function Profile() {
                 setAddress={setAddress}
                 setBalance={setBalance}
               />
-
-              <AccountInfo 
-                isOwnProfile={isOwnProfile}
-                isPremium={isPremium}
-                createdAt={createdAt}
-                premiumSince={profile?.premium_since || null}
-                premiumExpires={premiumExpires}
-              />
+              <div className="space-y-6">
+                <AccountInfo 
+                  isOwnProfile={isOwnProfile}
+                  isPremium={isPremium}
+                  createdAt={createdAt}
+                  premiumSince={profile?.premium_since || null}
+                  premiumExpires={premiumExpires}
+                />
+                {isOwnProfile && (
+                  <ExportDataButton userId={user?.id || ''} />
+                )}
+              </div>
             </div>
           </TabsContent>
         </Tabs>
