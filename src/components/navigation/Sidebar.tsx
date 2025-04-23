@@ -104,7 +104,7 @@ export function Sidebar() {
   const handleAccordionChange = (value: string) => {
     const newOpenState = { ...openAccordions };
     
-    if (!value) {
+    if (value in newOpenState) {
       delete newOpenState[value];
     } else {
       newOpenState[value] = true;
@@ -186,8 +186,29 @@ export function Sidebar() {
   ) => {
     if (collapsed) {
       return (
-        <div className="flex items-center w-full px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-          {icon}
+        <div className="relative group">
+          <button
+            className="flex items-center w-full px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            onClick={() => handleAccordionChange(value)}
+          >
+            {icon}
+          </button>
+          {openAccordions[value] && (
+            <div className="absolute left-full top-0 ml-2 w-48 py-2 bg-popover border rounded-md shadow-md z-50">
+              {items.map((item) => (
+                <SidebarNavItem
+                  key={item.path}
+                  name={item.name}
+                  path={item.path}
+                  icon={item.icon}
+                  collapsed={false}
+                  isPremiumFeature={item.requirePremium}
+                  userHasPremium={isPremium}
+                  onItemClick={handleNavItemClick}
+                />
+              ))}
+            </div>
+          )}
         </div>
       );
     }
@@ -208,7 +229,7 @@ export function Sidebar() {
             </div>
           </AccordionTrigger>
           <AccordionContent>
-            <ul className="mt-1 space-y-1.5 pl-7 mb-3">
+            <ul className="mt-1 space-y-1.5 pl-7">
               {items.map((item) => (
                 <SidebarNavItem
                   key={item.path}
@@ -284,7 +305,7 @@ export function Sidebar() {
           )}
 
           <nav className="flex-1 py-4 overflow-y-auto scrollbar-thin">
-            <ul className="space-y-3 px-2">
+            <ul className="space-y-1.5 px-2">
               {mainNavItems.map((item) => (
                 <SidebarNavItem
                   key={item.path}
@@ -294,17 +315,8 @@ export function Sidebar() {
                 />
               ))}
               
-              <li className="py-1">
-                {renderAccordionGroup(
-                  'Personnel',
-                  personnelItems,
-                  <User className="w-5 h-5" aria-hidden="true" />,
-                  'personnel'
-                )}
-              </li>
-
               {afterGroupsItems.slice(0, 1).map((item) => (
-                <li className="py-1 mt-1" key={item.path}>
+                <li key={item.path}>
                   <SidebarNavItem
                     {...item}
                     collapsed={collapsed}
@@ -313,7 +325,7 @@ export function Sidebar() {
                 </li>
               ))}
 
-              <li className="py-1">
+              <li>
                 {renderAccordionGroup(
                   'Analyses',
                   analysesItems,
@@ -322,8 +334,17 @@ export function Sidebar() {
                 )}
               </li>
 
+              <li>
+                {renderAccordionGroup(
+                  'Personnel',
+                  personnelItems,
+                  <User className="w-5 h-5" aria-hidden="true" />,
+                  'personnel'
+                )}
+              </li>
+
               {afterGroupsItems.slice(1).map((item) => (
-                <li className="py-1 mt-1" key={item.path}>
+                <li key={item.path}>
                   <SidebarNavItem
                     {...item}
                     collapsed={collapsed}
