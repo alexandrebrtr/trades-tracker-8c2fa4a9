@@ -3,7 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { TradeForm } from '@/components/forms/TradeForm';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Zap, Book, X, Import } from 'lucide-react';
+import { Zap, Book, X, Import, Upload } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { usePremium } from '@/context/PremiumContext';
 import { 
@@ -51,7 +51,6 @@ const TradeEntry = () => {
     
     setIsConnecting(true);
     try {
-      // Mettre à jour les paramètres utilisateur
       const newSettings = {
         ...userSettings,
         broker: {
@@ -64,7 +63,6 @@ const TradeEntry = () => {
       
       await updateUserSettings(newSettings);
       
-      // Synchroniser les trades depuis le broker
       setIsSyncing(true);
       const result = await RealtimeService.syncTradesFromBroker(user.id, {
         name: brokerName,
@@ -106,7 +104,7 @@ const TradeEntry = () => {
               className="flex items-center gap-2"
               onClick={() => setImportDialogOpen(true)}
             >
-              <FileUp className="h-4 w-4" />
+              <Upload className="h-4 w-4" />
               <span>Importer des données</span>
             </Button>
             <Button 
