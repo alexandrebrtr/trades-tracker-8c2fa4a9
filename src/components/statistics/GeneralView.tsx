@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { PieChart, Pie, ResponsiveContainer, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, Legend } from 'recharts';
-import { format, subDays, subMonths, isValid } from "date-fns";
+import { format, subDays, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CalendarIcon, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { CustomTooltip } from "../dashboard/chart/CustomTooltip";
+import { type DateRange } from "react-day-picker";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
 
@@ -24,7 +24,6 @@ type Trade = {
   type: string;
   strategy: string;
   pnl: number;
-  // ... autres propriétés
 };
 
 type GeneralViewProps = {
@@ -46,11 +45,18 @@ const timelineOptions: TimelineOption[] = [
   { value: "custom", label: "Personnalisé" },
 ];
 
+const chartTypes = [
+  { value: "types", label: "Types de trades" },
+  { value: "strategies", label: "Stratégies" },
+  { value: "assets", label: "Actifs" },
+  { value: "drawdown", label: "Drawdown" }
+];
+
 export default function GeneralView({ trades }: GeneralViewProps) {
   const [selectedTimeline, setSelectedTimeline] = useState<string>("3m");
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: undefined,
-    to: undefined,
+    to: undefined
   });
   const [chartData, setChartData] = useState<any[]>([]);
   const [pieChartType, setPieChartType] = useState<string>("types");
@@ -60,61 +66,6 @@ export default function GeneralView({ trades }: GeneralViewProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [totalPnL, setTotalPnL] = useState<number>(0);
 
-  // Filtrer les trades en fonction de la timeline sélectionnée
-  useEffect(() => {
-    setLoading(true);
-    
-    // Déterminer les dates de début et de fin en fonction de la timeline
-    const now = new Date();
-    let startDate: Date;
-    
-    if (selectedTimeline === "custom" && dateRange.from && dateRange.to) {
-      startDate = dateRange.from;
-      const endDate = dateRange.to;
-      
-      const filtered = trades.filter(trade => {
-        const tradeDate = new Date(trade.date);
-        return tradeDate >= startDate && tradeDate <= endDate;
-      });
-      
-      setFilteredTrades(filtered);
-      processTradeData(filtered);
-      processPerformanceData(filtered);
-      processDailyPnLData(filtered);
-    } else {
-      switch (selectedTimeline) {
-        case "7d":
-          startDate = subDays(now, 7);
-          break;
-        case "1m":
-          startDate = subMonths(now, 1);
-          break;
-        case "3m":
-          startDate = subMonths(now, 3);
-          break;
-        case "6m":
-          startDate = subMonths(now, 6);
-          break;
-        case "1y":
-          startDate = subMonths(now, 12);
-          break;
-        default:
-          startDate = new Date(0); // Tout l'historique
-      }
-      
-      const filtered = trades.filter(trade => {
-        const tradeDate = new Date(trade.date);
-        return tradeDate >= startDate;
-      });
-      
-      setFilteredTrades(filtered);
-      processTradeData(filtered);
-      processPerformanceData(filtered);
-      processDailyPnLData(filtered);
-    }
-  }, [trades, selectedTimeline, dateRange]);
-
-  // Traiter les données pour le graphique en camembert
   const processTradeData = (filteredTrades: Trade[]) => {
     if (filteredTrades.length === 0) {
       setChartData([]);
@@ -163,7 +114,6 @@ export default function GeneralView({ trades }: GeneralViewProps) {
     setLoading(false);
   };
 
-  // Traiter les données pour le graphique d'évolution des performances
   const processPerformanceData = (filteredTrades: Trade[]) => {
     if (filteredTrades.length === 0) {
       setPerformanceData([]);
@@ -196,7 +146,6 @@ export default function GeneralView({ trades }: GeneralViewProps) {
     setPerformanceData(performanceData);
   };
 
-  // Traiter les données pour le graphique de P&L journalier
   const processDailyPnLData = (filteredTrades: Trade[]) => {
     if (filteredTrades.length === 0) {
       setDailyPnLData([]);
@@ -230,130 +179,142 @@ export default function GeneralView({ trades }: GeneralViewProps) {
     setDailyPnLData(dailyPnLData);
   };
 
+  // Nouvelle fonction pour calculer les données de drawdown
+  const calculateDrawdownData = (filteredTrades: Trade[]) => {
+    if (!filteredTrades.length) return [];
+
+    let cumulative = 0;
+    let peak = 0;
+    const drawdowns: any[] = [];
+    
+    filteredTrades.forEach(trade => {
+      cumulative += trade.pnl;
+      if (cumulative > peak) peak = cumulative;
+      
+      const drawdownPercent = peak !== 0 ? ((peak - cumulative) / peak) * 100 : 0;
+      drawdowns.push({
+        date: format(new Date(trade.date), "dd/MM/yyyy"),
+        value: drawdownPercent
+      });
+    });
+    
+    return drawdowns;
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    
+    let startDate: Date;
+    let endDate = new Date();
+    
+    if (selectedTimeline === "custom" && dateRange?.from) {
+      startDate = dateRange.from;
+      if (dateRange.to) endDate = dateRange.to;
+    } else {
+      switch (selectedTimeline) {
+        case "7d":
+          startDate = subDays(new Date(), 7);
+          break;
+        case "1m":
+          startDate = subMonths(new Date(), 1);
+          break;
+        case "3m":
+          startDate = subMonths(new Date(), 3);
+          break;
+        case "6m":
+          startDate = subMonths(new Date(), 6);
+          break;
+        case "1y":
+          startDate = subMonths(new Date(), 12);
+          break;
+        default:
+          startDate = new Date(0);
+      }
+    }
+    
+    const filtered = trades.filter(trade => {
+      const tradeDate = new Date(trade.date);
+      return tradeDate >= startDate && tradeDate <= endDate;
+    });
+    
+    setFilteredTrades(filtered);
+    processTradeData(filtered);
+    processPerformanceData(filtered);
+    processDailyPnLData(filtered);
+    setLoading(false);
+  }, [trades, selectedTimeline, dateRange]);
+
+  const TimelineSelector = () => (
+    <div className="flex items-center space-x-2">
+      <Select
+        value={selectedTimeline}
+        onValueChange={(value) => {
+          setSelectedTimeline(value);
+          if (value !== "custom") {
+            setDateRange({ from: undefined, to: undefined });
+          }
+        }}
+      >
+        <SelectTrigger className="w-[120px] md:w-[150px]">
+          <SelectValue placeholder="Période" />
+        </SelectTrigger>
+        <SelectContent>
+          {timelineOptions.map(option => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {selectedTimeline === "custom" && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "flex items-center justify-center text-sm md:text-base whitespace-nowrap",
+                !dateRange?.from && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {dateRange?.from ? (
+                dateRange.to ? (
+                  <>
+                    {format(dateRange.from, "dd/MM/yy")} - {format(dateRange.to, "dd/MM/yy")}
+                  </>
+                ) : (
+                  format(dateRange.from, "dd/MM/yyyy")
+                )
+              ) : (
+                "Sélectionner"
+              )}
+              <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={dateRange?.from}
+              selected={dateRange}
+              onSelect={setDateRange}
+              numberOfMonths={2}
+              locale={fr}
+            />
+          </PopoverContent>
+        </Popover>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-6">
-      {/* Graphique en camembert avec sélection de type */}
+      {/* Performance Evolution Chart */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg md:text-xl font-semibold">Répartition des données</CardTitle>
-          <div className="flex items-center space-x-2">
-            <Select
-              value={pieChartType}
-              onValueChange={setPieChartType}
-            >
-              <SelectTrigger className="w-[120px] md:w-[170px]">
-                <SelectValue placeholder="Sélectionnez" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="types">Types de trades</SelectItem>
-                <SelectItem value="strategies">Stratégies</SelectItem>
-                <SelectItem value="assets">Actifs</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Select
-              value={selectedTimeline}
-              onValueChange={(value) => {
-                setSelectedTimeline(value);
-                if (value !== "custom") {
-                  setDateRange({ from: undefined, to: undefined });
-                }
-              }}
-            >
-              <SelectTrigger className="w-[120px] md:w-[150px]">
-                <SelectValue placeholder="Période" />
-              </SelectTrigger>
-              <SelectContent>
-                {timelineOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {selectedTimeline === "custom" && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "flex items-center justify-center text-sm md:text-base whitespace-nowrap",
-                      !dateRange.from && !dateRange.to && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, "dd/MM/yy")} - {format(dateRange.to, "dd/MM/yy")}
-                        </>
-                      ) : (
-                        format(dateRange.from, "dd/MM/yyyy")
-                      )
-                    ) : (
-                      "Sélectionner"
-                    )}
-                    <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="range"
-                    selected={dateRange}
-                    onSelect={setDateRange}
-                    numberOfMonths={2}
-                    locale={fr}
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px] md:h-[400px] w-full">
-            {loading ? (
-              <div className="h-full w-full flex items-center justify-center">
-                <Skeleton className="h-full w-full rounded-lg" />
-              </div>
-            ) : chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius="70%"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`${value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}`, 'Montant']} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full w-full flex items-center justify-center">
-                <p className="text-muted-foreground">Aucune donnée disponible pour cette période</p>
-              </div>
-            )}
-          </div>
-          <div className="mt-4 text-center">
-            <Badge variant="outline" className={cn("text-md font-medium", totalPnL >= 0 ? "text-green-500" : "text-red-500")}>
-              Total P&L: {totalPnL.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Graphique d'évolution des performances */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Évolution des performances</CardTitle>
+          <CardTitle className="text-lg md:text-xl font-semibold">Évolution des performances</CardTitle>
+          <TimelineSelector />
         </CardHeader>
         <CardContent>
           <div className="h-[300px] md:h-[350px]">
@@ -403,10 +364,112 @@ export default function GeneralView({ trades }: GeneralViewProps) {
         </CardContent>
       </Card>
 
-      {/* Graphique P&L Journalier */}
+      {/* Distribution and Drawdown Charts Side by Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Distribution Chart */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-lg md:text-xl font-semibold">Répartition des données</CardTitle>
+            <div className="flex items-center space-x-2">
+              <Select
+                value={pieChartType}
+                onValueChange={setPieChartType}
+              >
+                <SelectTrigger className="w-[120px] md:w-[170px]">
+                  <SelectValue placeholder="Sélectionnez" />
+                </SelectTrigger>
+                <SelectContent>
+                  {chartTypes.map(type => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <TimelineSelector />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] w-full aspect-square">
+              {loading ? (
+                <Skeleton className="h-full w-full rounded-lg" />
+              ) : chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius="70%"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [`${value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}`, 'Montant']} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full w-full flex items-center justify-center">
+                  <p className="text-muted-foreground">Aucune donnée disponible pour cette période</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Drawdown Chart */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-lg md:text-xl font-semibold">Analyse du Drawdown</CardTitle>
+            <TimelineSelector />
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] w-full aspect-square">
+              {loading ? (
+                <Skeleton className="h-full w-full rounded-lg" />
+              ) : filteredTrades.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={calculateDrawdownData(filteredTrades)}>
+                    <defs>
+                      <linearGradient id="colorDrawdown" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ff4d4d" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#ff4d4d" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis dataKey="date" />
+                    <YAxis tickFormatter={(value) => `${value}%`} />
+                    <Tooltip 
+                      formatter={(value: any) => [`${value}%`, 'Drawdown']}
+                      labelFormatter={(label) => `Date: ${label}`}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#ff4d4d"
+                      fill="url(#colorDrawdown)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full w-full flex items-center justify-center">
+                  <p className="text-muted-foreground">Aucune donnée disponible pour cette période</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Daily P&L Chart */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle>P&L Journalier {new Date().getFullYear()}</CardTitle>
+          <TimelineSelector />
         </CardHeader>
         <CardContent>
           <div className="h-[300px] md:h-[350px]">
