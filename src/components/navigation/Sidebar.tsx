@@ -51,6 +51,8 @@ export function Sidebar() {
   const { user } = useAuth();
   const { isPremium } = usePremium();
   
+  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({});
+  
   useEffect(() => {
     const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState) {
@@ -70,6 +72,17 @@ export function Sidebar() {
     };
   }, [isMobile]);
 
+  useEffect(() => {
+    const storedAccordions = localStorage.getItem('sidebarOpenAccordions');
+    if (storedAccordions) {
+      try {
+        setOpenAccordions(JSON.parse(storedAccordions));
+      } catch (e) {
+        console.error("Erreur lors du chargement des accordéons ouverts:", e);
+      }
+    }
+  }, []);
+
   const toggleSidebar = () => {
     const newState = !collapsed;
     setCollapsed(newState);
@@ -86,6 +99,19 @@ export function Sidebar() {
     if (isMobile && !collapsed) {
       toggleSidebar();
     }
+  };
+
+  const handleAccordionChange = (value: string) => {
+    const newOpenState = { ...openAccordions };
+    
+    if (!value) {
+      delete newOpenState[value];
+    } else {
+      newOpenState[value] = true;
+    }
+    
+    setOpenAccordions(newOpenState);
+    localStorage.setItem('sidebarOpenAccordions', JSON.stringify(newOpenState));
   };
 
   const mainNavItems: NavItem[] = [
@@ -167,7 +193,13 @@ export function Sidebar() {
     }
     
     return (
-      <Accordion type="single" collapsible className="w-full border-none">
+      <Accordion 
+        type="single" 
+        collapsible 
+        className="w-full border-none"
+        value={openAccordions[value] ? value : ""}
+        onValueChange={(val) => handleAccordionChange(val)}
+      >
         <AccordionItem value={value} className="border-none">
           <AccordionTrigger className="flex items-center w-full px-3 py-2.5 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
             <div className="flex items-center gap-2 text-left">
@@ -176,7 +208,7 @@ export function Sidebar() {
             </div>
           </AccordionTrigger>
           <AccordionContent>
-            <ul className="mt-1 space-y-1.5 pl-7">
+            <ul className="mt-1 space-y-1.5 pl-7 mb-3">
               {items.map((item) => (
                 <SidebarNavItem
                   key={item.path}
@@ -252,7 +284,7 @@ export function Sidebar() {
           )}
 
           <nav className="flex-1 py-4 overflow-y-auto scrollbar-thin">
-            <ul className="space-y-2 px-2">
+            <ul className="space-y-3 px-2">
               {mainNavItems.map((item) => (
                 <SidebarNavItem
                   key={item.path}
@@ -272,7 +304,7 @@ export function Sidebar() {
               </li>
 
               {afterGroupsItems.slice(0, 1).map((item) => (
-                <li className="py-1" key={item.path}>
+                <li className="py-1 mt-1" key={item.path}>
                   <SidebarNavItem
                     {...item}
                     collapsed={collapsed}
@@ -291,7 +323,7 @@ export function Sidebar() {
               </li>
 
               {afterGroupsItems.slice(1).map((item) => (
-                <li className="py-1" key={item.path}>
+                <li className="py-1 mt-1" key={item.path}>
                   <SidebarNavItem
                     {...item}
                     collapsed={collapsed}
