@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +20,7 @@ const strategies = [
   'Trend Following',
   'Mean Reversion',
   'Arbitrage',
+  'custom'
 ];
 
 const assets = [
@@ -67,11 +67,8 @@ export function TradeForm() {
   const [manualPnL, setManualPnL] = useState('');
   const [useManualPnL, setUseManualPnL] = useState(false);
   const [isCustomAsset, setIsCustomAsset] = useState(false);
-  
-  const [stopLoss, setStopLoss] = useState('');
-  const [takeProfit, setTakeProfit] = useState('');
-  const [useStopLoss, setUseStopLoss] = useState(false);
-  const [useTakeProfit, setUseTakeProfit] = useState(false);
+  const [customStrategy, setCustomStrategy] = useState('');
+  const [isCustomStrategy, setIsCustomStrategy] = useState(false);
 
   useEffect(() => {
     const now = new Date();
@@ -87,6 +84,14 @@ export function TradeForm() {
       setIsCustomAsset(false);
     }
   }, [asset]);
+
+  useEffect(() => {
+    if (strategy === 'custom') {
+      setIsCustomStrategy(true);
+    } else {
+      setIsCustomStrategy(false);
+    }
+  }, [strategy]);
 
   const calculateResult = () => {
     if (entryPrice && exitPrice && size) {
@@ -122,7 +127,7 @@ export function TradeForm() {
       return;
     }
     
-    if (!asset || (asset === 'custom' && !customAsset) || !orderType || !strategy || !entryPrice || !exitPrice || !size || !entryDate || !exitDate) {
+    if (!asset || (asset === 'custom' && !customAsset) || !orderType || !strategy || (strategy === 'custom' && !customStrategy) || !entryPrice || !exitPrice || !size || !entryDate || !exitDate) {
       toast({
         title: "Formulaire incomplet",
         description: "Veuillez remplir tous les champs obligatoires.",
@@ -134,13 +139,11 @@ export function TradeForm() {
     setIsSubmitting(true);
     
     try {
-      // Parse numeric values properly
       const entry = parseFloat(entryPrice.replace(',', '.'));
       const exit = parseFloat(exitPrice.replace(',', '.'));
       const positionSize = parseFloat(size.replace(',', '.'));
       const feesAmount = fees ? parseFloat(fees.replace(',', '.')) : 0;
       
-      // Calculate PnL
       let finalPnL;
       if (useManualPnL && manualPnL) {
         finalPnL = parseFloat(manualPnL.replace(',', '.'));
@@ -152,7 +155,6 @@ export function TradeForm() {
         }
       }
       
-      // Determine symbol to use
       let symbolToUse;
       if (asset === 'custom') {
         symbolToUse = customAsset.trim();
@@ -160,17 +162,19 @@ export function TradeForm() {
         symbolToUse = assets.find(a => a.value === asset)?.label || asset;
       }
       
-      // Parse optional stop loss and take profit
-      const stopLossValue = useStopLoss && stopLoss ? parseFloat(stopLoss.replace(',', '.')) : null;
-      const takeProfitValue = useTakeProfit && takeProfit ? parseFloat(takeProfit.replace(',', '.')) : null;
+      let strategyToUse;
+      if (strategy === 'custom') {
+        strategyToUse = customStrategy.trim();
+      } else {
+        strategyToUse = strategy;
+      }
       
-      // Create trade object
       const newTrade = {
         user_id: user.id,
         date: new Date(entryDate).toISOString(),
         symbol: symbolToUse,
         type: direction,
-        strategy,
+        strategy: strategyToUse,
         entry_price: entry,
         exit_price: exit,
         size: positionSize,
@@ -202,7 +206,6 @@ export function TradeForm() {
         description: "Votre trade a été enregistré avec succès.",
       });
       
-      // Reset form fields
       setEntryPrice('');
       setExitPrice('');
       setSize('');
@@ -304,7 +307,14 @@ export function TradeForm() {
               <DollarSign className="w-4 h-4 text-muted-foreground" />
               Actif tradé
             </Label>
-            <Select value={asset} onValueChange={setAsset} required>
+            <Select value={asset} onValueChange={(value) => {
+              setAsset(value);
+              if (value === 'custom') {
+                setIsCustomAsset(true);
+              } else {
+                setIsCustomAsset(false);
+              }
+            }} required>
               <SelectTrigger id="asset" className="mt-1">
                 <SelectValue placeholder="Sélectionner un actif" />
               </SelectTrigger>
@@ -490,7 +500,14 @@ export function TradeForm() {
               <Clock className="w-4 h-4 text-muted-foreground" />
               Stratégie utilisée
             </Label>
-            <Select value={strategy} onValueChange={setStrategy} required>
+            <Select value={strategy} onValueChange={(value) => {
+              setStrategy(value);
+              if (value === 'custom') {
+                setIsCustomStrategy(true);
+              } else {
+                setIsCustomStrategy(false);
+              }
+            }} required>
               <SelectTrigger id="strategy" className="mt-1">
                 <SelectValue placeholder="Sélectionner une stratégie" />
               </SelectTrigger>
@@ -498,10 +515,29 @@ export function TradeForm() {
                 {strategies.map((strategyItem) => (
                   <SelectItem key={strategyItem} value={strategyItem}>
                     {strategyItem}
+                    {strategyItem === 'custom' && <Search className="w-3.5 h-3.5 ml-1 inline" />}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            
+            {isCustomStrategy && (
+              <div className="mt-2">
+                <Label htmlFor="customStrategy" className="flex items-center gap-2">
+                  <Search className="w-4 h-4 text-muted-foreground" />
+                  Nom de la stratégie
+                </Label>
+                <Input
+                  id="customStrategy"
+                  type="text"
+                  placeholder="Saisir le nom de la stratégie..."
+                  className="mt-1"
+                  value={customStrategy}
+                  onChange={(e) => setCustomStrategy(e.target.value)}
+                  required={isCustomStrategy}
+                />
+              </div>
+            )}
           </div>
           
           <div>
