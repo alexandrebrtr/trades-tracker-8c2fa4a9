@@ -24,7 +24,7 @@ export function PerformanceChart({ data, loading, totalGain }: PerformanceChartP
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle>Performance du Capital</CardTitle>
-          <Badge variant={totalGain >= 0 ? "success" : "destructive"}>
+          <Badge variant={totalGain >= 0 ? "default" : "destructive"}>
             {totalGain >= 0 ? "+" : ""}{formatCurrency(totalGain)}
           </Badge>
         </div>
