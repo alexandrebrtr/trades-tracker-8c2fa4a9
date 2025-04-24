@@ -1,8 +1,6 @@
 
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const COLORS = ['#22c55e', '#ef4444'];
 
 interface WinLossDistributionChartProps {
   data: {
@@ -14,48 +12,52 @@ interface WinLossDistributionChartProps {
 
 export function WinLossDistributionChart({ data, loading }: WinLossDistributionChartProps) {
   if (loading) {
-    return <div className="animate-pulse bg-muted h-[350px] rounded-lg" />;
+    return <div className="animate-pulse bg-muted h-[300px] rounded-lg" />;
   }
 
+  const { winCount, lossCount } = data;
+  const totalTrades = winCount + lossCount;
+  const winRate = totalTrades > 0 ? Math.round((winCount / totalTrades) * 100) : 0;
+
   const chartData = [
-    { name: 'Trades Gagnants', value: data.winCount },
-    { name: 'Trades Perdants', value: data.lossCount }
+    { name: 'Gagnants', value: winCount, color: '#82ca9d' },
+    { name: 'Perdants', value: lossCount, color: '#ff8884' },
   ];
 
-  const total = data.winCount + data.lossCount;
-  const winRate = total > 0 ? (data.winCount / total * 100).toFixed(1) : '0';
-
+  const COLORS = ['#82ca9d', '#ff8884'];
+  
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Distribution Gains/Pertes</CardTitle>
-          <span className="text-sm font-medium">
-            Win Rate: {winRate}%
-          </span>
+          <CardTitle>Distribution des Trades</CardTitle>
+          <div className="text-sm font-medium">
+            Taux de réussite: <span className={winRate >= 50 ? 'text-green-500' : 'text-red-500'}>{winRate}%</span>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px]">
-          {total > 0 ? (
+        <div className="h-[250px]">
+          {totalTrades > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={chartData}
-                  dataKey="value"
-                  nameKey="name"
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
+                  labelLine={false}
                   outerRadius={80}
-                  paddingAngle={2}
+                  fill="#8884d8"
+                  dataKey="value"
                   label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
                   {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip 
+                  formatter={(value) => [`${value} trades`, '']}
+                />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>

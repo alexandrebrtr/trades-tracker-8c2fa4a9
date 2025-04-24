@@ -34,7 +34,7 @@ export function TradeVolumeChart({ data, loading }: TradeVolumeChartProps) {
                 />
                 <Bar
                   dataKey="count"
-                  fill="#8884d8"
+                  fill="#82ca9d" // Couleur verte pour les volumes
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>

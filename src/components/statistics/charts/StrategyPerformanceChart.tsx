@@ -1,5 +1,5 @@
 
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 
@@ -35,9 +35,12 @@ export function StrategyPerformanceChart({ data, loading }: StrategyPerformanceC
                 />
                 <Bar
                   dataKey="pnl"
-                  fill="#8884d8"
                   radius={[0, 4, 4, 0]}
-                />
+                >
+                  {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? '#82ca9d' : '#ff8884'} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : (

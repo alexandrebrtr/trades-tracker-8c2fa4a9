@@ -5,7 +5,7 @@ import { PerformanceChart } from './charts/PerformanceChart';
 import { WinLossDistributionChart } from './charts/WinLossDistributionChart';
 import { TradeVolumeChart } from './charts/TradeVolumeChart';
 import { StrategyPerformanceChart } from './charts/StrategyPerformanceChart';
-import { format, subDays, subMonths } from "date-fns";
+import { format, subDays, subMonths, parseISO, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
 
 const timelineOptions = [
@@ -26,6 +26,41 @@ export default function GeneralView({ trades }: { trades: any[] }) {
   const [winLossData, setWinLossData] = useState({ winCount: 0, lossCount: 0 });
   const [totalGain, setTotalGain] = useState(0);
 
+  // Filtrer les trades selon la période sélectionnée
+  const getFilteredTrades = () => {
+    if (!trades || trades.length === 0) return [];
+    
+    const today = new Date();
+    let startDate: Date;
+    
+    switch (selectedPeriod) {
+      case "7d":
+        startDate = subDays(today, 7);
+        break;
+      case "1m":
+        startDate = subMonths(today, 1);
+        break;
+      case "3m":
+        startDate = subMonths(today, 3);
+        break;
+      case "6m":
+        startDate = subMonths(today, 6);
+        break;
+      case "1y":
+        startDate = subMonths(today, 12);
+        break;
+      default:
+        // "all" - pas de filtrage
+        return [...trades].sort((a, b) => 
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+    }
+    
+    return trades
+      .filter(trade => new Date(trade.date) >= startDate)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  };
+
   useEffect(() => {
     if (!trades || trades.length === 0) {
       setLoading(false);
@@ -33,25 +68,55 @@ export default function GeneralView({ trades }: { trades: any[] }) {
     }
 
     setLoading(true);
-
-    // Process performance data
-    const dailyPerformance: Record<string, number> = {};
-    let cumulativePnL = 0;
     
-    trades.forEach(trade => {
+    // Récupérer les trades filtrés
+    const filteredTrades = getFilteredTrades();
+    
+    if (filteredTrades.length === 0) {
+      setLoading(false);
+      return;
+    }
+
+    // Process performance data with daily changes
+    const dailyPerformance: Record<string, { value: number, dailyChange: number }> = {};
+    let cumulativePnL = 0;
+    let previousDate = '';
+    let previousValue = 0;
+    
+    // Trier les trades par date croissante
+    filteredTrades.forEach(trade => {
       const date = format(new Date(trade.date), "dd/MM/yyyy");
-      cumulativePnL += trade.pnl;
-      dailyPerformance[date] = cumulativePnL;
+      
+      // Si c'est la première entrée pour cette date
+      if (!dailyPerformance[date]) {
+        const dailyChange = previousDate ? (cumulativePnL + trade.pnl) - previousValue : trade.pnl;
+        
+        cumulativePnL += trade.pnl;
+        dailyPerformance[date] = { 
+          value: cumulativePnL,
+          dailyChange 
+        };
+        
+        previousDate = date;
+        previousValue = cumulativePnL;
+      } else {
+        // Si on a déjà une entrée pour cette date, on met à jour
+        cumulativePnL += trade.pnl;
+        dailyPerformance[date].value = cumulativePnL;
+        dailyPerformance[date].dailyChange += trade.pnl;
+      }
     });
 
-    const performanceData = Object.entries(dailyPerformance).map(([date, value]) => ({
+    // Convertir en tableau pour le graphique
+    const performanceData = Object.entries(dailyPerformance).map(([date, data]) => ({
       date,
-      value
+      value: data.value,
+      dailyChange: data.dailyChange
     }));
 
-    // Process trade volume data
+    // Process trade volume data (compter le nombre de trades par jour)
     const volumeByDay: Record<string, number> = {};
-    trades.forEach(trade => {
+    filteredTrades.forEach(trade => {
       const date = format(new Date(trade.date), "dd/MM/yyyy");
       volumeByDay[date] = (volumeByDay[date] || 0) + 1;
     });
@@ -63,7 +128,7 @@ export default function GeneralView({ trades }: { trades: any[] }) {
 
     // Process strategy performance
     const strategyPerformance: Record<string, number> = {};
-    trades.forEach(trade => {
+    filteredTrades.forEach(trade => {
       const strategy = trade.strategy || "Non définie";
       strategyPerformance[strategy] = (strategyPerformance[strategy] || 0) + trade.pnl;
     });
@@ -73,8 +138,8 @@ export default function GeneralView({ trades }: { trades: any[] }) {
       .sort((a, b) => b.pnl - a.pnl);
 
     // Calculate win/loss distribution
-    const winningTrades = trades.filter(trade => trade.pnl > 0);
-    const losingTrades = trades.filter(trade => trade.pnl < 0);
+    const winningTrades = filteredTrades.filter(trade => trade.pnl > 0);
+    const losingTrades = filteredTrades.filter(trade => trade.pnl < 0);
 
     setPerformanceData(performanceData);
     setTradeVolumeData(volumeData);
