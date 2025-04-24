@@ -50,7 +50,6 @@ const chartTypes = [
   { value: "types", label: "Types de trades" },
   { value: "strategies", label: "Stratégies" },
   { value: "assets", label: "Actifs" },
-  { value: "drawdown", label: "Drawdown" }
 ];
 
 export default function GeneralView({ trades }: GeneralViewProps) {
