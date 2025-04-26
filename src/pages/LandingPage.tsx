@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronDown, LineChart, TrendingUp, PieChart, Wallet, BarChart2, ArrowRight, FileText, ChartBar, Briefcase } from 'lucide-react';
+import { ChevronDown, LineChart, TrendingUp, PieChart, Wallet, BarChart2, ArrowRight, FileText, ChartBar, Briefcase, Star } from 'lucide-react';
+import { ContactForm } from '@/components/contact/ContactForm';
 
 export default function LandingPage() {
   const fadeIn = {
@@ -65,6 +66,27 @@ export default function LandingPage() {
       title: "Statistiques avancées",
       description: "Visualisez vos performances avec des graphiques détaillés",
       icon: "/lovable-uploads/add96841-d5f8-4327-a5d6-5f1b97236b33.png"
+    }
+  ];
+
+  const testimonials = [
+    {
+      text: "Trades Tracker a transformé ma façon d'analyser mes performances. Je peux maintenant identifier facilement mes schémas de trading gagnants.",
+      author: "Alexandre D.",
+      role: "Day Trader",
+      rating: 5
+    },
+    {
+      text: "Interface intuitive, statistiques claires. Exactement ce dont j'avais besoin pour progresser et être plus disciplinée dans mes trades.",
+      author: "Marie L.",
+      role: "Investisseur particulier",
+      rating: 5
+    },
+    {
+      text: "Le journal de trading est devenu mon meilleur allié. Je comprends mieux mes erreurs et améliore constamment ma stratégie.",
+      author: "Thomas B.",
+      role: "Swing Trader",
+      rating: 5
     }
   ];
 
@@ -346,23 +368,185 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-secondary/20">
-        <div className="container px-4 mx-auto text-center">
-          <div className="max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold mb-4">Prêt à améliorer votre trading ?</h2>
-            <p className="text-muted-foreground mb-8">
-              Rejoignez des milliers de traders qui ont déjà optimisé leurs performances
-            </p>
-            <Button asChild size="lg" className="rounded-full px-8 gap-2">
-              <Link to="/dashboard">
-                Commencer maintenant
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+      {/* Transformation CTA Section */}
+      <section className="py-32 bg-primary relative overflow-hidden">
+        <div className="container px-4 mx-auto text-center text-white">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-4xl md:text-5xl font-bold mb-6"
+          >
+            Prêt à transformer votre trading ?
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-lg mb-8 text-white/90"
+          >
+            Rejoignez des milliers de traders qui ont amélioré leurs performances grâce à Trades Tracker.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
+            <Button size="lg" variant="secondary" className="rounded-full px-8">
+              Commencer gratuitement
             </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Beta Version Notice */}
+      <section className="py-16 bg-background">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="text-center space-y-12">
+            <div className="space-y-4">
+              <div className="flex justify-center">
+                <div className="rounded-full bg-primary/10 p-3">
+                  <div className="text-primary">ⓘ</div>
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold">Version Bêta - Premium Offert !</h2>
+              <p className="text-muted-foreground">
+                Vous utilisez actuellement la version bêta de Trades Tracker. Pendant cette période,{' '}
+                <span className="text-primary">nous offrons l'accès premium gratuitement</span> à tous nos utilisateurs !
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Pour en bénéficier, il vous suffit d'envoyer un message via notre page contact en précisant votre intérêt
+                pour l'accès premium gratuit.
+              </p>
+              <Button variant="outline" size="lg" className="rounded-full">
+                Contacter l'équipe
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex justify-center">
+                <div className="rounded-full bg-yellow-500/10 p-3">
+                  <div className="text-yellow-500">⚠</div>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold">Avertissement important</h3>
+              <div className="space-y-4 text-sm text-muted-foreground">
+                <p>
+                  Le trading et les investissements sur les marchés financiers comportent un risque substantiel de perte.
+                  Les performances passées ne préjugent pas des résultats futurs.
+                </p>
+                <p>
+                  75% des comptes d'investisseurs particuliers perdent de l'argent lorsqu'ils négocient des produits
+                  financiers.
+                </p>
+                <p>
+                  Cette plateforme est conçue pour le suivi et l'analyse de vos activités de trading, et non pour fournir des
+                  recommandations d'investissement. Veuillez consulter un conseiller financier professionnel avant de
+                  prendre des décisions d'investissement.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 bg-background">
+        <div className="container px-4 mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl font-bold mb-4">Ce que disent nos utilisateurs</h2>
+            <p className="text-muted-foreground">
+              Découvrez comment Trades Tracker aide les traders à améliorer leurs performances
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="h-full">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex text-primary">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-current" />
+                      ))}
+                    </div>
+                    <p className="text-muted-foreground italic">"{testimonial.text}"</p>
+                    <div>
+                      <p className="font-semibold">{testimonial.author}</p>
+                      <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section className="py-20 bg-background/50">
+        <div className="container px-4 mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+            <div>
+              <h2 className="text-3xl font-bold mb-6">Une question ? Contactez-nous !</h2>
+              <p className="text-muted-foreground mb-8">
+                Notre équipe est là pour vous aider à tirer le meilleur parti de Trades Tracker. N'hésitez pas à nous contacter pour toute question ou suggestion.
+              </p>
+              <ul className="space-y-4">
+                <li className="flex items-center gap-2 text-muted-foreground">
+                  <div className="w-5 h-5 text-primary">✓</div>
+                  Support réactif
+                </li>
+                <li className="flex items-center gap-2 text-muted-foreground">
+                  <div className="w-5 h-5 text-primary">✓</div>
+                  Experts en trading
+                </li>
+                <li className="flex items-center gap-2 text-muted-foreground">
+                  <div className="w-5 h-5 text-primary">✓</div>
+                  Accompagnement personnalisé
+                </li>
+                <li className="flex items-center gap-2 text-muted-foreground">
+                  <div className="w-5 h-5 text-primary">✓</div>
+                  Réponse sous 24h
+                </li>
+              </ul>
+            </div>
+            <div className="bg-card rounded-lg p-6 shadow-lg border border-border">
+              <ContactForm />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 bg-background/50 border-t border-border">
+        <div className="container px-4 mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div>
+              <div className="text-xl font-semibold text-primary">Trades Tracker</div>
+              <p className="text-sm text-muted-foreground">Votre compagnon de trading au quotidien</p>
+            </div>
+            <div className="flex items-center space-x-6">
+              <Link to="/contact" className="text-muted-foreground hover:text-primary">Contact</Link>
+              <Link to="/premium" className="text-muted-foreground hover:text-primary">Premium</Link>
+              <Link to="/demo" className="text-muted-foreground hover:text-primary">Démo</Link>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-border/50 text-center">
+            <p className="text-sm text-muted-foreground">
+              © 2025 Trades Tracker. Tous droits réservés.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
