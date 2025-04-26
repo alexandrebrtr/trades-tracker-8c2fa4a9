@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -14,7 +13,8 @@ import {
   AlertTriangle,
   Info,
   Play,
-  Video
+  Video,
+  Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,6 +22,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { ContactForm } from '@/components/contact/ContactForm';
 
 export default function LandingPage() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -204,7 +205,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Integration Section */}
+        {/* Integration Section - Updated with Contact Form */}
         <section className="py-12 md:py-24 bg-secondary/20">
           <div className="container px-4 md:px-6">
             <div className="grid md:grid-cols-2 gap-8 md:gap-10 items-center">
@@ -216,25 +217,25 @@ export default function LandingPage() {
                 transition={{ duration: 0.5 }}
               >
                 <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-4">
-                  Connectez votre broker en toute sécurité
+                  Une question ? Contactez-nous !
                 </h2>
                 <p className="text-base md:text-xl text-muted-foreground mb-6">
-                  Grâce à notre intégration avec les principales plateformes de trading, importez automatiquement vos trades et suivez vos performances en temps réel.
+                  Notre équipe est là pour vous aider à tirer le meilleur parti de Trades Tracker. 
+                  N'hésitez pas à nous contacter pour toute question ou suggestion.
                 </p>
                 <ul className="space-y-3 mb-8">
-                  {["Binance", "FTX", "Coinbase", "Kraken"].map((broker, index) => (
+                  {[
+                    "Support réactif",
+                    "Experts en trading",
+                    "Accompagnement personnalisé",
+                    "Réponse sous 24h"
+                  ].map((item, index) => (
                     <li key={index} className="flex items-center">
-                      <CheckCircle2 className="h-5 w-5 text-primary mr-2" />
-                      <span>{broker}</span>
+                      <Mail className="h-5 w-5 text-primary mr-2" />
+                      <span>{item}</span>
                     </li>
                   ))}
                 </ul>
-                <Button asChild className="w-full sm:w-auto">
-                  <Link to="/trade-entry" className="inline-flex items-center">
-                    <span>Connectez votre compte</span>
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
               </motion.div>
               <motion.div
                 initial="hidden"
@@ -242,34 +243,9 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 variants={fadeIn}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="flex justify-center mt-8 md:mt-0"
+                className="bg-card rounded-lg shadow-xl p-6"
               >
-                <div className="relative max-w-md w-full">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-lg blur opacity-25"></div>
-                  <div className="relative bg-card rounded-lg overflow-hidden p-6 shadow-xl">
-                    <h3 className="text-xl font-semibold mb-4">Connectez votre broker</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Plateforme</label>
-                        <select className="w-full p-2 rounded-md border bg-background">
-                          <option>Binance</option>
-                          <option>FTX</option>
-                          <option>Coinbase</option>
-                          <option>Kraken</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Clé API</label>
-                        <input type="text" className="w-full p-2 rounded-md border bg-background" placeholder="Votre clé API" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Clé secrète</label>
-                        <input type="password" className="w-full p-2 rounded-md border bg-background" placeholder="Votre clé secrète" />
-                      </div>
-                      <Button className="w-full">Connecter et synchroniser</Button>
-                    </div>
-                  </div>
-                </div>
+                <ContactForm />
               </motion.div>
             </div>
           </div>
