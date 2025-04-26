@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -6,9 +5,12 @@ import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { ContactForm } from '@/components/contact/ContactForm';
-import { Mail, Info, AlertTriangle } from 'lucide-react';
+import { Mail, Info, AlertTriangle, Moon, Sun } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function LandingPage() {
+  const { theme, toggleTheme } = useTheme();
+  
   // Animation variant for fade in effect
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
@@ -84,8 +86,14 @@ export default function LandingPage() {
                 <Button asChild size="lg" className="rounded-full">
                   <Link to="/dashboard">Démarrer gratuitement</Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="rounded-full">
-                  <Link to="/login">Se connecter</Link>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={toggleTheme} 
+                  className="rounded-full"
+                  aria-label={theme === 'dark' ? "Passer au mode clair" : "Passer au mode sombre"}
+                >
+                  {theme === 'dark' ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
                 </Button>
               </div>
               <div className="grid grid-cols-3 gap-8 mt-12">
@@ -104,7 +112,6 @@ export default function LandingPage() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative aspect-[4/3] lg:-mr-20"
             >
-              {/* Desktop Screenshot */}
               <div className="absolute inset-0">
                 <img
                   src="/lovable-uploads/7b5e102a-70c9-4618-a03e-87c1f375227e.png"
@@ -113,7 +120,6 @@ export default function LandingPage() {
                 />
               </div>
 
-              {/* Mobile Screenshot - Overlapping */}
               <img
                 src="/lovable-uploads/add96841-d5f8-4327-a5d6-5f1b97236b33.png"
                 alt="Mobile Dashboard"
