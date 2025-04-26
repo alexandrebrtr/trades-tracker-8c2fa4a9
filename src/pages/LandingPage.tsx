@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronDown, LineChart, TrendingUp, PieChart, Wallet, BarChart2, ArrowRight } from 'lucide-react';
+import { ChevronDown, LineChart, TrendingUp, PieChart, Wallet, BarChart2, ArrowRight, FileText, ChartBar, BriefCase } from 'lucide-react';
 
 export default function LandingPage() {
   const fadeIn = {
@@ -43,6 +42,29 @@ export default function LandingPage() {
       description: "Ratio de Sharpe, drawdown, win rate et autres métriques essentielles",
       icon: <BarChart2 className="h-6 w-6" />,
       stats: "+20 métriques"
+    }
+  ];
+
+  const trackingCategories = [
+    {
+      title: "Journal de trading",
+      description: "Enregistrez vos trades et analysez vos performances avec +20 métriques",
+      icon: "/lovable-uploads/6b9faeba-9821-4d33-be9c-6a099aa8c1fe.png"
+    },
+    {
+      title: "Analyse technique",
+      description: "Suivez vos stratégies et identifiez vos points forts",
+      icon: "/lovable-uploads/57a22622-92bf-4e4a-871d-1436a6ee3bb2.png"
+    },
+    {
+      title: "Gestion du capital",
+      description: "Optimisez votre money management et limitez les risques",
+      icon: "/lovable-uploads/08082885-3fcb-46d9-b3a4-e5140c20d702.png"
+    },
+    {
+      title: "Statistiques avancées",
+      description: "Visualisez vos performances avec des graphiques détaillés",
+      icon: "/lovable-uploads/add96841-d5f8-4327-a5d6-5f1b97236b33.png"
     }
   ];
 
@@ -106,6 +128,73 @@ export default function LandingPage() {
 
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+      </section>
+
+      {/* Tracking Section */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="container px-4 mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-3xl mx-auto text-center mb-16"
+          >
+            <h2 className="text-4xl font-bold mb-6">
+              Suivre vos performances,<br />
+              en pilote automatique
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              On ne peut pas améliorer ce que l'on ne suit pas.<br />
+              Nous automatisons le suivi de vos performances de trading.
+            </p>
+            <div className="p-4 bg-secondary/20 rounded-lg mb-8">
+              <p className="text-muted-foreground">
+                Économisez des heures sur l'analyse de vos trades
+              </p>
+            </div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {trackingCategories.map((category, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <Card className="h-full bg-card hover:shadow-lg transition-shadow overflow-hidden">
+                  <CardContent className="p-6 flex gap-4">
+                    <div className="w-32 h-24 relative rounded-lg overflow-hidden bg-black/5">
+                      <img
+                        src={category.icon}
+                        alt={category.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold mb-2">{category.title}</h3>
+                      <p className="text-muted-foreground text-sm">{category.description}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-center mt-12"
+          >
+            <Button asChild size="lg" className="rounded-full px-8">
+              <Link to="/dashboard">Commencer gratuitement</Link>
+            </Button>
+          </motion.div>
+        </div>
       </section>
 
       {/* Features Section */}
