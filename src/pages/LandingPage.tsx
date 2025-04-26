@@ -90,16 +90,12 @@ export default function LandingPage() {
     visible: { opacity: 1, y: 0 }
   };
 
-  const handlePlayVideo = () => {
-    setIsVideoPlaying(true);
-  };
-
   return (
     <div className="min-h-screen bg-[#0A0B0D] text-white overflow-hidden">
-      {/* Hero Section */}
-      <section className="relative pt-20 md:pt-32 pb-16 md:pb-32">
+      {/* Hero Section with Screenshots */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center pt-16 md:pt-24 pb-16">
         <div className="container px-4 mx-auto relative z-10">
-          <div className="max-w-4xl mx-auto text-center mb-16">
+          <div className="max-w-4xl mx-auto text-center mb-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -113,7 +109,7 @@ export default function LandingPage() {
                 Trades Tracker est l'application qui vous aide à mieux gérer votre trading.
                 Suivez vos performances, analysez vos trades et optimisez votre stratégie.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
                 <Button
                   asChild
                   className="bg-[#2D7FF9] hover:bg-[#2D7FF9]/90 text-white px-8 py-6 rounded-full text-lg"
@@ -131,46 +127,36 @@ export default function LandingPage() {
             </motion.div>
           </div>
 
-          {/* Statistics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
-                className="bg-[#1A1D23] p-6 rounded-xl text-center"
-              >
-                <div className="text-2xl font-bold text-white mb-2">{stat.value}</div>
-                <div className="text-gray-400">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Preview Images */}
+          {/* Screenshot Container */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-20 relative"
+            className="relative w-full max-w-[1400px] mx-auto mt-4"
           >
-            <div className="relative mx-auto max-w-5xl">
-              <img
-                src="/lovable-uploads/57a22622-92bf-4e4a-871d-1436a6ee3bb2.png"
-                alt="Dashboard Preview"
-                className="rounded-xl shadow-2xl w-full"
-              />
-              <img
-                src="/lovable-uploads/add96841-d5f8-4327-a5d6-5f1b97236b33.png"
-                alt="Mobile Dashboard"
-                className="absolute -bottom-10 right-0 md:right-[-100px] w-48 md:w-64 rounded-xl shadow-2xl border border-gray-800"
-              />
+            {/* Desktop Screenshot - Cropped with overflow */}
+            <div className="relative w-full overflow-hidden rounded-t-xl shadow-2xl border border-gray-800">
+              <div className="relative" style={{ height: '600px' }}>
+                <img
+                  src="/lovable-uploads/57a22622-92bf-4e4a-871d-1436a6ee3bb2.png"
+                  alt="Dashboard Preview"
+                  className="absolute top-0 left-0 w-full object-cover"
+                  style={{ height: '900px', objectPosition: 'top' }}
+                />
+              </div>
             </div>
+
+            {/* Mobile Screenshot - Overlapping */}
+            <img
+              src="/lovable-uploads/add96841-d5f8-4327-a5d6-5f1b97236b33.png"
+              alt="Mobile Dashboard"
+              className="absolute -bottom-10 right-0 md:right-[-50px] w-48 md:w-64 rounded-xl shadow-2xl border border-gray-800 z-10"
+            />
           </motion.div>
         </div>
 
         {/* Background gradient */}
-        <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-[#2D7FF9]/20 to-transparent"></div>
+        <div className="absolute top-0 left-0 right-0 h-[800px] bg-gradient-to-b from-[#2D7FF9]/20 to-transparent"></div>
       </section>
 
       {/* Features Section */}
