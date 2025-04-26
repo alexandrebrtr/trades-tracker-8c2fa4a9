@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronDown, BookOpen, Calendar, Star } from 'lucide-react';
+import { ChevronDown, LineChart, TrendingUp, PieChart, Wallet, BarChart2, ArrowRight } from 'lucide-react';
 
 export default function LandingPage() {
   const fadeIn = {
@@ -15,19 +15,34 @@ export default function LandingPage() {
 
   const features = [
     {
-      title: "Journal de trading détaillé",
-      description: "Enregistrez et analysez chaque trade pour améliorer votre performance",
-      icon: <div className="p-2 rounded-full bg-primary/10 text-primary"><BookOpen className="h-6 w-6" /></div>
+      title: "Suivi de performance",
+      description: "Analysez vos trades et optimisez vos stratégies grâce à des statistiques détaillées",
+      icon: <div className="p-2 rounded-full bg-primary/10 text-primary"><LineChart className="h-6 w-6" /></div>
     },
     {
-      title: "Suivi en temps réel",
-      description: "Visualisez l'évolution de votre portefeuille et de vos performances",
-      icon: <div className="p-2 rounded-full bg-primary/10 text-primary"><Calendar className="h-6 w-6" /></div>
+      title: "Journal de trading",
+      description: "Gardez une trace détaillée de chaque trade avec notes et analyses",
+      icon: <div className="p-2 rounded-full bg-primary/10 text-primary"><TrendingUp className="h-6 w-6" /></div>
     },
     {
       title: "Analyses avancées",
-      description: "Accédez à des statistiques détaillées et des graphiques pertinents",
-      icon: <div className="p-2 rounded-full bg-primary/10 text-primary"><Star className="h-6 w-6" /></div>
+      description: "Visualisez vos performances avec des graphiques clairs et pertinents",
+      icon: <div className="p-2 rounded-full bg-primary/10 text-primary"><PieChart className="h-6 w-6" /></div>
+    }
+  ];
+
+  const tools = [
+    {
+      title: "Gestion de portefeuille",
+      description: "Suivez l'évolution de votre capital et de vos positions en temps réel",
+      icon: <Wallet className="h-6 w-6" />,
+      stats: "100% gratuit"
+    },
+    {
+      title: "Statistiques avancées",
+      description: "Ratio de Sharpe, drawdown, win rate et autres métriques essentielles",
+      icon: <BarChart2 className="h-6 w-6" />,
+      stats: "+20 métriques"
     }
   ];
 
@@ -45,7 +60,7 @@ export default function LandingPage() {
               transition={{ duration: 0.6 }}
               className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80"
             >
-              Devenez un meilleur trader grâce au suivi de vos performances
+              Le meilleur outil pour suivre et améliorer vos performances de trading
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
@@ -53,8 +68,8 @@ export default function LandingPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto"
             >
-              Prenez des décisions éclairées grâce à des analyses détaillées de vos trades 
-              et développez une stratégie gagnante.
+              Une plateforme complète pour analyser vos trades, suivre vos performances 
+              et optimiser vos stratégies. Tout ce dont vous avez besoin, gratuit.
             </motion.p>
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -71,6 +86,7 @@ export default function LandingPage() {
             </motion.div>
           </div>
 
+          {/* Dashboard Preview */}
           <motion.div 
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -96,11 +112,11 @@ export default function LandingPage() {
       <section className="py-20 bg-secondary/20">
         <div className="container px-4 mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Tout ce dont vous avez besoin</h2>
-            <p className="text-muted-foreground">Des outils puissants pour améliorer votre trading</p>
+            <h2 className="text-3xl font-bold mb-4">Un outil complet pour votre trading</h2>
+            <p className="text-muted-foreground">Tout ce dont vous avez besoin pour améliorer vos performances</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
@@ -123,16 +139,54 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Tools Section */}
       <section className="py-20">
+        <div className="container px-4 mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            {tools.map((tool, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="relative"
+              >
+                <Card className="overflow-hidden">
+                  <CardContent className="p-8">
+                    <div className="flex items-start gap-4">
+                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                        {tool.icon}
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold mb-2">{tool.title}</h3>
+                        <p className="text-muted-foreground mb-4">{tool.description}</p>
+                        <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                          {tool.stats}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-secondary/20">
         <div className="container px-4 mx-auto text-center">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-3xl font-bold mb-4">Prêt à améliorer votre trading ?</h2>
             <p className="text-muted-foreground mb-8">
               Rejoignez des milliers de traders qui ont déjà optimisé leurs performances
             </p>
-            <Button asChild size="lg" className="rounded-full px-8">
-              <Link to="/dashboard">Commencer maintenant</Link>
+            <Button asChild size="lg" className="rounded-full px-8 gap-2">
+              <Link to="/dashboard">
+                Commencer maintenant
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </Button>
           </div>
         </div>
