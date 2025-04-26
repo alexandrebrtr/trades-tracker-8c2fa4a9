@@ -29,9 +29,6 @@ export function LandingHeader() {
         </div>
 
         <div className="flex items-center gap-4">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/login">Connexion</Link>
-          </Button>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -40,6 +37,9 @@ export function LandingHeader() {
             aria-label={theme === 'dark' ? "Passer au mode clair" : "Passer au mode sombre"}
           >
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/login">Connexion</Link>
           </Button>
           <Button asChild size="sm">
             <Link to="/dashboard">S'inscrire</Link>
