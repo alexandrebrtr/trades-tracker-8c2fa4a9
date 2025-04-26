@@ -92,67 +92,69 @@ export default function LandingPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-[#0A0B0D] text-white overflow-hidden">
+      <div className="min-h-screen bg-background text-foreground">
         {/* Hero Section with Screenshots */}
-        <section className="relative min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center">
-          <div className="container px-4 mx-auto relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h1 className="text-4xl md:text-6xl font-bold mb-6">
-                <span className="block">Suivre. Optimiser.</span>
-                <span className="text-[#2D7FF9]">Trader.</span>
-              </h1>
-              <p className="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-                Trades Tracker est l'application qui vous aide à mieux gérer votre trading.
-                Suivez vos performances, analysez vos trades et optimisez votre stratégie.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                <Button
-                  asChild
-                  className="bg-[#2D7FF9] hover:bg-[#2D7FF9]/90 text-white px-8 py-6 rounded-full text-lg"
-                >
-                  <Link to="/dashboard">Démarrer gratuitement</Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="border-gray-600 text-white hover:bg-white/10 px-8 py-6 rounded-full text-lg"
-                >
-                  <Link to="/login">Se connecter</Link>
-                </Button>
-              </div>
-            </motion.div>
-          </div>
+        <section className="relative min-h-[calc(100vh-4rem)] flex items-center">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+                className="order-2 lg:order-1"
+              >
+                <h1 className="text-4xl md:text-6xl font-bold mb-6">
+                  <span className="block">Suivre. Optimiser.</span>
+                  <span className="text-primary">Trader.</span>
+                </h1>
+                <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl">
+                  Trades Tracker est l'application qui vous aide à mieux gérer votre trading.
+                  Suivez vos performances, analysez vos trades et optimisez votre stratégie.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 mb-12">
+                  <Button
+                    asChild
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 rounded-full text-lg"
+                  >
+                    <Link to="/dashboard">Démarrer gratuitement</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="border-border text-foreground hover:bg-accent px-8 py-6 rounded-full text-lg"
+                  >
+                    <Link to="/login">Se connecter</Link>
+                  </Button>
+                </div>
+              </motion.div>
 
-          {/* Screenshot Container */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative w-full max-w-[1400px] mx-auto mt-4"
-          >
-            {/* Desktop Screenshot - Cropped with overflow */}
-            <div className="relative w-full overflow-hidden rounded-t-xl shadow-2xl border border-gray-800">
-              <div className="relative" style={{ height: '600px' }}>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="order-1 lg:order-2 relative"
+              >
+                {/* Desktop Screenshot */}
+                <div className="relative w-full overflow-hidden rounded-xl shadow-2xl border border-border">
+                  <div className="relative" style={{ height: '600px' }}>
+                    <img
+                      src="/lovable-uploads/6b9faeba-9821-4d33-be9c-6a099aa8c1fe.png"
+                      alt="Dashboard Preview"
+                      className="absolute top-0 left-0 w-full object-cover"
+                      style={{ height: '900px', objectPosition: 'top' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Mobile Screenshot - Overlapping */}
                 <img
-                  src="/lovable-uploads/57a22622-92bf-4e4a-871d-1436a6ee3bb2.png"
-                  alt="Dashboard Preview"
-                  className="absolute top-0 left-0 w-full object-cover"
-                  style={{ height: '900px', objectPosition: 'top' }}
+                  src="/lovable-uploads/add96841-d5f8-4327-a5d6-5f1b97236b33.png"
+                  alt="Mobile Dashboard"
+                  className="absolute -bottom-10 right-0 md:right-[-50px] w-48 md:w-64 rounded-xl shadow-2xl border border-border z-10"
                 />
-              </div>
+              </motion.div>
             </div>
-
-            {/* Mobile Screenshot - Overlapping */}
-            <img
-              src="/lovable-uploads/add96841-d5f8-4327-a5d6-5f1b97236b33.png"
-              alt="Mobile Dashboard"
-              className="absolute -bottom-10 right-0 md:right-[-50px] w-48 md:w-64 rounded-xl shadow-2xl border border-gray-800 z-10"
-            />
-          </motion.div>
+          </div>
         </section>
 
         {/* Features Section */}
