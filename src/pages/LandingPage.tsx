@@ -13,24 +13,6 @@ export default function LandingPage() {
     visible: { opacity: 1, y: 0 }
   };
 
-  const features = [
-    {
-      title: "Suivi de performance",
-      description: "Analysez vos trades et optimisez vos stratégies grâce à des statistiques détaillées",
-      icon: <div className="p-2 rounded-full bg-primary/10 text-primary"><LineChart className="h-6 w-6" /></div>
-    },
-    {
-      title: "Journal de trading",
-      description: "Gardez une trace détaillée de chaque trade avec notes et analyses",
-      icon: <div className="p-2 rounded-full bg-primary/10 text-primary"><TrendingUp className="h-6 w-6" /></div>
-    },
-    {
-      title: "Analyses avancées",
-      description: "Visualisez vos performances avec des graphiques clairs et pertinents",
-      icon: <div className="p-2 rounded-full bg-primary/10 text-primary"><PieChart className="h-6 w-6" /></div>
-    }
-  ];
-
   const tools = [
     {
       title: "Gestion de portefeuille",
