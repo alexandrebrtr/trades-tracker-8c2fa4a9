@@ -28,6 +28,12 @@ export default function LandingPage() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const isMobile = useIsMobile();
 
+  const stats = [
+    { value: "10,000+", label: "Traders actifs" },
+    { value: "50M+", label: "Trades analysés" },
+    { value: "89%", label: "Taux de satisfaction" }
+  ];
+
   const features = [
     {
       icon: <BarChart3 className="h-10 w-10 text-primary" />,
