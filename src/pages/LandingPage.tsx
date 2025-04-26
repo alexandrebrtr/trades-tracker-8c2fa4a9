@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, BarChart2, ChartBar, TrendingUp, Briefcase, Star } from 'lucide-react';
+import { Wallet, BarChart2, ChartBar, TrendingUp, Briefcase, Star, Smartphone, PcCase } from 'lucide-react';
 import { ContactForm } from '@/components/contact/ContactForm';
 
 export default function LandingPage() {
@@ -77,7 +77,7 @@ export default function LandingPage() {
       <LandingHeader />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20">
+      <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="container px-4 mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8 lg:pl-12 text-left">
@@ -126,19 +126,37 @@ export default function LandingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative"
+              className="relative min-h-[600px] hidden lg:block"
             >
-              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-white/10 shadow-2xl">
-                <img
-                  src="/lovable-uploads/7b5e102a-70c9-4618-a03e-87c1f375227e.png"
-                  alt="Dashboard Preview"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+              <div className="absolute right-0 top-0 w-[80%]">
+                <div className="relative border-[8px] border-zinc-800 rounded-2xl bg-zinc-900 shadow-2xl">
+                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-24 h-2 bg-zinc-800 rounded-full" />
+                  <img
+                    src="/lovable-uploads/68631625-1d14-4206-b940-611ff6fce57e.png"
+                    alt="Dashboard Desktop"
+                    className="w-full rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div className="absolute left-0 bottom-0 w-[35%]">
+                <div className="relative border-[8px] border-zinc-800 rounded-[2.5rem] bg-zinc-900 shadow-2xl">
+                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-2 bg-zinc-800 rounded-full" />
+                  <div className="relative rounded-[1.8rem] overflow-hidden">
+                    <img
+                      src="/lovable-uploads/75bc79d3-a83c-4eac-88bb-45983d822da6.png"
+                      alt="Dashboard Mobile"
+                      className="w-full"
+                    />
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>
         </div>
+
+        <div className="absolute top-1/2 right-0 w-1/3 h-1/2 bg-primary/10 blur-[120px] -z-10" />
+        <div className="absolute bottom-0 left-1/4 w-1/2 h-1/2 bg-primary/5 blur-[120px] -z-10" />
       </section>
 
       {/* Tracking Section */}
