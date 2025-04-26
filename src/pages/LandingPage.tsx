@@ -1,10 +1,58 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing/LandingHeader';
+import { Card, CardContent } from '@/components/ui/card';
+import { ContactForm } from '@/components/contact/ContactForm';
+import { Mail, Info, AlertTriangle } from 'lucide-react';
 
 export default function LandingPage() {
+  // Animation variant for fade in effect
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
+  // Define features array
+  const features = [
+    {
+      title: "Suivi détaillé",
+      description: "Suivez chaque trade avec précision et analysez vos performances au fil du temps.",
+      icon: <div className="p-2 rounded-full bg-primary/10 text-primary"><Mail className="h-6 w-6" /></div>
+    },
+    {
+      title: "Statistiques avancées",
+      description: "Accédez à des statistiques détaillées pour comprendre vos forces et faiblesses.",
+      icon: <div className="p-2 rounded-full bg-primary/10 text-primary"><Mail className="h-6 w-6" /></div>
+    },
+    {
+      title: "Journal de trading",
+      description: "Documentez vos trades et vos émotions pour améliorer votre stratégie.",
+      icon: <div className="p-2 rounded-full bg-primary/10 text-primary"><Mail className="h-6 w-6" /></div>
+    }
+  ];
+
+  // Define testimonials array
+  const testimonials = [
+    {
+      name: "Alexandre D.",
+      role: "Day Trader",
+      content: "Trades Tracker a transformé ma façon d'analyser mes performances. Je peux maintenant identifier facilement mes schémas de trading gagnants."
+    },
+    {
+      name: "Marie L.",
+      role: "Investisseur particulier",
+      content: "Interface intuitive, statistiques claires. Exactement ce dont j'avais besoin pour progresser et être plus disciplinée dans mes trades."
+    },
+    {
+      name: "Thomas B.",
+      role: "Swing Trader",
+      content: "Le journal de trading est devenu mon meilleur allié. Je comprends mieux mes erreurs et améliore constamment ma stratégie."
+    }
+  ];
+
   const stats = [
     { value: "10,000+", label: "Traders actifs" },
     { value: "50M+", label: "Trades analysés" },
