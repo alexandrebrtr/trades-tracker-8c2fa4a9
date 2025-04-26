@@ -102,7 +102,7 @@ export default function LandingPage() {
                 variants={fadeIn}
                 transition={{ duration: 0.5 }}
               >
-                Suivez vos trades et optimisez vos performances facilement avec{isMobile ? ' ' : <br />}
+                Suivez et analysez ses trades avec{isMobile ? ' ' : <br />}
                 <span className="text-primary">Trades Tracker</span>
               </motion.h1>
               <motion.p 
@@ -112,7 +112,7 @@ export default function LandingPage() {
                 variants={fadeIn}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                Trades-Tracker vous aide à analyser vos résultats, à repérer vos erreurs et à devenir un meilleur trader.
+                Suivez vos performances, analysez vos trades et améliorez votre stratégie avec notre plateforme intuitive.
               </motion.p>
               <motion.div 
                 className="flex flex-col sm:flex-row gap-4 mt-6 md:mt-8 w-full sm:w-auto"
