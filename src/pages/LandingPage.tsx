@@ -302,37 +302,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-secondary/20">
-        <div className="container px-4 mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Un outil complet pour votre trading</h2>
-            <p className="text-muted-foreground">Tout ce dont vous avez besoin pour améliorer vos performances</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeIn}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
-              >
-                <Card className="h-full border-none shadow-md bg-card hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="mb-4">{feature.icon}</div>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Tools Section */}
       <section className="py-20">
         <div className="container px-4 mx-auto">
@@ -468,7 +437,6 @@ export default function LandingPage() {
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
               >
                 <Card className="h-full">
