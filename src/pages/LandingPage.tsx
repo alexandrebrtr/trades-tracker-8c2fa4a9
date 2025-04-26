@@ -102,7 +102,7 @@ export default function LandingPage() {
                 variants={fadeIn}
                 transition={{ duration: 0.5 }}
               >
-                Suivez et analysez ses trades avec{isMobile ? ' ' : <br />}
+                Suivez et analysez vos trades avec{isMobile ? ' ' : <br />}
                 <span className="text-primary">Trades Tracker</span>
               </motion.h1>
               <motion.p 
