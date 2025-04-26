@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -16,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -41,14 +41,19 @@ export function ContactForm() {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      // TODO: Implement actual email sending logic
-      console.log('Form data:', data);
+      const { error } = await supabase.functions.invoke('send-contact-email', {
+        body: data
+      });
+
+      if (error) throw error;
+
       toast({
         title: "Message envoyé !",
         description: "Nous vous répondrons dans les plus brefs délais.",
       });
       form.reset();
     } catch (error) {
+      console.error('Error sending message:', error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de l'envoi du message.",
