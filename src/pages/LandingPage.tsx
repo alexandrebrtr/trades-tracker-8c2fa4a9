@@ -4,8 +4,6 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronDown, LineChart, TrendingUp, PieChart, Wallet, BarChart2, ArrowRight, FileText, ChartBar, Briefcase, Star } from 'lucide-react';
-import { ContactForm } from '@/components/contact/ContactForm';
 
 export default function LandingPage() {
   const fadeIn = {
@@ -73,65 +71,72 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#0A0E17]">
       <LandingHeader />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
-        <div className="container px-4 mx-auto relative z-10">
-          <div className="text-center max-w-4xl mx-auto mb-12">
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80"
+      <section className="relative pt-32 pb-20">
+        <div className="container px-4 mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="space-y-6"
+              >
+                <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+                  <span className="text-white">Suivre. Optimiser.</span><br />
+                  <span className="text-[#0EA5E9]">Trader.</span>
+                </h1>
+                <p className="text-lg text-gray-400 max-w-xl">
+                  Trades Tracker est l'application qui vous aide à mieux gérer votre trading. Suivez vos performances, analysez vos trades et optimisez votre stratégie.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button size="lg" className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white rounded-full px-8">
+                    Démarrer gratuitement
+                  </Button>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="grid grid-cols-3 gap-8 pt-8 border-t border-white/10"
+              >
+                <div>
+                  <div className="text-3xl font-bold text-white mb-2">10,000+</div>
+                  <div className="text-gray-400">Traders actifs</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-white mb-2">50M+</div>
+                  <div className="text-gray-400">Trades analysés</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-white mb-2">89%</div>
+                  <div className="text-gray-400">Taux de satisfaction</div>
+                </div>
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="relative"
             >
-              Le meilleur outil pour suivre et améliorer vos performances de trading
-            </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto"
-            >
-              Une plateforme complète pour analyser vos trades, suivre vos performances 
-              et optimiser vos stratégies. Tout ce dont vous avez besoin, gratuit.
-            </motion.p>
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            >
-              <Button asChild size="lg" className="rounded-full px-8">
-                <Link to="/dashboard">Commencer gratuitement</Link>
-              </Button>
-              <Button variant="ghost" size="lg" className="rounded-full gap-2">
-                En savoir plus <ChevronDown className="h-4 w-4" />
-              </Button>
+              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-white/10 shadow-2xl">
+                <img
+                  src="/lovable-uploads/7b5e102a-70c9-4618-a03e-87c1f375227e.png"
+                  alt="Dashboard Preview"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+              </div>
             </motion.div>
           </div>
-
-          {/* Dashboard Preview */}
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="relative max-w-5xl mx-auto"
-          >
-            <div className="relative aspect-video rounded-xl overflow-hidden shadow-2xl border border-border">
-              <img
-                src="/lovable-uploads/7b5e102a-70c9-4618-a03e-87c1f375227e.png"
-                alt="Dashboard Preview"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-            </div>
-          </motion.div>
         </div>
-
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
       </section>
 
       {/* Tracking Section */}
