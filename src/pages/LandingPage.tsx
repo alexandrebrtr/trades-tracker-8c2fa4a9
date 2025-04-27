@@ -78,14 +78,14 @@ export default function LandingPage() {
       <LandingHeader />
       
       {/* Hero Section */}
-      <section className="relative flex items-center justify-center min-h-screen">
+      <section className="relative flex items-center justify-center min-h-screen overflow-hidden">
         <div className="container px-4 mx-auto">
-          <div className="relative flex flex-col lg:flex-row items-center">
+          <div className="flex flex-col lg:flex-row items-center gap-12">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="w-full lg:w-5/12 space-y-8 lg:pl-12 z-10"
+              className="w-full lg:w-5/12 space-y-8 lg:pl-12 lg:mt-0 -mt-20"
             >
               <div className="space-y-6">
                 <h1 className="text-5xl md:text-6xl font-bold leading-tight">
@@ -131,13 +131,13 @@ export default function LandingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-full lg:w-8/12"
+              className="w-full lg:w-7/12 lg:-mr-20"
             >
               <div className="relative">
                 <img
                   src="/lovable-uploads/670604e6-f3d4-410a-90ea-fc3b3decc42a.png"
                   alt="Dashboard Preview"
-                  className="w-full h-auto object-cover lg:max-w-[300%]"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-full h-auto object-cover lg:max-w-[300%]"
                 />
               </div>
             </motion.div>
