@@ -135,7 +135,7 @@ export default function LandingPage() {
             >
               <div className="relative">
                 <img
-                  src="/lovable-uploads/670604e6-f3d4-410a-90ea-fc3b3decc42a.png"
+                  src="/lovable-uploads/20fd8bfd-5ad7-4e39-846b-320e2e599978.png"
                   alt="Dashboard Preview"
                   className="absolute right-0 top-1/2 -translate-y-1/2 w-full h-auto object-cover lg:max-w-[300%]"
                 />
