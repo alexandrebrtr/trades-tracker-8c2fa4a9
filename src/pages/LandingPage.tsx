@@ -73,11 +73,11 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0A0E17] text-white">
+    <div className="min-h-screen bg-background text-foreground dark">
       <LandingHeader />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
+      <section className="relative pt-32 pb-20 overflow-hidden bg-background">
         <div className="container px-4 mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <motion.div 
@@ -88,14 +88,14 @@ export default function LandingPage() {
             >
               <div className="space-y-6">
                 <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                  <span className="text-white">Suivre. Optimiser.</span><br />
-                  <span className="text-[#0EA5E9]">Trader.</span>
+                  <span className="text-foreground">Suivre. Optimiser.</span><br />
+                  <span className="text-primary">Trader.</span>
                 </h1>
-                <p className="text-lg text-gray-400 max-w-xl">
+                <p className="text-lg text-muted-foreground max-w-xl">
                   Trades Tracker est l'application qui vous aide à mieux gérer votre trading. Suivez vos performances, analysez vos trades et optimisez votre stratégie.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white rounded-full px-8">
+                  <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8">
                     Démarrer gratuitement
                   </Button>
                 </div>
@@ -108,16 +108,16 @@ export default function LandingPage() {
                 className="grid grid-cols-3 gap-8 pt-8 border-t border-white/10"
               >
                 <div>
-                  <div className="text-3xl font-bold text-white mb-2">10,000+</div>
-                  <div className="text-gray-400">Traders actifs</div>
+                  <div className="text-3xl font-bold text-foreground mb-2">10,000+</div>
+                  <div className="text-muted-foreground">Traders actifs</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-white mb-2">50M+</div>
-                  <div className="text-gray-400">Trades analysés</div>
+                  <div className="text-3xl font-bold text-foreground mb-2">50M+</div>
+                  <div className="text-muted-foreground">Trades analysés</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-white mb-2">89%</div>
-                  <div className="text-gray-400">Taux de satisfaction</div>
+                  <div className="text-3xl font-bold text-foreground mb-2">89%</div>
+                  <div className="text-muted-foreground">Taux de satisfaction</div>
                 </div>
               </motion.div>
             </motion.div>
@@ -144,7 +144,7 @@ export default function LandingPage() {
       </section>
 
       {/* Tracking Section */}
-      <section className="py-20 relative overflow-hidden bg-[#0D1119]">
+      <section className="py-20 relative overflow-hidden bg-secondary">
         <div className="container px-4 mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
