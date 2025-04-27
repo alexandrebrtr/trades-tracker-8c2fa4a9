@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, BarChart2, ChartBar, TrendingUp, Briefcase, Star, Smartphone, PcCase } from 'lucide-react';
+import { Wallet, BarChart2, ChartBar, TrendingUp, Briefcase, Star } from 'lucide-react';
 import { ContactForm } from '@/components/contact/ContactForm';
 
 export default function LandingPage() {
@@ -73,7 +73,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0A0E17]">
+    <div className="min-h-screen bg-[#0A0E17] text-white">
       <LandingHeader />
       
       {/* Hero Section */}
@@ -126,25 +126,25 @@ export default function LandingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="w-full lg:w-7/12"
+              className="w-full lg:w-7/12 relative"
             >
               <div className="relative h-full">
                 <img
                   src="/lovable-uploads/670604e6-f3d4-410a-90ea-fc3b3decc42a.png"
                   alt="Dashboard Preview"
-                  className="w-full h-auto rounded-lg object-cover"
+                  className="w-full h-[600px] object-contain"
                 />
               </div>
             </motion.div>
           </div>
         </div>
 
-        <div className="absolute top-1/2 right-0 w-1/3 h-1/2 bg-primary/10 blur-[120px] -z-10" />
-        <div className="absolute bottom-0 left-1/4 w-1/2 h-1/2 bg-primary/5 blur-[120px] -z-10" />
+        <div className="absolute top-1/2 right-0 w-1/3 h-1/2 bg-blue-500/10 blur-[120px] -z-10" />
+        <div className="absolute bottom-0 left-1/4 w-1/2 h-1/2 bg-blue-500/5 blur-[120px] -z-10" />
       </section>
 
       {/* Tracking Section */}
-      <section className="py-20 relative overflow-hidden">
+      <section className="py-20 relative overflow-hidden bg-[#0D1119]">
         <div className="container px-4 mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -211,7 +211,7 @@ export default function LandingPage() {
       </section>
 
       {/* Premium Trading Section */}
-      <section className="py-20 bg-background relative overflow-hidden">
+      <section className="py-20 bg-[#0A0E17] relative overflow-hidden">
         <div className="container px-4 mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -294,7 +294,7 @@ export default function LandingPage() {
       </section>
 
       {/* Tools Section */}
-      <section className="py-20">
+      <section className="py-20 bg-[#0D1119]">
         <div className="container px-4 mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             {tools.map((tool, index) => (
@@ -362,7 +362,7 @@ export default function LandingPage() {
       </section>
 
       {/* Beta Version Notice */}
-      <section className="py-16 bg-background">
+      <section className="py-16 bg-[#0A0E17]">
         <div className="container px-4 mx-auto max-w-4xl">
           <div className="text-center space-y-12">
             <div className="space-y-4">
@@ -413,7 +413,7 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-[#0D1119]">
         <div className="container px-4 mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl font-bold mb-4">Ce que disent nos utilisateurs</h2>
@@ -451,7 +451,7 @@ export default function LandingPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-20 bg-background/50">
+      <section className="py-20 bg-[#0A0E17]">
         <div className="container px-4 mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
             <div>
@@ -486,7 +486,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-background/50 border-t border-border">
+      <footer className="py-12 bg-[#0D1119] border-t border-white/10">
         <div className="container px-4 mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div>
@@ -499,7 +499,7 @@ export default function LandingPage() {
               <Link to="/demo" className="text-muted-foreground hover:text-primary">Démo</Link>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-border/50 text-center">
+          <div className="mt-8 pt-8 border-t border-white/50 text-center">
             <p className="text-sm text-muted-foreground">
               © 2025 Trades Tracker. Tous droits réservés.
             </p>
