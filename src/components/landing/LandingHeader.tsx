@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Package, BarChart3, Calendar, Book, Phone, Users, FileText, HelpCircle, Star } from "lucide-react";
+import { Moon, Sun, Package, BarChart3, Calendar, Book, Phone, Users, FileText, HelpCircle, Star, Video } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import {
   NavigationMenu,
@@ -96,10 +96,10 @@ export function LandingHeader() {
                             </p>
                           </div>
                         </Link>
-                        <Link to="/documentation" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
-                          <Book className="h-4 w-4" />
+                        <Link to="/demonstration" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+                          <Video className="h-4 w-4" />
                           <div>
-                            <div className="font-medium">Documentation</div>
+                            <div className="font-medium">Démonstration</div>
                             <p className="text-sm text-muted-foreground">
                               Guide d'utilisation de la plateforme
                             </p>

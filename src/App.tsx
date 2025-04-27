@@ -81,6 +81,10 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/premium" element={<Premium />} />
             <Route path="/journal" element={<Journal />} />
+            <Route path="/demonstration" element={<Contact />} />
+            <Route path="/about" element={<Contact />} />
+            <Route path="/blog" element={<Contact />} />
+            <Route path="/faq" element={<Contact />} />
             
             {/* Routes protégées */}
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
