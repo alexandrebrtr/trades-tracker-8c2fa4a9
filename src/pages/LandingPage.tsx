@@ -78,7 +78,7 @@ export default function LandingPage() {
       <LandingHeader />
       
       {/* Hero Section */}
-      <section className="relative flex items-center min-h-screen pt-32 pb-20 overflow-hidden">
+      <section className="relative flex items-center justify-center min-h-screen overflow-hidden">
         <div className="container px-4 mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <motion.div 
@@ -137,7 +137,7 @@ export default function LandingPage() {
                 <img
                   src="/lovable-uploads/670604e6-f3d4-410a-90ea-fc3b3decc42a.png"
                   alt="Dashboard Preview"
-                  className="w-full h-auto rounded-lg object-cover lg:max-w-[300%]"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-full h-auto object-cover lg:max-w-[300%]"
                 />
               </div>
             </motion.div>
