@@ -78,7 +78,7 @@ export default function LandingPage() {
       <LandingHeader />
       
       {/* Hero Section */}
-      <section className="relative min-h-screen pt-32 pb-20 overflow-hidden w-full">
+      <section className="relative min-h-screen pt-32 pb-20 overflow-hidden w-full flex items-center">
         <div className="container relative mx-auto">
           <div className="flex flex-col lg:flex-row items-center">
             <motion.div 
