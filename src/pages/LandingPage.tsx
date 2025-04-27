@@ -79,14 +79,14 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="container px-4 mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8 lg:pl-12 text-left">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="space-y-6"
-              >
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="w-full lg:w-5/12 space-y-8"
+            >
+              <div className="space-y-6">
                 <h1 className="text-5xl md:text-6xl font-bold leading-tight">
                   <span className="text-white">Suivre. Optimiser.</span><br />
                   <span className="text-[#0EA5E9]">Trader.</span>
@@ -99,7 +99,7 @@ export default function LandingPage() {
                     Démarrer gratuitement
                   </Button>
                 </div>
-              </motion.div>
+              </div>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -120,19 +120,19 @@ export default function LandingPage() {
                   <div className="text-gray-400">Taux de satisfaction</div>
                 </div>
               </motion.div>
-            </div>
+            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative min-h-[600px] hidden lg:block"
+              className="w-full lg:w-7/12"
             >
-              <div className="absolute right-0 top-0 w-full">
+              <div className="relative h-full">
                 <img
                   src="/lovable-uploads/670604e6-f3d4-410a-90ea-fc3b3decc42a.png"
                   alt="Dashboard Preview"
-                  className="w-full h-auto rounded-lg"
+                  className="w-full h-auto rounded-lg object-cover"
                 />
               </div>
             </motion.div>
