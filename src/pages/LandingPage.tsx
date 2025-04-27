@@ -78,28 +78,28 @@ export default function LandingPage() {
       <LandingHeader />
       
       {/* Hero Section */}
-      <section className="relative flex items-center justify-center min-h-screen overflow-hidden">
+      <section className="relative flex items-center justify-center min-h-screen overflow-hidden py-20 lg:py-0">
         <div className="container px-4 mx-auto">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="w-full lg:w-5/12 space-y-8 lg:pl-12 lg:mt-0 -mt-20"
+              className="w-full lg:w-5/12 space-y-6 lg:space-y-8 lg:pl-12"
             >
-              <div className="space-y-6">
-                <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+              <div className="space-y-4 lg:space-y-6">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
                   <span className="text-foreground dark:text-white">Suivez et analysez vos trades avec</span><br />
                   <span style={{ color: '#0080ff' }}>Trades Tracker.</span>
                 </h1>
-                <p className="text-foreground dark:text-white text-lg">
+                <p className="text-base sm:text-lg lg:text-xl text-foreground/90 dark:text-white/90 max-w-xl">
                   Trades Tracker est l'application qui vous aide à mieux gérer votre trading. Suivez vos performances, analysez vos trades et optimisez votre stratégie.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 pt-2">
                   <Button 
                     size="lg" 
                     onClick={handleDashboardRedirect} 
-                    className="rounded-full px-8 bg-[#0080ff] hover:bg-[#0080ff]/80 text-white"
+                    className="rounded-full px-8 bg-[#0080ff] hover:bg-[#0080ff]/80 text-white w-full sm:w-auto"
                   >
                     Démarrer gratuitement
                   </Button>
@@ -110,19 +110,19 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="grid grid-cols-3 gap-8 pt-8 border-t border-white/10"
+                className="grid grid-cols-3 gap-4 sm:gap-8 pt-8 border-t border-white/10"
               >
                 <div>
-                  <div className="text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>10,000+</div>
-                  <div className="text-foreground dark:text-white">Traders actifs</div>
+                  <div className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>10,000+</div>
+                  <div className="text-sm sm:text-base text-foreground/80 dark:text-white/80">Traders actifs</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>50M+</div>
-                  <div className="text-foreground dark:text-white">Trades analysés</div>
+                  <div className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>50M+</div>
+                  <div className="text-sm sm:text-base text-foreground/80 dark:text-white/80">Trades analysés</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>89%</div>
-                  <div className="text-foreground dark:text-white">Taux de satisfaction</div>
+                  <div className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>89%</div>
+                  <div className="text-sm sm:text-base text-foreground/80 dark:text-white/80">Taux de satisfaction</div>
                 </div>
               </motion.div>
             </motion.div>
@@ -131,13 +131,13 @@ export default function LandingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="w-full lg:w-7/12 lg:absolute lg:right-0 lg:-mr-4"
+              className="w-full lg:w-7/12 lg:absolute lg:right-0 lg:-mr-4 mt-12 lg:mt-0"
             >
-              <div className="relative">
+              <div className="relative px-4 sm:px-0">
                 <img
                   src="/lovable-uploads/20fd8bfd-5ad7-4e39-846b-320e2e599978.png"
                   alt="Dashboard Preview"
-                  className="absolute right-0 top-1/2 -translate-y-1/2 w-full lg:w-auto h-auto object-contain max-w-[95%] lg:max-w-[95%]"
+                  className="block w-full h-auto object-contain max-w-[95%] mx-auto lg:max-w-[95%] lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2"
                 />
               </div>
             </motion.div>
@@ -149,7 +149,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 relative overflow-hidden">
+      <section className="py-16 sm:py-20 lg:py-24 relative overflow-hidden">
         <div className="container px-4 mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
