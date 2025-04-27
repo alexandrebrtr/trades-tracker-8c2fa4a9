@@ -255,41 +255,56 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Transformation CTA Section */}
-      <section className="py-32 bg-primary relative overflow-hidden">
-        <div className="container px-4 mx-auto text-center text-white">
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-bold mb-6"
-          >
-            Prêt à transformer votre trading ?
-          </motion.h2>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-lg mb-8 text-white/90"
-          >
-            Rejoignez des milliers de traders qui ont amélioré leurs performances grâce à Trades Tracker.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-          >
-            <Button 
-              size="lg" 
-              variant="secondary" 
-              onClick={handleDashboardRedirect} 
-              className="rounded-full px-8"
+      {/* Testimonials Section */}
+      <section className="py-20 bg-background">
+        <div className="container px-4 mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl font-bold mb-4">Ce que disent nos utilisateurs</h2>
+            <p className="text-muted-foreground">
+              Découvrez comment Trades Tracker aide les traders à améliorer leurs performances
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true
+              }}
+              className="w-full"
             >
-              Commencer gratuitement
-            </Button>
-          </motion.div>
+              <CarouselContent>
+                {testimonials.map((testimonial, index) => (
+                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/2">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Card className="h-full">
+                        <CardContent className="p-6 space-y-4">
+                          <div className="flex text-primary">
+                            {[...Array(testimonial.rating)].map((_, i) => (
+                              <Star key={i} className="h-4 w-4 fill-current" />
+                            ))}
+                          </div>
+                          <p className="text-muted-foreground italic">"{testimonial.text}"</p>
+                          <div>
+                            <p className="font-semibold">{testimonial.author}</p>
+                            <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="flex items-center justify-center mt-8 gap-4">
+                <CarouselPrevious className="relative static" />
+                <CarouselNext className="relative static" />
+              </div>
+            </Carousel>
+          </div>
         </div>
       </section>
 
@@ -344,69 +359,41 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 bg-background">
-        <div className="container px-4 mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold mb-4">Ce que disent nos utilisateurs</h2>
-            <p className="text-muted-foreground">
-              Découvrez comment Trades Tracker aide les traders à améliorer leurs performances
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto">
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true
-              }}
-              className="w-full"
+      {/* Transformation CTA Section */}
+      <section className="py-32 bg-primary relative overflow-hidden">
+        <div className="container px-4 mx-auto text-center text-white">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-4xl md:text-5xl font-bold mb-6"
+          >
+            Prêt à transformer votre trading ?
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-lg mb-8 text-white/90"
+          >
+            Rejoignez des milliers de traders qui ont amélioré leurs performances grâce à Trades Tracker.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
+            <Button 
+              size="lg" 
+              variant="secondary" 
+              onClick={handleDashboardRedirect} 
+              className="rounded-full px-8"
             >
-              <CarouselContent>
-                {testimonials.map((testimonial, index) => (
-                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/2">
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <Card className="h-full">
-                        <CardContent className="p-6 space-y-4">
-                          <div className="flex text-primary">
-                            {[...Array(testimonial.rating)].map((_, i) => (
-                              <Star key={i} className="h-4 w-4 fill-current" />
-                            ))}
-                          </div>
-                          <p className="text-muted-foreground italic">"{testimonial.text}"</p>
-                          <div>
-                            <p className="font-semibold">{testimonial.author}</p>
-                            <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <div className="flex items-center justify-center mt-8 gap-4">
-                <CarouselPrevious className="relative static" />
-                <CarouselNext className="relative static" />
-              </div>
-            </Carousel>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section className="py-20">
-        <div className="container px-4 mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold mb-4">Contactez-nous</h2>
-            <p className="text-muted-foreground">
-              Une question ? Besoin d'aide ? N'hésitez pas à nous contacter.
-            </p>
-          </div>
-          <ContactForm />
+              Commencer gratuitement
+            </Button>
+          </motion.div>
         </div>
       </section>
 
