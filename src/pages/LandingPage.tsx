@@ -104,12 +104,7 @@ export default function LandingPage() {
                   <Button 
                     size="lg" 
                     onClick={handleDashboardRedirect} 
-                    className="rounded-full px-8"
-                    style={{ 
-                      backgroundColor: '#0080ff', 
-                      color: 'white',
-                      '&:hover': { backgroundColor: '#0066cc' }
-                    }}
+                    className="rounded-full px-8 bg-[#0080ff] hover:bg-[#0066cc] text-white"
                   >
                     Démarrer gratuitement
                   </Button>
