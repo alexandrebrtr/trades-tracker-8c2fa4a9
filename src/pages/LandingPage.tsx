@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, BarChart2, ChartBar, TrendingUp, Briefcase, Star } from 'lucide-react';
+import { Wallet, BarChart2, ChartBar, TrendingUp, Briefcase, Star, Smartphone, PcCase } from 'lucide-react';
 import { ContactForm } from '@/components/contact/ContactForm';
 
 export default function LandingPage() {
@@ -73,11 +73,11 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground dark">
+    <div className="min-h-screen bg-[#0A0E17]">
       <LandingHeader />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden bg-background">
+      <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="container px-4 mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <motion.div 
@@ -88,14 +88,14 @@ export default function LandingPage() {
             >
               <div className="space-y-6">
                 <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                  <span className="text-foreground">Suivre. Optimiser.</span><br />
-                  <span className="text-primary">Trader.</span>
+                  <span className="text-white">Suivre. Optimiser.</span><br />
+                  <span className="text-[#0EA5E9]">Trader.</span>
                 </h1>
-                <p className="text-lg text-muted-foreground max-w-xl">
+                <p className="text-lg text-gray-400 max-w-xl">
                   Trades Tracker est l'application qui vous aide à mieux gérer votre trading. Suivez vos performances, analysez vos trades et optimisez votre stratégie.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8">
+                  <Button size="lg" className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white rounded-full px-8">
                     Démarrer gratuitement
                   </Button>
                 </div>
@@ -108,16 +108,16 @@ export default function LandingPage() {
                 className="grid grid-cols-3 gap-8 pt-8 border-t border-white/10"
               >
                 <div>
-                  <div className="text-3xl font-bold text-foreground mb-2">10,000+</div>
-                  <div className="text-muted-foreground">Traders actifs</div>
+                  <div className="text-3xl font-bold text-white mb-2">10,000+</div>
+                  <div className="text-gray-400">Traders actifs</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-foreground mb-2">50M+</div>
-                  <div className="text-muted-foreground">Trades analysés</div>
+                  <div className="text-3xl font-bold text-white mb-2">50M+</div>
+                  <div className="text-gray-400">Trades analysés</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-foreground mb-2">89%</div>
-                  <div className="text-muted-foreground">Taux de satisfaction</div>
+                  <div className="text-3xl font-bold text-white mb-2">89%</div>
+                  <div className="text-gray-400">Taux de satisfaction</div>
                 </div>
               </motion.div>
             </motion.div>
@@ -126,25 +126,25 @@ export default function LandingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="w-full lg:w-7/12 relative"
+              className="w-full lg:w-7/12"
             >
               <div className="relative h-full">
                 <img
                   src="/lovable-uploads/670604e6-f3d4-410a-90ea-fc3b3decc42a.png"
                   alt="Dashboard Preview"
-                  className="w-full h-[600px] object-contain"
+                  className="w-full h-auto rounded-lg object-cover"
                 />
               </div>
             </motion.div>
           </div>
         </div>
 
-        <div className="absolute top-1/2 right-0 w-1/3 h-1/2 bg-blue-500/10 blur-[120px] -z-10" />
-        <div className="absolute bottom-0 left-1/4 w-1/2 h-1/2 bg-blue-500/5 blur-[120px] -z-10" />
+        <div className="absolute top-1/2 right-0 w-1/3 h-1/2 bg-primary/10 blur-[120px] -z-10" />
+        <div className="absolute bottom-0 left-1/4 w-1/2 h-1/2 bg-primary/5 blur-[120px] -z-10" />
       </section>
 
       {/* Tracking Section */}
-      <section className="py-20 relative overflow-hidden bg-secondary">
+      <section className="py-20 relative overflow-hidden">
         <div className="container px-4 mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -211,7 +211,7 @@ export default function LandingPage() {
       </section>
 
       {/* Premium Trading Section */}
-      <section className="py-20 bg-[#0A0E17] relative overflow-hidden">
+      <section className="py-20 bg-background relative overflow-hidden">
         <div className="container px-4 mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -294,7 +294,7 @@ export default function LandingPage() {
       </section>
 
       {/* Tools Section */}
-      <section className="py-20 bg-[#0D1119]">
+      <section className="py-20">
         <div className="container px-4 mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             {tools.map((tool, index) => (
@@ -362,7 +362,7 @@ export default function LandingPage() {
       </section>
 
       {/* Beta Version Notice */}
-      <section className="py-16 bg-[#0A0E17]">
+      <section className="py-16 bg-background">
         <div className="container px-4 mx-auto max-w-4xl">
           <div className="text-center space-y-12">
             <div className="space-y-4">
@@ -413,7 +413,7 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-[#0D1119]">
+      <section className="py-20 bg-background">
         <div className="container px-4 mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl font-bold mb-4">Ce que disent nos utilisateurs</h2>
@@ -451,7 +451,7 @@ export default function LandingPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-20 bg-[#0A0E17]">
+      <section className="py-20 bg-background/50">
         <div className="container px-4 mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
             <div>
@@ -486,7 +486,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-[#0D1119] border-t border-white/10">
+      <footer className="py-12 bg-background/50 border-t border-border">
         <div className="container px-4 mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div>
@@ -499,7 +499,7 @@ export default function LandingPage() {
               <Link to="/demo" className="text-muted-foreground hover:text-primary">Démo</Link>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-white/50 text-center">
+          <div className="mt-8 pt-8 border-t border-border/50 text-center">
             <p className="text-sm text-muted-foreground">
               © 2025 Trades Tracker. Tous droits réservés.
             </p>
