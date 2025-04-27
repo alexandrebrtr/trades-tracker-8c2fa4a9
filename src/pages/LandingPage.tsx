@@ -132,7 +132,7 @@ export default function LandingPage() {
                 <div className="relative border-[8px] border-zinc-800 rounded-2xl bg-zinc-900 shadow-2xl">
                   <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-24 h-2 bg-zinc-800 rounded-full" />
                   <img
-                    src="/lovable-uploads/75bc79d3-a83c-4eac-88bb-45983d822da6.png"
+                    src="/lovable-uploads/09d684bc-c3da-4455-9fa6-465f8703a0f5.png"
                     alt="Dashboard Desktop"
                     className="w-full rounded-lg"
                   />
@@ -144,7 +144,7 @@ export default function LandingPage() {
                   <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-2 bg-zinc-800 rounded-full" />
                   <div className="relative rounded-[1.8rem] overflow-hidden">
                     <img
-                      src="/lovable-uploads/68631625-1d14-4206-b940-611ff6fce57e.png"
+                      src="/lovable-uploads/09d684bc-c3da-4455-9fa6-465f8703a0f5.png"
                       alt="Dashboard Mobile"
                       className="w-full"
                     />
