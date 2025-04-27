@@ -137,7 +137,7 @@ export default function LandingPage() {
                 <img
                   src="/lovable-uploads/20fd8bfd-5ad7-4e39-846b-320e2e599978.png"
                   alt="Dashboard Preview"
-                  className="block w-[80%] h-auto object-contain mx-auto lg:max-w-[75%] lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2"
+                  className="block w-[70%] h-auto object-contain mx-auto lg:max-w-[65%] lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2"
                 />
               </div>
             </motion.div>
