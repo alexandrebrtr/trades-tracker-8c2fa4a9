@@ -78,28 +78,28 @@ export default function LandingPage() {
       <LandingHeader />
       
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100vh-4rem)] md:min-h-screen flex items-center justify-center overflow-hidden py-20 md:py-0">
+      <section className="relative flex items-center justify-center min-h-screen overflow-hidden">
         <div className="container px-4 mx-auto">
-          <div className="flex flex-col-reverse md:flex-row items-center gap-8 md:gap-12">
+          <div className="flex flex-col lg:flex-row items-center gap-12">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="w-full md:w-5/12 space-y-6 md:space-y-8 md:pl-6"
+              className="w-full lg:w-5/12 space-y-8 lg:pl-12 lg:mt-0 -mt-20"
             >
-              <div className="space-y-4 md:space-y-6 text-center md:text-left">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <div className="space-y-6">
+                <h1 className="text-5xl md:text-6xl font-bold leading-tight">
                   <span className="text-foreground dark:text-white">Suivez et analysez vos trades avec</span><br />
                   <span style={{ color: '#0080ff' }}>Trades Tracker.</span>
                 </h1>
-                <p className="text-foreground dark:text-white text-base md:text-lg max-w-xl mx-auto md:mx-0">
+                <p className="text-foreground dark:text-white text-lg">
                   Trades Tracker est l'application qui vous aide à mieux gérer votre trading. Suivez vos performances, analysez vos trades et optimisez votre stratégie.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
                     size="lg" 
                     onClick={handleDashboardRedirect} 
-                    className="rounded-full px-8 bg-[#0080ff] hover:bg-[#0080ff]/80 text-white w-full sm:w-auto"
+                    className="rounded-full px-8 bg-[#0080ff] hover:bg-[#0080ff]/80 text-white"
                   >
                     Démarrer gratuitement
                   </Button>
@@ -110,19 +110,19 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="grid grid-cols-3 gap-4 md:gap-8 pt-8 border-t border-white/10"
+                className="grid grid-cols-3 gap-8 pt-8 border-t border-white/10"
               >
-                <div className="text-center md:text-left">
-                  <div className="text-2xl md:text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>10,000+</div>
-                  <div className="text-foreground dark:text-white text-sm md:text-base">Traders actifs</div>
+                <div>
+                  <div className="text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>10,000+</div>
+                  <div className="text-foreground dark:text-white">Traders actifs</div>
                 </div>
-                <div className="text-center md:text-left">
-                  <div className="text-2xl md:text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>50M+</div>
-                  <div className="text-foreground dark:text-white text-sm md:text-base">Trades analysés</div>
+                <div>
+                  <div className="text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>50M+</div>
+                  <div className="text-foreground dark:text-white">Trades analysés</div>
                 </div>
-                <div className="text-center md:text-left">
-                  <div className="text-2xl md:text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>89%</div>
-                  <div className="text-foreground dark:text-white text-sm md:text-base">Taux de satisfaction</div>
+                <div>
+                  <div className="text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>89%</div>
+                  <div className="text-foreground dark:text-white">Taux de satisfaction</div>
                 </div>
               </motion.div>
             </motion.div>
@@ -131,13 +131,13 @@ export default function LandingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="w-full md:w-7/12 relative mt-10 md:mt-0"
+              className="w-full lg:w-7/12 lg:absolute lg:right-0 lg:-mr-4"
             >
               <div className="relative">
                 <img
                   src="/lovable-uploads/20fd8bfd-5ad7-4e39-846b-320e2e599978.png"
                   alt="Dashboard Preview"
-                  className="w-full h-auto object-contain max-w-[95%] mx-auto md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-full lg:w-auto h-auto object-contain max-w-[95%] lg:max-w-[95%]"
                 />
               </div>
             </motion.div>
@@ -149,23 +149,24 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 md:py-20 relative overflow-hidden">
+      <section className="py-20 relative overflow-hidden">
         <div className="container px-4 mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="max-w-3xl mx-auto text-center mb-12 md:mb-16"
+            transition={{ duration: 0.6 }}
+            className="max-w-3xl mx-auto text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">
+            <h2 className="text-4xl font-bold mb-6">
               Toutes les fonctionnalités dont vous avez besoin
             </h2>
-            <p className="text-base md:text-lg text-muted-foreground">
+            <p className="text-lg text-muted-foreground mb-8">
               Une suite complète d'outils pour optimiser votre trading
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {trackingCategories.map((category, index) => (
               <motion.div
                 key={index}
