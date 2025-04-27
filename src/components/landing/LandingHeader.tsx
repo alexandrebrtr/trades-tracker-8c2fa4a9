@@ -1,8 +1,12 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 export function LandingHeader() {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/80 backdrop-blur-lg">
       <div className="container mx-auto">
@@ -26,6 +30,15 @@ export function LandingHeader() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleTheme} 
+              className="h-9 w-9"
+              aria-label={theme === 'dark' ? "Passer au mode clair" : "Passer au mode sombre"}
+            >
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
             <Button asChild variant="ghost" size="sm">
               <Link to="/login">Connexion</Link>
             </Button>

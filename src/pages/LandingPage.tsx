@@ -467,39 +467,7 @@ export default function LandingPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-20 bg-background/50">
-        <div className="container px-4 mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            <div>
-              <h2 className="text-3xl font-bold mb-6">Une question ? Contactez-nous !</h2>
-              <p className="text-muted-foreground mb-8">
-                Notre équipe est là pour vous aider à tirer le meilleur parti de Trades Tracker. N'hésitez pas à nous contacter pour toute question ou suggestion.
-              </p>
-              <ul className="space-y-4">
-                <li className="flex items-center gap-2 text-muted-foreground">
-                  <div className="w-5 h-5 text-primary">✓</div>
-                  Support réactif
-                </li>
-                <li className="flex items-center gap-2 text-muted-foreground">
-                  <div className="w-5 h-5 text-primary">✓</div>
-                  Experts en trading
-                </li>
-                <li className="flex items-center gap-2 text-muted-foreground">
-                  <div className="w-5 h-5 text-primary">✓</div>
-                  Accompagnement personnalisé
-                </li>
-                <li className="flex items-center gap-2 text-muted-foreground">
-                  <div className="w-5 h-5 text-primary">✓</div>
-                  Réponse sous 24h
-                </li>
-              </ul>
-            </div>
-            <div className="bg-card rounded-lg p-6 shadow-lg border border-border">
-              <ContactForm />
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Footer */}
       <footer className="py-12 bg-background/50 border-t border-border">
