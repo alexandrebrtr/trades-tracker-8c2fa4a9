@@ -131,13 +131,13 @@ export default function LandingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="w-full lg:w-7/12 lg:-mr-20"
+              className="w-full lg:w-7/12 lg:absolute lg:right-0 lg:-mr-4"
             >
               <div className="relative">
                 <img
                   src="/lovable-uploads/20fd8bfd-5ad7-4e39-846b-320e2e599978.png"
                   alt="Dashboard Preview"
-                  className="absolute right-0 top-1/2 -translate-y-1/2 w-full h-auto object-cover lg:max-w-[300%]"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-full lg:w-auto h-auto object-contain max-w-[80%] lg:max-w-[60%]"
                 />
               </div>
             </motion.div>
