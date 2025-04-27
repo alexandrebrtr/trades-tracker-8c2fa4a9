@@ -90,21 +90,21 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="w-full lg:w-5/12 space-y-8"
+              className="w-full lg:w-5/12 space-y-8 lg:pl-12"
             >
               <div className="space-y-6">
-                <h1 className="text-5xl md:text-6xl font-bold leading-tight" style={{ color: '#0080ff' }}>
-                  Suivez et analysez vos trades avec.<br />
-                  <span>Trades Tracker.</span>
+                <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+                  <span className="text-black">Suivez et analysez vos trades avec</span><br />
+                  <span style={{ color: '#0080ff' }}>Trades Tracker.</span>
                 </h1>
-                <p className="text-lg" style={{ color: '#0080ff' }}>
+                <p className="text-black text-lg">
                   Trades Tracker est l'application qui vous aide à mieux gérer votre trading. Suivez vos performances, analysez vos trades et optimisez votre stratégie.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
                     size="lg" 
                     onClick={handleDashboardRedirect} 
-                    className="rounded-full px-8 bg-[#0080ff] hover:bg-[#0066cc] text-white"
+                    className="rounded-full px-8 bg-[#0080ff] hover:bg-[#0080ff]/80 text-white"
                   >
                     Démarrer gratuitement
                   </Button>
@@ -116,19 +116,18 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
                 className="grid grid-cols-3 gap-8 pt-8 border-t border-white/10"
-                style={{ color: '#0080ff' }}
               >
                 <div>
-                  <div className="text-3xl font-bold mb-2">10,000+</div>
-                  <div>Traders actifs</div>
+                  <div className="text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>10,000+</div>
+                  <div className="text-black">Traders actifs</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold mb-2">50M+</div>
-                  <div>Trades analysés</div>
+                  <div className="text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>50M+</div>
+                  <div className="text-black">Trades analysés</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold mb-2">89%</div>
-                  <div>Taux de satisfaction</div>
+                  <div className="text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>89%</div>
+                  <div className="text-black">Taux de satisfaction</div>
                 </div>
               </motion.div>
             </motion.div>
