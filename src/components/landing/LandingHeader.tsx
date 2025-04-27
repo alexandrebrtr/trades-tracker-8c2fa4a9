@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Package, BarChart3, Calendar, CreditCard } from "lucide-react";
+import { Moon, Sun, Package, BarChart3, Calendar, Book, Phone, Users, FileText, HelpCircle } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import {
   NavigationMenu,
@@ -64,12 +64,83 @@ export function LandingHeader() {
                   </NavigationMenuItem>
                 </NavigationMenuList>
               </NavigationMenu>
+
               <Link to="/premium" className="text-sm text-muted-foreground hover:text-primary">
                 Tarifs
               </Link>
-              <Link to="/contact" className="text-sm text-muted-foreground hover:text-primary">
-                Contact
-              </Link>
+
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="text-sm text-muted-foreground hover:text-primary">
+                      Ressources
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="grid gap-3 p-4 w-[400px]">
+                        <Link to="/blog" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+                          <FileText className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">Blog</div>
+                            <p className="text-sm text-muted-foreground">
+                              Articles et guides sur le trading
+                            </p>
+                          </div>
+                        </Link>
+                        <Link to="/faq" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+                          <HelpCircle className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">FAQ</div>
+                            <p className="text-sm text-muted-foreground">
+                              Réponses aux questions fréquentes
+                            </p>
+                          </div>
+                        </Link>
+                        <Link to="/documentation" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+                          <Book className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">Documentation</div>
+                            <p className="text-sm text-muted-foreground">
+                              Guide d'utilisation de la plateforme
+                            </p>
+                          </div>
+                        </Link>
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="text-sm text-muted-foreground hover:text-primary">
+                      À propos
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="grid gap-3 p-4 w-[400px]">
+                        <Link to="/about" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+                          <Users className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">Notre équipe</div>
+                            <p className="text-sm text-muted-foreground">
+                              Découvrez qui nous sommes
+                            </p>
+                          </div>
+                        </Link>
+                        <Link to="/contact" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+                          <Phone className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">Nous contacter</div>
+                            <p className="text-sm text-muted-foreground">
+                              Une question ? Contactez-nous
+                            </p>
+                          </div>
+                        </Link>
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
             </nav>
           </div>
 
@@ -95,4 +166,3 @@ export function LandingHeader() {
     </header>
   );
 }
-
