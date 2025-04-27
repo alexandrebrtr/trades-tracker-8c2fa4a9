@@ -5,9 +5,8 @@ import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
-import { Wallet, BarChart2, ChartBar, TrendingUp, Briefcase, Star, Smartphone, PcCase } from 'lucide-react';
+import { FileText, BarChart2, Briefcase, TrendingUp, ChartBar, Calendar, Book, Star } from 'lucide-react';
 import { ContactForm } from '@/components/contact/ContactForm';
-import { FileText } from 'lucide-react';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -36,6 +35,16 @@ export default function LandingPage() {
       title: "Statistiques avancées",
       description: "Visualisez vos performances avec des graphiques détaillés",
       icon: <TrendingUp className="h-6 w-6" />
+    },
+    {
+      title: "Calendrier trading",
+      description: "Planifiez et suivez vos sessions de trading efficacement",
+      icon: <Calendar className="h-6 w-6" />
+    },
+    {
+      title: "Statistiques comparatives",
+      description: "Comparez vos performances avec d'autres traders",
+      icon: <ChartBar className="h-6 w-6" />
     }
   ];
 
@@ -157,7 +166,7 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {trackingCategories.map((category, index) => (
               <motion.div
                 key={index}
@@ -182,18 +191,27 @@ export default function LandingPage() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-center mt-12"
-          >
+      {/* Blog Section */}
+      <section className="py-16 bg-background/50">
+        <div className="container px-4 mx-auto">
+          <div className="max-w-3xl mx-auto text-center space-y-8">
+            <div className="inline-flex items-center justify-center gap-2 px-4 py-1 rounded-full bg-primary/10 text-primary">
+              <Book className="h-4 w-4" />
+              <span className="text-sm font-medium">Blog Trading</span>
+            </div>
+            <h2 className="text-3xl font-bold">
+              Découvrez nos articles sur le trading
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Apprenez de l'expérience des meilleurs traders et restez informé des dernières tendances du marché
+            </p>
             <Button asChild size="lg" className="rounded-full px-8">
-              <Link to="/dashboard">Commencer gratuitement</Link>
+              <Link to="/blog">Accéder au blog</Link>
             </Button>
-          </motion.div>
+          </div>
         </div>
       </section>
 
