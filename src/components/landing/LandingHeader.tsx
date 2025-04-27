@@ -1,7 +1,6 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Package, BarChart3, Calendar, Book, Phone, Users, FileText, HelpCircle } from "lucide-react";
+import { Moon, Sun, Package, BarChart3, Calendar, Book, Phone, Users, FileText, HelpCircle, Star } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import {
   NavigationMenu,
@@ -32,7 +31,7 @@ export function LandingHeader() {
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <div className="grid gap-3 p-4 w-[400px]">
-                        <Link to="/dashboard" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+                        <Link to="/journal" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
                           <Package className="h-4 w-4" />
                           <div>
                             <div className="font-medium">Journal de trading</div>
@@ -43,21 +42,23 @@ export function LandingHeader() {
                         </Link>
                         <Link to="/statistics" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
                           <BarChart3 className="h-4 w-4" />
-                          <div>
+                          <div className="flex items-center gap-2">
                             <div className="font-medium">Analyses avancées</div>
-                            <p className="text-sm text-muted-foreground">
-                              Statistiques détaillées de votre trading
-                            </p>
+                            <Star className="h-3 w-3 text-yellow-500" fill="currentColor" />
                           </div>
+                          <p className="text-sm text-muted-foreground">
+                            Statistiques détaillées de votre trading
+                          </p>
                         </Link>
                         <Link to="/calendar" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
                           <Calendar className="h-4 w-4" />
-                          <div>
+                          <div className="flex items-center gap-2">
                             <div className="font-medium">Calendrier des trades</div>
-                            <p className="text-sm text-muted-foreground">
-                              Visualisez vos trades dans le temps
-                            </p>
+                            <Star className="h-3 w-3 text-yellow-500" fill="currentColor" />
                           </div>
+                          <p className="text-sm text-muted-foreground">
+                            Visualisez vos trades dans le temps
+                          </p>
                         </Link>
                       </div>
                     </NavigationMenuContent>
