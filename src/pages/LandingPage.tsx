@@ -85,7 +85,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="w-full lg:w-1/2 space-y-8 px-4 lg:px-0 text-center lg:text-center relative z-10 mx-auto"
+              className="w-full lg:w-1/2 space-y-8 px-4 lg:px-0 text-center lg:text-left relative z-10"
             >
               <div className="space-y-6">
                 <h1 className="text-5xl md:text-6xl font-bold leading-tight">
@@ -136,7 +136,7 @@ export default function LandingPage() {
               <img
                 src="/lovable-uploads/670604e6-f3d4-410a-90ea-fc3b3decc42a.png"
                 alt="Dashboard Preview"
-                className="w-full h-auto object-cover"
+                className="w-full h-auto"
               />
             </motion.div>
           </div>
