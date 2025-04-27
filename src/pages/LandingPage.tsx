@@ -15,21 +15,6 @@ export default function LandingPage() {
     visible: { opacity: 1, y: 0 }
   };
 
-  const tools = [
-    {
-      title: "Gestion de portefeuille",
-      description: "Suivez l'évolution de votre capital et de vos positions en temps réel",
-      icon: <Wallet className="h-6 w-6" />,
-      stats: "100% gratuit"
-    },
-    {
-      title: "Statistiques avancées",
-      description: "Ratio de Sharpe, drawdown, win rate et autres métriques essentielles",
-      icon: <BarChart2 className="h-6 w-6" />,
-      stats: "+20 métriques"
-    }
-  ];
-
   const trackingCategories = [
     {
       title: "Journal de trading",
@@ -217,41 +202,6 @@ export default function LandingPage() {
               <Link to="/dashboard">Commencer gratuitement</Link>
             </Button>
           </motion.div>
-        </div>
-      </section>
-
-      {/* Tools Section */}
-      <section className="py-20">
-        <div className="container px-4 mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            {tools.map((tool, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="relative"
-              >
-                <Card className="overflow-hidden">
-                  <CardContent className="p-8">
-                    <div className="flex items-start gap-4">
-                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                        {tool.icon}
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2">{tool.title}</h3>
-                        <p className="text-muted-foreground mb-4">{tool.description}</p>
-                        <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                          {tool.stats}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 
