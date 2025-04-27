@@ -94,17 +94,17 @@ export default function LandingPage() {
             >
               <div className="space-y-6">
                 <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                  <span className="text-[rgb(37,150,190)] dark:text-white">Suivre. Optimiser.</span><br />
-                  <span className="text-[rgb(37,150,190)]">Trader.</span>
+                  <span className="text-[#2596be] dark:text-white">Suivre. Optimiser.</span><br />
+                  <span className="text-[#2596be]">Trader.</span>
                 </h1>
-                <p className="text-[rgb(37,150,190)] dark:text-gray-400 max-w-xl">
+                <p className="text-[#2596be] dark:text-gray-400 max-w-xl">
                   Trades Tracker est l'application qui vous aide à mieux gérer votre trading. Suivez vos performances, analysez vos trades et optimisez votre stratégie.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
                     size="lg" 
                     onClick={handleDashboardRedirect} 
-                    className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white rounded-full px-8"
+                    className="bg-[#2596be] hover:bg-[#2596be]/90 text-white rounded-full px-8"
                   >
                     Démarrer gratuitement
                   </Button>
@@ -118,16 +118,16 @@ export default function LandingPage() {
                 className="grid grid-cols-3 gap-8 pt-8 border-t border-white/10"
               >
                 <div>
-                  <div className="text-3xl font-bold text-[#0EA5E9] dark:text-white mb-2">10,000+</div>
-                  <div className="text-[#0EA5E9] dark:text-gray-400">Traders actifs</div>
+                  <div className="text-3xl font-bold text-[#2596be] dark:text-white mb-2">10,000+</div>
+                  <div className="text-[#2596be] dark:text-gray-400">Traders actifs</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-[#0EA5E9] dark:text-white mb-2">50M+</div>
-                  <div className="text-[#0EA5E9] dark:text-gray-400">Trades analysés</div>
+                  <div className="text-3xl font-bold text-[#2596be] dark:text-white mb-2">50M+</div>
+                  <div className="text-[#2596be] dark:text-gray-400">Trades analysés</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-[#0EA5E9] dark:text-white mb-2">89%</div>
-                  <div className="text-[#0EA5E9] dark:text-gray-400">Taux de satisfaction</div>
+                  <div className="text-3xl font-bold text-[#2596be] dark:text-white mb-2">89%</div>
+                  <div className="text-[#2596be] dark:text-gray-400">Taux de satisfaction</div>
                 </div>
               </motion.div>
             </motion.div>
