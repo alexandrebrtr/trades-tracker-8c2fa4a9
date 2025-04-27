@@ -94,10 +94,10 @@ export default function LandingPage() {
             >
               <div className="space-y-6">
                 <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                  <span className="text-black">Suivez et analysez vos trades avec</span><br />
+                  <span className="text-foreground dark:text-white">Suivez et analysez vos trades avec</span><br />
                   <span style={{ color: '#0080ff' }}>Trades Tracker.</span>
                 </h1>
-                <p className="text-black text-lg">
+                <p className="text-foreground dark:text-white text-lg">
                   Trades Tracker est l'application qui vous aide à mieux gérer votre trading. Suivez vos performances, analysez vos trades et optimisez votre stratégie.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -119,15 +119,15 @@ export default function LandingPage() {
               >
                 <div>
                   <div className="text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>10,000+</div>
-                  <div className="text-black">Traders actifs</div>
+                  <div className="text-foreground dark:text-white">Traders actifs</div>
                 </div>
                 <div>
                   <div className="text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>50M+</div>
-                  <div className="text-black">Trades analysés</div>
+                  <div className="text-foreground dark:text-white">Trades analysés</div>
                 </div>
                 <div>
                   <div className="text-3xl font-bold mb-2" style={{ color: '#0080ff' }}>89%</div>
-                  <div className="text-black">Taux de satisfaction</div>
+                  <div className="text-foreground dark:text-white">Taux de satisfaction</div>
                 </div>
               </motion.div>
             </motion.div>
