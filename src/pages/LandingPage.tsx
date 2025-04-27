@@ -78,14 +78,14 @@ export default function LandingPage() {
       <LandingHeader />
       
       {/* Hero Section */}
-      <section className="relative flex items-center justify-center min-h-screen pt-32 pb-20 overflow-hidden w-full">
-        <div className="container mx-auto px-4 relative">
-          <div className="flex flex-col lg:flex-row items-center justify-center gap-8">
+      <section className="relative min-h-screen pt-32 pb-20 overflow-hidden w-full">
+        <div className="container relative mx-auto">
+          <div className="flex flex-col lg:flex-row items-center">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="w-full lg:w-5/12 space-y-8 text-center lg:text-left"
+              className="w-full lg:w-1/2 space-y-8 px-4 lg:px-0 text-center lg:text-left relative z-10"
             >
               <div className="space-y-6">
                 <h1 className="text-5xl md:text-6xl font-bold leading-tight">
@@ -131,15 +131,13 @@ export default function LandingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="w-full lg:w-7/12"
+              className="w-[65%] absolute right-0 top-1/2 -translate-y-1/2"
             >
-              <div className="relative">
-                <img
-                  src="/lovable-uploads/670604e6-f3d4-410a-90ea-fc3b3decc42a.png"
-                  alt="Dashboard Preview"
-                  className="w-full h-auto rounded-lg shadow-2xl"
-                />
-              </div>
+              <img
+                src="/lovable-uploads/670604e6-f3d4-410a-90ea-fc3b3decc42a.png"
+                alt="Dashboard Preview"
+                className="w-full h-auto"
+              />
             </motion.div>
           </div>
         </div>
