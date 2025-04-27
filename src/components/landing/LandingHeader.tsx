@@ -1,8 +1,15 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Package, BarChart3, Calendar, CreditCard } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 
 export function LandingHeader() {
   const { theme, toggleTheme } = useTheme();
@@ -17,10 +24,47 @@ export function LandingHeader() {
             </Link>
             
             <nav className="hidden md:flex items-center space-x-6">
-              <Link to="/features" className="text-sm text-muted-foreground hover:text-primary">
-                Fonctionnalités
-              </Link>
-              <Link to="/pricing" className="text-sm text-muted-foreground hover:text-primary">
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="text-sm text-muted-foreground hover:text-primary">
+                      Fonctionnalités
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="grid gap-3 p-4 w-[400px]">
+                        <Link to="/dashboard" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+                          <Package className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">Journal de trading</div>
+                            <p className="text-sm text-muted-foreground">
+                              Suivez vos trades et analysez vos performances
+                            </p>
+                          </div>
+                        </Link>
+                        <Link to="/statistics" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+                          <BarChart3 className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">Analyses avancées</div>
+                            <p className="text-sm text-muted-foreground">
+                              Statistiques détaillées de votre trading
+                            </p>
+                          </div>
+                        </Link>
+                        <Link to="/calendar" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+                          <Calendar className="h-4 w-4" />
+                          <div>
+                            <div className="font-medium">Calendrier des trades</div>
+                            <p className="text-sm text-muted-foreground">
+                              Visualisez vos trades dans le temps
+                            </p>
+                          </div>
+                        </Link>
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+              <Link to="/premium" className="text-sm text-muted-foreground hover:text-primary">
                 Tarifs
               </Link>
               <Link to="/contact" className="text-sm text-muted-foreground hover:text-primary">
@@ -51,3 +95,4 @@ export function LandingHeader() {
     </header>
   );
 }
+
