@@ -30,6 +30,9 @@ const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PremiumAnalytics = lazy(() => import("./pages/PremiumAnalytics"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
+const Team = lazy(() => import("./pages/Team"));
+const Blog = lazy(() => import("./pages/Blog"));
+const Demonstration = lazy(() => import("./pages/Demonstration"));
 
 // Composant de chargement
 function LoadingSpinner() {
@@ -81,11 +84,11 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/premium" element={<Premium />} />
             <Route path="/journal" element={<Journal />} />
-            <Route path="/demonstration" element={<Contact />} />
-            <Route path="/about" element={<Contact />} />
-            <Route path="/blog" element={<Contact />} />
+            <Route path="/demonstration" element={<Demonstration />} />
+            <Route path="/about" element={<Team />} />
+            <Route path="/blog" element={<Blog />} />
             <Route path="/faq" element={<Contact />} />
-            
+
             {/* Routes protégées */}
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/trade/:id" element={<ProtectedRoute><TradeEntry /></ProtectedRoute>} />
