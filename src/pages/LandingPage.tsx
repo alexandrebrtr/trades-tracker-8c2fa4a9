@@ -128,28 +128,12 @@ export default function LandingPage() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="relative min-h-[600px] hidden lg:block"
             >
-              <div className="absolute right-0 top-0 w-[90%]">
-                <div className="relative border-[8px] border-zinc-800 rounded-2xl bg-zinc-900 shadow-2xl">
-                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-24 h-2 bg-zinc-800 rounded-full" />
-                  <img
-                    src="/lovable-uploads/09d684bc-c3da-4455-9fa6-465f8703a0f5.png"
-                    alt="Dashboard Desktop"
-                    className="w-full rounded-lg"
-                  />
-                </div>
-              </div>
-
-              <div className="absolute left-0 bottom-0 w-[30%]">
-                <div className="relative border-[8px] border-zinc-800 rounded-[2.5rem] bg-zinc-900 shadow-2xl">
-                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-2 bg-zinc-800 rounded-full" />
-                  <div className="relative rounded-[1.8rem] overflow-hidden">
-                    <img
-                      src="/lovable-uploads/09d684bc-c3da-4455-9fa6-465f8703a0f5.png"
-                      alt="Dashboard Mobile"
-                      className="w-full"
-                    />
-                  </div>
-                </div>
+              <div className="absolute right-0 top-0 w-full">
+                <img
+                  src="/lovable-uploads/670604e6-f3d4-410a-90ea-fc3b3decc42a.png"
+                  alt="Dashboard Preview"
+                  className="w-full h-auto rounded-lg"
+                />
               </div>
             </motion.div>
           </div>
