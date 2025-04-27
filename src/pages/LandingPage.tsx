@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing/LandingHeader';
@@ -9,6 +9,7 @@ import { Wallet, BarChart2, ChartBar, TrendingUp, Briefcase, Star, Smartphone, P
 import { ContactForm } from '@/components/contact/ContactForm';
 
 export default function LandingPage() {
+  const navigate = useNavigate();
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
@@ -73,6 +74,10 @@ export default function LandingPage() {
     }
   ];
 
+  const handleDashboardRedirect = () => {
+    navigate('/dashboard');
+  };
+
   return (
     <div className="min-h-screen bg-[hsl(var(--landing-background))] text-[hsl(var(--landing-foreground))]">
       <LandingHeader />
@@ -89,15 +94,19 @@ export default function LandingPage() {
             >
               <div className="space-y-6">
                 <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                  <span className="text-[#0EA5E9] dark:text-white">Suivre. Optimiser.</span><br />
-                  <span className="text-[#0EA5E9]">Trader.</span>
+                  <span className="text-[rgb(37,150,190)] dark:text-white">Suivre. Optimiser.</span><br />
+                  <span className="text-[rgb(37,150,190)]">Trader.</span>
                 </h1>
-                <p className="text-[#0EA5E9] dark:text-gray-400 max-w-xl">
+                <p className="text-[rgb(37,150,190)] dark:text-gray-400 max-w-xl">
                   Trades Tracker est l'application qui vous aide à mieux gérer votre trading. Suivez vos performances, analysez vos trades et optimisez votre stratégie.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" asChild className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white rounded-full px-8">
-                    <Link to="/dashboard">Démarrer gratuitement</Link>
+                  <Button 
+                    size="lg" 
+                    onClick={handleDashboardRedirect} 
+                    className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white rounded-full px-8"
+                  >
+                    Démarrer gratuitement
                   </Button>
                 </div>
               </div>
@@ -284,8 +293,12 @@ export default function LandingPage() {
                   </li>
                 </ul>
                 <div className="mt-8">
-                  <Button asChild size="lg" className="rounded-full px-8">
-                    <Link to="/dashboard">Commencer à trader</Link>
+                  <Button 
+                    size="lg" 
+                    onClick={handleDashboardRedirect} 
+                    className="rounded-full px-8"
+                  >
+                    Commencer à trader
                   </Button>
                 </div>
               </div>
@@ -355,8 +368,13 @@ export default function LandingPage() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            <Button asChild size="lg" variant="secondary" className="rounded-full px-8">
-              <Link to="/dashboard">Commencer gratuitement</Link>
+            <Button 
+              size="lg" 
+              variant="secondary" 
+              onClick={handleDashboardRedirect} 
+              className="rounded-full px-8"
+            >
+              Commencer gratuitement
             </Button>
           </motion.div>
         </div>
