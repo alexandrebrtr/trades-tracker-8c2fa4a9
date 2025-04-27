@@ -27,7 +27,7 @@ export function LandingHeader() {
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger className="text-sm text-muted-foreground hover:text-primary">
+                    <NavigationMenuTrigger className="text-sm text-muted-foreground hover:text-primary data-[state=open]:text-primary">
                       Fonctionnalités
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
@@ -72,7 +72,7 @@ export function LandingHeader() {
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger className="text-sm text-muted-foreground hover:text-primary">
+                    <NavigationMenuTrigger className="text-sm text-muted-foreground hover:text-primary data-[state=open]:text-primary">
                       Ressources
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
@@ -113,7 +113,7 @@ export function LandingHeader() {
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger className="text-sm text-muted-foreground hover:text-primary">
+                    <NavigationMenuTrigger className="text-sm text-muted-foreground hover:text-primary data-[state=open]:text-primary">
                       À propos
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
