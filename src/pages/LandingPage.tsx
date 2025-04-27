@@ -89,15 +89,15 @@ export default function LandingPage() {
             >
               <div className="space-y-6">
                 <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                  <span className="text-white">Suivre. Optimiser.</span><br />
+                  <span className="text-[#0EA5E9] dark:text-white">Suivre. Optimiser.</span><br />
                   <span className="text-[#0EA5E9]">Trader.</span>
                 </h1>
-                <p className="text-lg text-gray-400 max-w-xl">
+                <p className="text-[#0EA5E9] dark:text-gray-400 max-w-xl">
                   Trades Tracker est l'application qui vous aide à mieux gérer votre trading. Suivez vos performances, analysez vos trades et optimisez votre stratégie.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white rounded-full px-8">
-                    Démarrer gratuitement
+                  <Button size="lg" asChild className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white rounded-full px-8">
+                    <Link to="/dashboard">Démarrer gratuitement</Link>
                   </Button>
                 </div>
               </div>
@@ -109,16 +109,16 @@ export default function LandingPage() {
                 className="grid grid-cols-3 gap-8 pt-8 border-t border-white/10"
               >
                 <div>
-                  <div className="text-3xl font-bold text-white mb-2">10,000+</div>
-                  <div className="text-gray-400">Traders actifs</div>
+                  <div className="text-3xl font-bold text-[#0EA5E9] dark:text-white mb-2">10,000+</div>
+                  <div className="text-[#0EA5E9] dark:text-gray-400">Traders actifs</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-white mb-2">50M+</div>
-                  <div className="text-gray-400">Trades analysés</div>
+                  <div className="text-3xl font-bold text-[#0EA5E9] dark:text-white mb-2">50M+</div>
+                  <div className="text-[#0EA5E9] dark:text-gray-400">Trades analysés</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-white mb-2">89%</div>
-                  <div className="text-gray-400">Taux de satisfaction</div>
+                  <div className="text-3xl font-bold text-[#0EA5E9] dark:text-white mb-2">89%</div>
+                  <div className="text-[#0EA5E9] dark:text-gray-400">Taux de satisfaction</div>
                 </div>
               </motion.div>
             </motion.div>
@@ -284,8 +284,8 @@ export default function LandingPage() {
                   </li>
                 </ul>
                 <div className="mt-8">
-                  <Button size="lg" className="rounded-full px-8">
-                    Commencer à trader
+                  <Button asChild size="lg" className="rounded-full px-8">
+                    <Link to="/dashboard">Commencer à trader</Link>
                   </Button>
                 </div>
               </div>
@@ -355,8 +355,8 @@ export default function LandingPage() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            <Button size="lg" variant="secondary" className="rounded-full px-8">
-              Commencer gratuitement
+            <Button asChild size="lg" variant="secondary" className="rounded-full px-8">
+              <Link to="/dashboard">Commencer gratuitement</Link>
             </Button>
           </motion.div>
         </div>
@@ -467,7 +467,17 @@ export default function LandingPage() {
       </section>
 
       {/* Contact Section */}
-      
+      <section className="py-20">
+        <div className="container px-4 mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl font-bold mb-4">Contactez-nous</h2>
+            <p className="text-muted-foreground">
+              Une question ? Besoin d'aide ? N'hésitez pas à nous contacter.
+            </p>
+          </div>
+          <ContactForm />
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="py-12 bg-background/50 border-t border-border">
