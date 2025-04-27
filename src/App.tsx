@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -88,6 +89,7 @@ function App() {
             <Route path="/about" element={<Team />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/faq" element={<Contact />} />
+            <Route path="/dashboard" element={<Dashboard />} />
 
             {/* Routes protégées */}
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
