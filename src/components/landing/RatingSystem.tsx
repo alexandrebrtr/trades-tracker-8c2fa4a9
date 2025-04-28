@@ -4,6 +4,13 @@ import { Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// Définir le type pour les notes
+interface RatingData {
+  id: string;
+  rating: number;
+  created_at: string;
+}
+
 export function RatingSystem() {
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -18,14 +25,14 @@ export function RatingSystem() {
         // Récupérer le nombre total de notes
         const { count, error: countError } = await supabase
           .from('ratings')
-          .select('*', { count: 'exact', head: true });
+          .select('*', { count: 'exact', head: true }) as { count: number, error: any };
           
         if (countError) throw countError;
         
         // Calculer la moyenne des notes
         const { data, error } = await supabase
           .from('ratings')
-          .select('rating');
+          .select('rating') as { data: RatingData[], error: any };
           
         if (error) throw error;
         
@@ -63,7 +70,7 @@ export function RatingSystem() {
     try {
       const { error } = await supabase
         .from('ratings')
-        .insert({ rating });
+        .insert({ rating }) as { error: any };
         
       if (error) throw error;
       

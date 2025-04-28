@@ -257,6 +257,54 @@ export type Database = {
         }
         Relationships: []
       }
+      ratings: {
+        Row: {
+          created_at: string
+          id: string
+          rating: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rating: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rating?: number
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          author: string
+          avatar_url: string | null
+          created_at: string
+          id: string
+          rating: number
+          role: string
+          text: string
+        }
+        Insert: {
+          author: string
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          role: string
+          text: string
+        }
+        Update: {
+          author?: string
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          role?: string
+          text?: string
+        }
+        Relationships: []
+      }
       trades: {
         Row: {
           created_at: string | null
