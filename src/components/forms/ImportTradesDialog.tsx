@@ -55,6 +55,14 @@ interface MappedField {
   targetField: string;
 }
 
+interface ImportStats {
+  total: number;
+  valid: number;
+  invalid: number;
+  profit: number;
+  loss: number;
+}
+
 export function ImportTradesDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -67,13 +75,7 @@ export function ImportTradesDialog({ open, onOpenChange }: { open: boolean; onOp
   const [validationErrors, setValidationErrors] = useState<Record<number, string[]>>({});
   const [progress, setProgress] = useState(0);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('default');
-  const [stats, setStats] = useState<{
-    total: number;
-    valid: number;
-    invalid: number;
-    profit: number;
-    loss: number;
-  }>({
+  const [stats, setStats] = useState<ImportStats>({
     total: 0,
     valid: 0,
     invalid: 0,
@@ -439,24 +441,33 @@ export function ImportTradesDialog({ open, onOpenChange }: { open: boolean; onOp
       for (let i = 0; i < validTrades.length; i += batchSize) {
         const batch = validTrades.slice(i, i + batchSize);
         
-        const trades = batch.map(trade => ({
-          user_id: user.id,
-          date: trade.date instanceof Date ? trade.date.toISOString() : new Date(trade.date as string).toISOString(),
-          symbol: trade.symbol || '',
-          type: (trade.type?.toString().toLowerCase() === 'long' || 
-                 trade.type?.toString().toLowerCase() === 'achat') ? 'long' : 'short',
-          entry_price: parseFloat(trade.entry_price?.toString() || '0'),
-          exit_price: parseFloat(trade.exit_price?.toString() || '0'),
-          size: parseFloat(trade.size?.toString() || '0'),
-          pnl: parseFloat(trade.pnl?.toString() || '0'),
-          fees: trade.fees !== undefined ? parseFloat(trade.fees.toString()) : null,
-          stop_loss: trade.stop_loss !== undefined ? parseFloat(trade.stop_loss.toString()) : null,
-          take_profit: trade.take_profit !== undefined ? parseFloat(trade.take_profit.toString()) : null,
-          strategy: trade.strategy || null,
-          notes: trade.notes || null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }));
+        const trades = batch.map(trade => {
+          // Safely handle date conversion to ensure we always pass a string to the database
+          const dateString = trade.date instanceof Date
+            ? trade.date.toISOString()
+            : typeof trade.date === 'string'
+              ? new Date(trade.date).toISOString()
+              : new Date().toISOString();
+
+          return {
+            user_id: user.id,
+            date: dateString,
+            symbol: trade.symbol || '',
+            type: (trade.type?.toString().toLowerCase() === 'long' || 
+                  trade.type?.toString().toLowerCase() === 'achat') ? 'long' : 'short',
+            entry_price: parseFloat(trade.entry_price?.toString() || '0'),
+            exit_price: parseFloat(trade.exit_price?.toString() || '0'),
+            size: parseFloat(trade.size?.toString() || '0'),
+            pnl: parseFloat(trade.pnl?.toString() || '0'),
+            fees: trade.fees !== undefined ? parseFloat(trade.fees.toString()) : null,
+            stop_loss: trade.stop_loss !== undefined ? parseFloat(trade.stop_loss.toString()) : null,
+            take_profit: trade.take_profit !== undefined ? parseFloat(trade.take_profit.toString()) : null,
+            strategy: trade.strategy || null,
+            notes: trade.notes || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+        });
 
         const { error } = await supabase
           .from('trades')
@@ -675,27 +686,32 @@ export function ImportTradesDialog({ open, onOpenChange }: { open: boolean; onOp
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {mappedData.filter((_, i) => !validationErrors[i]).map((trade, index) => (
-                        <TableRow key={index}>
-                          <TableCell>
-                            {trade.date instanceof Date 
-                              ? formatDate(trade.date) 
-                              : formatDate(new Date(trade.date as string))}
-                          </TableCell>
-                          <TableCell>{trade.symbol}</TableCell>
-                          <TableCell>
-                            <Badge variant={trade.type === 'long' ? 'success' : 'destructive'}>
-                              {trade.type === 'long' ? 'Long' : 'Short'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{trade.entry_price}</TableCell>
-                          <TableCell>{trade.exit_price}</TableCell>
-                          <TableCell>{trade.size}</TableCell>
-                          <TableCell className={trade.pnl && trade.pnl > 0 ? 'text-green-600' : 'text-red-600'}>
-                            {trade.pnl !== undefined && (trade.pnl > 0 ? '+' : '')}{trade.pnl}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {mappedData.filter((_, i) => !validationErrors[i]).map((trade, index) => {
+                        // Safely format the date
+                        const formattedDate = trade.date instanceof Date 
+                          ? formatDate(trade.date) 
+                          : typeof trade.date === 'string' 
+                            ? formatDate(new Date(trade.date)) 
+                            : 'N/A';
+                        
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>{formattedDate}</TableCell>
+                            <TableCell>{trade.symbol}</TableCell>
+                            <TableCell>
+                              <Badge variant={trade.type === 'long' ? 'success' : 'destructive'}>
+                                {trade.type === 'long' ? 'Long' : 'Short'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{trade.entry_price}</TableCell>
+                            <TableCell>{trade.exit_price}</TableCell>
+                            <TableCell>{trade.size}</TableCell>
+                            <TableCell className={trade.pnl && trade.pnl > 0 ? 'text-green-600' : 'text-red-600'}>
+                              {trade.pnl !== undefined && (trade.pnl > 0 ? '+' : '')}{trade.pnl}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
@@ -716,11 +732,19 @@ export function ImportTradesDialog({ open, onOpenChange }: { open: boolean; onOp
                       {Object.entries(validationErrors).map(([index, errors]) => {
                         const rowIndex = parseInt(index);
                         const trade = mappedData[rowIndex];
+                        
+                        // Safely format the date
+                        const formattedDate = trade?.date instanceof Date 
+                          ? formatDate(trade.date) 
+                          : typeof trade?.date === 'string' 
+                            ? formatDate(new Date(trade.date)) 
+                            : 'N/A';
+                        
                         return (
                           <TableRow key={index}>
                             <TableCell>{rowIndex + 1}</TableCell>
                             <TableCell>{trade?.symbol || 'N/A'}</TableCell>
-                            <TableCell>{trade?.date ? (trade.date instanceof Date ? formatDate(trade.date) : trade.date) : 'N/A'}</TableCell>
+                            <TableCell>{formattedDate}</TableCell>
                             <TableCell>
                               <ul className="list-disc ml-4 text-xs">
                                 {errors.map((error, i) => (
