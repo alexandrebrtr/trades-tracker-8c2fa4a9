@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,6 @@ import { Check, HelpCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/navigation/Header';
-import { TestimonialsCarousel, Testimonial } from '@/components/landing/TestimonialsCarousel';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -14,7 +14,7 @@ export default function Premium() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const navigate = useNavigate();
 
-  const testimonials: Testimonial[] = [
+  const testimonials = [
     {
       id: "1",
       text: "L'accès Premium a révolutionné ma façon de trader. Les analyses avancées valent largement l'investissement.",
@@ -215,7 +215,40 @@ export default function Premium() {
               </p>
             </div>
             
-            <TestimonialsCarousel staticTestimonials={testimonials} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <Card key={index} className="bg-card hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center space-x-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-4 w-4 ${
+                            star <= testimonial.rating
+                              ? 'text-yellow-500 fill-yellow-500'
+                              : 'text-muted-foreground'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-muted-foreground italic">"{testimonial.text}"</p>
+                    <div className="flex items-center pt-4">
+                      <div className="h-10 w-10 rounded-full overflow-hidden mr-3">
+                        <img 
+                          src={testimonial.avatar} 
+                          alt={testimonial.author} 
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium">{testimonial.author}</p>
+                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </section>
 
