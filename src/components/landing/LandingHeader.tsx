@@ -55,23 +55,27 @@ export function LandingHeader() {
                           </Link>
                           <Link to="/statistics" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
                             <BarChart3 className="h-4 w-4" />
-                            <div className="flex items-center gap-2">
-                              <div className="font-medium">Analyses avancées</div>
-                              <Star className="h-3 w-3 text-yellow-500" fill="currentColor" />
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <div className="font-medium">Analyses avancées</div>
+                                <Star className="h-3 w-3 text-yellow-500" fill="currentColor" />
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Statistiques détaillées de votre trading
+                              </p>
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                              Statistiques détaillées de votre trading
-                            </p>
                           </Link>
                           <Link to="/calendar" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
                             <Calendar className="h-4 w-4" />
-                            <div className="flex items-center gap-2">
-                              <div className="font-medium">Calendrier des trades</div>
-                              <Star className="h-3 w-3 text-yellow-500" fill="currentColor" />
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <div className="font-medium">Calendrier des trades</div>
+                                <Star className="h-3 w-3 text-yellow-500" fill="currentColor" />
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Visualisez vos trades dans le temps
+                              </p>
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                              Visualisez vos trades dans le temps
-                            </p>
                           </Link>
                         </div>
                       </NavigationMenuContent>
@@ -213,6 +217,23 @@ export function LandingHeader() {
                       <SheetClose asChild>
                         <Link to="/contact" className="block p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground">
                           Contact
+                        </Link>
+                      </SheetClose>
+                    </div>
+                    
+                    <hr className="border-border" />
+                    
+                    <div className="space-y-4">
+                      <div className="flex justify-between">
+                        <SheetClose asChild>
+                          <Link to="/login" className="w-full">
+                            <Button variant="outline" className="w-full">Connexion</Button>
+                          </Link>
+                        </SheetClose>
+                      </div>
+                      <SheetClose asChild>
+                        <Link to="/dashboard" className="w-full">
+                          <Button className="w-full">S'inscrire</Button>
                         </Link>
                       </SheetClose>
                     </div>
