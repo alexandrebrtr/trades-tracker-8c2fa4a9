@@ -89,8 +89,7 @@ export default function LandingPage() {
             >
               <div className="space-y-4 lg:space-y-6">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
-                  <span className="text-foreground dark:text-white">Suivez et analysez vos trades avec</span><br />
-                  <span style={{ color: '#0080ff' }}>Trades Tracker.</span>
+                  <span className="text-foreground dark:text-white">Suivez, Optimisez, Tradez.</span><br />
                 </h1>
                 <p className="text-base sm:text-lg lg:text-xl text-foreground/90 dark:text-white/90 max-w-xl">
                   Trades Tracker est l'application qui vous aide à mieux gérer votre trading. Suivez vos performances, analysez vos trades et optimisez votre stratégie.
