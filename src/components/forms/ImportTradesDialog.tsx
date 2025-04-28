@@ -80,7 +80,7 @@ export function ImportTradesDialog({ open, onOpenChange }: { open: boolean; onOp
     valid: 0,
     invalid: 0,
     profit: 0,
-    loss: 0,
+    loss: 0
   });
 
   // Templates for common export formats
@@ -373,7 +373,7 @@ export function ImportTradesDialog({ open, onOpenChange }: { open: boolean; onOp
       valid: validCount,
       invalid: invalidCount,
       profit: profitSum,
-      loss: lossSum,
+      loss: lossSum
     });
     
     return mappedTrades;
@@ -687,12 +687,17 @@ export function ImportTradesDialog({ open, onOpenChange }: { open: boolean; onOp
                     </TableHeader>
                     <TableBody>
                       {mappedData.filter((_, i) => !validationErrors[i]).map((trade, index) => {
-                        // Safely format the date
-                        const formattedDate = trade.date instanceof Date 
-                          ? formatDate(trade.date) 
-                          : typeof trade.date === 'string' 
-                            ? formatDate(new Date(trade.date)) 
-                            : 'N/A';
+                        // Safely convert date to string for formatting
+                        let formattedDate = 'N/A';
+                        if (trade.date instanceof Date) {
+                          formattedDate = formatDate(trade.date.toISOString());
+                        } else if (typeof trade.date === 'string') {
+                          try {
+                            formattedDate = formatDate(trade.date);
+                          } catch (e) {
+                            formattedDate = trade.date;
+                          }
+                        }
                         
                         return (
                           <TableRow key={index}>
@@ -733,12 +738,17 @@ export function ImportTradesDialog({ open, onOpenChange }: { open: boolean; onOp
                         const rowIndex = parseInt(index);
                         const trade = mappedData[rowIndex];
                         
-                        // Safely format the date
-                        const formattedDate = trade?.date instanceof Date 
-                          ? formatDate(trade.date) 
-                          : typeof trade?.date === 'string' 
-                            ? formatDate(new Date(trade.date)) 
-                            : 'N/A';
+                        // Safely convert date to string for formatting
+                        let formattedDate = 'N/A';
+                        if (trade?.date instanceof Date) {
+                          formattedDate = formatDate(trade.date.toISOString());
+                        } else if (typeof trade?.date === 'string') {
+                          try {
+                            formattedDate = formatDate(trade.date);
+                          } catch (e) {
+                            formattedDate = trade.date;
+                          }
+                        }
                         
                         return (
                           <TableRow key={index}>
