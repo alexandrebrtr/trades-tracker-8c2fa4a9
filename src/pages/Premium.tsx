@@ -1,516 +1,292 @@
-import { AppLayout } from '@/components/layout/AppLayout';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Link } from 'react-router-dom';
-import { Check, Calendar, BarChart3, Clock, AlertCircle, Star, Download, Gift, Zap, MessageSquare, Users } from 'lucide-react';
-import { usePremium } from '@/context/PremiumContext';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Check, HelpCircle, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Header } from '@/components/navigation/Header';
+import { TestimonialsCarousel, Testimonial } from '@/components/landing/TestimonialsCarousel';
 import { useNavigate } from 'react-router-dom';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-const Premium = () => {
-  const { isPremium, premiumExpires } = usePremium();
+export default function Premium() {
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const navigate = useNavigate();
-  
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual'>('annual');
-  
-  const testimonials = [
+
+  const testimonials: Testimonial[] = [
     {
-      text: "Trades Tracker a transformé ma façon d'analyser mes performances. Je peux maintenant identifier facilement mes schémas de trading gagnants.",
-      author: "Alexandre D.",
-      role: "Day Trader",
-      avatar: "/lovable-uploads/6b9faeba-9821-4d33-be9c-6a099aa8c1fe.png",
-      rating: 5
+      id: "1",
+      text: "L'accès Premium a révolutionné ma façon de trader. Les analyses avancées valent largement l'investissement.",
+      author: "Mathieu R.",
+      role: "Trader Professionnel",
+      rating: 5,
+      avatar: "/lovable-uploads/6b9faeba-9821-4d33-be9c-6a099aa8c1fe.png"
     },
     {
-      text: "Interface intuitive, statistiques claires. Exactement ce dont j'avais besoin pour progresser et être plus disciplinée dans mes trades.",
-      author: "Marie L.",
-      role: "Investisseur particulier",
-      avatar: "/lovable-uploads/7b5e102a-70c9-4618-a03e-87c1f375227e.png",
-      rating: 5
-    },
-    {
-      text: "Le journal de trading est devenu mon meilleur allié. Je comprends mieux mes erreurs et améliore constamment ma stratégie.",
-      author: "Thomas B.",
+      id: "2",
+      text: "Les fonctionnalités d'analyse comparative m'ont permis d'affiner ma stratégie et d'augmenter significativement mes gains.",
+      author: "Julie D.",
       role: "Swing Trader",
-      avatar: "/lovable-uploads/68631625-1d14-4206-b940-611ff6fce57e.png",
-      rating: 5
+      rating: 5,
+      avatar: "/lovable-uploads/7b5e102a-70c9-4618-a03e-87c1f375227e.png"
     },
     {
-      text: "Après avoir testé plusieurs outils, Trades Tracker est définitivement le plus complet. Les fonctionnalités premium valent vraiment l'investissement.",
-      author: "Sophie M.",
-      role: "Trader Forex",
-      avatar: "/lovable-uploads/75bc79d3-a83c-4eac-88bb-45983d822da6.png",
-      rating: 5
+      id: "3",
+      text: "Le retour sur investissement est impressionnant. J'ai récupéré le coût de l'abonnement annuel en seulement deux trades.",
+      author: "Antoine B.",
+      role: "Day Trader",
+      rating: 5,
+      avatar: "/lovable-uploads/68631625-1d14-4206-b940-611ff6fce57e.png"
     }
   ];
-  
-  if (isPremium) {
-    const expiryDate = premiumExpires ? new Date(premiumExpires) : null;
-    const formattedExpiryDate = expiryDate ? expiryDate.toLocaleDateString('fr-FR') : 'Date inconnue';
-    
-    return (
-      <AppLayout>
-        <div className="container py-8 max-w-4xl mx-auto page-transition">
-          <div className="space-y-8">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Votre Abonnement Premium</h1>
-              <p className="text-muted-foreground mt-2">
-                Merci pour votre confiance ! Vous bénéficiez actuellement de toutes les fonctionnalités premium.
-              </p>
-            </div>
-            
-            <Card className="bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                      Compte Premium Actif
-                    </CardTitle>
-                    <CardDescription>
-                      Votre abonnement est valide jusqu'au {formattedExpiryDate}
-                    </CardDescription>
-                  </div>
-                  <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    Actif
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card className="bg-white dark:bg-background shadow-sm">
-                    <CardContent className="p-6 text-center">
-                      <Zap className="h-8 w-8 mx-auto mb-4 text-blue-500" />
-                      <h3 className="font-medium mb-2">Analyses Avancées</h3>
-                      <p className="text-sm text-muted-foreground">Accès à toutes les analyses premium</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-white dark:bg-background shadow-sm">
-                    <CardContent className="p-6 text-center">
-                      <Download className="h-8 w-8 mx-auto mb-4 text-blue-500" />
-                      <h3 className="font-medium mb-2">Exports Illimités</h3>
-                      <p className="text-sm text-muted-foreground">Exportez vos données sans limitation</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-white dark:bg-background shadow-sm">
-                    <CardContent className="p-6 text-center">
-                      <Gift className="h-8 w-8 mx-auto mb-4 text-blue-500" />
-                      <h3 className="font-medium mb-2">Fonctionnalités Exclusives</h3>
-                      <p className="text-sm text-muted-foreground">Accès aux futures fonctionnalités</p>
-                    </CardContent>
-                  </Card>
-                </div>
 
-                <div className="bg-white dark:bg-background p-6 rounded-lg space-y-4">
-                  <h3 className="text-lg font-medium">Gérer votre abonnement</h3>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => navigate('/statistics')}
-                    >
-                      Accéder aux statistiques avancées
-                    </Button>
-                    <Button 
-                      className="flex-1"
-                      onClick={() => navigate('/profile')}
-                    >
-                      Voir mon profil
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="bg-white/50 dark:bg-background/50 flex flex-col sm:flex-row items-center gap-4 justify-between rounded-b-lg">
-                <p className="text-sm text-muted-foreground">
-                  Pour toute question concernant votre abonnement, contactez notre support.
-                </p>
-                <Button variant="outline" size="sm">
-                  Contacter le support
-                </Button>
-              </CardFooter>
-            </Card>
-            
-            <div className="bg-muted/50 rounded-lg p-6 border border-border">
-              <h2 className="text-xl font-semibold mb-4">Avantages Premium dont vous bénéficiez</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex gap-3">
-                    <div className="flex-shrink-0 bg-primary/20 p-2 rounded-full">
-                      <Check className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Mesures de performance avancées</h3>
-                      <p className="text-sm text-muted-foreground">Suivez vos performances avec des indicateurs professionnels</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="flex-shrink-0 bg-primary/20 p-2 rounded-full">
-                      <Check className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Analyse de risque détaillée</h3>
-                      <p className="text-sm text-muted-foreground">Obtenez des insights sur votre exposition au risque</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="flex-shrink-0 bg-primary/20 p-2 rounded-full">
-                      <Check className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Recommandations personnalisées</h3>
-                      <p className="text-sm text-muted-foreground">Recevez des conseils adaptés à votre profil</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex gap-3">
-                    <div className="flex-shrink-0 bg-primary/20 p-2 rounded-full">
-                      <Check className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Analyse détaillée des patterns</h3>
-                      <p className="text-sm text-muted-foreground">Identifiez les patterns qui fonctionnent pour vous</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="flex-shrink-0 bg-primary/20 p-2 rounded-full">
-                      <Check className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Comparaison avec les indices</h3>
-                      <p className="text-sm text-muted-foreground">Comparez vos performances avec les principaux indices</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="flex-shrink-0 bg-primary/20 p-2 rounded-full">
-                      <Check className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Support prioritaire</h3>
-                      <p className="text-sm text-muted-foreground">Accédez à un support technique dédié</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </AppLayout>
-    );
-  }
+  const pricingPlans = {
+    monthly: {
+      price: 29.99,
+      discountedPrice: 19.99,
+    },
+    annual: {
+      price: 299.99,
+      discountedPrice: 199.99,
+    },
+  };
+
+  const features = [
+    { name: 'Journal de trading illimité', monthly: true, annual: true },
+    { name: 'Statistiques avancées', monthly: true, annual: true },
+    { name: 'Alertes personnalisées', monthly: true, annual: true },
+    { name: 'Accès prioritaire au support', monthly: true, annual: true },
+    { name: 'Intégrations exclusives', monthly: true, annual: true },
+  ];
+
+  const faqData = [
+    {
+      question: "Qu'est-ce qui est inclus dans l'abonnement Premium ?",
+      answer: "L'abonnement Premium offre un accès illimité à toutes les fonctionnalités de l'application, y compris les statistiques avancées, les alertes personnalisées, l'accès prioritaire au support et des intégrations exclusives."
+    },
+    {
+      question: "Puis-je annuler mon abonnement à tout moment ?",
+      answer: "Oui, vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord. L'accès Premium restera actif jusqu'à la fin de la période de facturation en cours."
+    },
+    {
+      question: "Offrez-vous une garantie de remboursement ?",
+      answer: "Oui, nous offrons une garantie de remboursement de 30 jours. Si vous n'êtes pas satisfait de l'abonnement Premium, contactez notre support client dans les 30 jours suivant votre achat pour un remboursement complet."
+    }
+  ];
+
+  const handleUpgrade = () => {
+    navigate('/dashboard');
+  };
 
   return (
-    <AppLayout>
-      <div className="container py-12 max-w-5xl mx-auto space-y-16 page-transition">
-        <div className="space-y-4 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Une tarification simple et transparente</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Choisissez le forfait qui correspond à vos besoins et boostez votre trading
-          </p>
-        </div>
-        
-        <div className="flex justify-center mb-12">
-          <div className="inline-flex items-center p-1 bg-muted rounded-full">
-            <button 
-              onClick={() => setSelectedPlan('monthly')} 
-              className={`px-4 py-2 text-sm rounded-full transition-all ${selectedPlan === 'monthly' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground'}`}
+    <div className="min-h-screen flex flex-col">
+      <Header />
+
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="py-20 md:py-32 bg-background">
+          <div className="container px-4 mx-auto text-center">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl md:text-5xl font-bold mb-6"
             >
-              Mensuel
-            </button>
-            <button 
-              onClick={() => setSelectedPlan('annual')} 
-              className={`px-4 py-2 text-sm rounded-full transition-all ${selectedPlan === 'annual' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground'}`}
+              Débloquez le potentiel de votre trading avec Premium
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-muted-foreground text-lg md:text-xl mb-8 max-w-2xl mx-auto"
             >
-              Annuel <span className="text-xs opacity-80 ml-1">-17%</span>
-            </button>
-          </div>
-        </div>
-        
-        <Alert variant="destructive" className="bg-destructive/10 border-destructive/30 text-destructive mx-auto mb-8 max-w-2xl">
-          <AlertCircle className="h-5 w-5" />
-          <AlertTitle>Paiements temporairement désactivés</AlertTitle>
-          <AlertDescription>
-            Les paiements sont actuellement désactivés jusqu'à la sortie officielle du site. 
-            Vous pourrez souscrire à l'abonnement premium très prochainement.
-          </AlertDescription>
-        </Alert>
-              
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-12">
-          <Card className="border border-border bg-card">
-            <CardHeader className="pb-4">
-              <div className="mb-2">
-                <span className="px-3 py-1 text-xs rounded-full bg-muted text-muted-foreground">Standard</span>
-              </div>
-              <CardTitle className="text-2xl">Gratuit</CardTitle>
-              <CardDescription className="text-base">Pour commencer à suivre vos trades</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="pt-4 border-t border-border">
-                <h3 className="font-medium mb-3">Inclus :</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <Check className="h-5 w-5 mr-3 text-green-500 shrink-0" />
-                    <span>Journal de trading illimité</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="h-5 w-5 mr-3 text-green-500 shrink-0" />
-                    <span>Suivi de portefeuille</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="h-5 w-5 mr-3 text-green-500 shrink-0" />
-                    <span>Statistiques de base</span>
-                  </li>
-                  <li className="flex items-center text-muted-foreground">
-                    <div className="h-5 w-5 mr-3 shrink-0" />
-                    <span>Calendrier des trades</span>
-                  </li>
-                  <li className="flex items-center text-muted-foreground">
-                    <div className="h-5 w-5 mr-3 shrink-0" />
-                    <span>Statistiques avancées</span>
-                  </li>
-                  <li className="flex items-center text-muted-foreground">
-                    <div className="h-5 w-5 mr-3 shrink-0" />
-                    <span>Support prioritaire</span>
-                  </li>
-                </ul>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full" asChild>
-                <Link to="/dashboard">Commencer gratuitement</Link>
+              Accédez à des outils d'analyse avancés, des alertes personnalisées et un support prioritaire pour optimiser votre stratégie de trading.
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <Button size="lg" className="rounded-full px-8" onClick={handleUpgrade}>
+                Passer à Premium
               </Button>
-            </CardFooter>
-          </Card>
-          
-          <Card className="border-2 border-primary bg-card shadow-lg relative">
-            <div className="absolute top-0 right-6 transform -translate-y-1/2 bg-primary text-primary-foreground px-3 py-1 text-xs font-medium rounded-full">
-              Recommandé
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section className="py-16 lg:py-24 bg-muted/30">
+          <div className="container px-4 mx-auto">
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h2 className="text-3xl font-bold mb-4">Choisissez votre plan Premium</h2>
+              <p className="text-muted-foreground">
+                Profitez de nos offres exclusives et accédez à des fonctionnalités avancées pour améliorer vos performances de trading.
+              </p>
             </div>
-            <CardHeader className="pb-4">
-              <div className="mb-2">
-                <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Premium</span>
-              </div>
-              <CardTitle className="text-2xl">
-                {selectedPlan === 'monthly' ? '9,99€' : '99,99€'}
-                <span className="text-base font-normal text-muted-foreground ml-1">
-                  {selectedPlan === 'monthly' ? '/mois' : '/an'}
-                </span>
-              </CardTitle>
-              <CardDescription className="text-base">
-                {selectedPlan === 'annual' && <span className="text-sm text-muted-foreground">Soit 8,33€ par mois</span>}
-                Améliorez votre trading avec des outils avancés
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="pt-4 border-t border-border">
-                <h3 className="font-medium mb-3">Tout ce qui est inclus dans Standard, plus :</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <Check className="h-5 w-5 mr-3 text-green-500 shrink-0" />
+
+            <Tabs defaultValue="monthly" className="w-full max-w-md mx-auto">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="monthly" onClick={() => setBillingCycle('monthly')}>Mensuel</TabsTrigger>
+                <TabsTrigger value="annual" onClick={() => setBillingCycle('annual')}>Annuel</TabsTrigger>
+              </TabsList>
+              <TabsContent value="monthly" className="mt-6">
+                <Card className="border-primary/20">
+                  <CardHeader className="space-y-2.5">
+                    <h3 className="text-2xl font-semibold">Abonnement Mensuel</h3>
+                    <p className="text-muted-foreground">Accès complet à toutes les fonctionnalités Premium.</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-center">
+                      <span className="text-5xl font-bold">
+                        ${billingCycle === 'monthly' ? pricingPlans.monthly.discountedPrice : pricingPlans.annual.discountedPrice}
+                      </span>
+                      <span className="text-xl text-muted-foreground">/mois</span>
+                    </div>
+                    <div className="flex items-center justify-center mt-2">
+                      <span className="text-lg text-muted-foreground line-through">
+                        ${billingCycle === 'monthly' ? pricingPlans.monthly.price : pricingPlans.annual.price}
+                      </span>
+                      <span className="text-sm text-primary ml-2">Offre limitée</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full rounded-full" onClick={handleUpgrade}>
+                      S'abonner
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+              <TabsContent value="annual" className="mt-6">
+                <Card className="border-primary/20">
+                  <CardHeader className="space-y-2.5">
+                    <h3 className="text-2xl font-semibold">Abonnement Annuel</h3>
+                    <p className="text-muted-foreground">Économisez jusqu'à 30% avec l'abonnement annuel.</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-center">
+                      <span className="text-5xl font-bold">
+                        ${billingCycle === 'monthly' ? pricingPlans.monthly.discountedPrice : pricingPlans.annual.discountedPrice}
+                      </span>
+                      <span className="text-xl text-muted-foreground">/an</span>
+                    </div>
+                    <div className="flex items-center justify-center mt-2">
+                      <span className="text-lg text-muted-foreground line-through">
+                        ${billingCycle === 'monthly' ? pricingPlans.monthly.price * 12 : pricingPlans.annual.price}
+                      </span>
+                      <span className="text-sm text-primary ml-2">Offre limitée</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full rounded-full" onClick={handleUpgrade}>
+                      S'abonner
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+            </Tabs>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+              {features.map((feature, index) => (
+                <Card key={index} className="bg-card hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6 flex items-center space-x-4">
+                    {feature.monthly && feature.annual ? (
+                      <Check className="text-green-500 h-6 w-6" />
+                    ) : (
+                      <X className="text-red-500 h-6 w-6" />
+                    )}
                     <div>
-                      <span className="font-medium">Calendrier des trades</span>
-                      <p className="text-sm text-muted-foreground">Visualisez vos trades dans le temps</p>
-                    </div>
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="h-5 w-5 mr-3 text-green-500 shrink-0" />
-                    <div>
-                      <span className="font-medium">Statistiques avancées</span>
-                      <p className="text-sm text-muted-foreground">Analyses détaillées de vos performances</p>
-                    </div>
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="h-5 w-5 mr-3 text-green-500 shrink-0" />
-                    <div>
-                      <span className="font-medium">Exports illimités</span>
-                      <p className="text-sm text-muted-foreground">Exportez toutes vos données facilement</p>
-                    </div>
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="h-5 w-5 mr-3 text-green-500 shrink-0" />
-                    <div>
-                      <span className="font-medium">Support prioritaire</span>
-                      <p className="text-sm text-muted-foreground">Accès à notre équipe dédiée</p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full" disabled>Prochainement disponible</Button>
-            </CardFooter>
-          </Card>
-        </div>
-        
-        <div className="space-y-6 max-w-5xl mx-auto">
-          <div className="text-center space-y-3">
-            <h2 className="text-2xl font-bold">Comparaison détaillée</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Découvrez en détail toutes les fonctionnalités proposées dans chacun de nos forfaits
-            </p>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left p-4">Fonctionnalité</th>
-                  <th className="text-center p-4">Standard</th>
-                  <th className="text-center p-4 bg-primary/5">Premium</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-border">
-                  <td className="p-4">Journal de trading</td>
-                  <td className="text-center p-4"><Check className="inline h-5 w-5 text-green-500" /></td>
-                  <td className="text-center p-4 bg-primary/5"><Check className="inline h-5 w-5 text-green-500" /></td>
-                </tr>
-                <tr className="border-b border-border">
-                  <td className="p-4">Suivi de portefeuille</td>
-                  <td className="text-center p-4"><Check className="inline h-5 w-5 text-green-500" /></td>
-                  <td className="text-center p-4 bg-primary/5"><Check className="inline h-5 w-5 text-green-500" /></td>
-                </tr>
-                <tr className="border-b border-border">
-                  <td className="p-4">Statistiques de base</td>
-                  <td className="text-center p-4"><Check className="inline h-5 w-5 text-green-500" /></td>
-                  <td className="text-center p-4 bg-primary/5"><Check className="inline h-5 w-5 text-green-500" /></td>
-                </tr>
-                <tr className="border-b border-border">
-                  <td className="p-4">Calendrier des trades</td>
-                  <td className="text-center p-4">-</td>
-                  <td className="text-center p-4 bg-primary/5"><Check className="inline h-5 w-5 text-green-500" /></td>
-                </tr>
-                <tr className="border-b border-border">
-                  <td className="p-4">Statistiques avancées</td>
-                  <td className="text-center p-4">-</td>
-                  <td className="text-center p-4 bg-primary/5"><Check className="inline h-5 w-5 text-green-500" /></td>
-                </tr>
-                <tr className="border-b border-border">
-                  <td className="p-4">Analyse de drawdown</td>
-                  <td className="text-center p-4">-</td>
-                  <td className="text-center p-4 bg-primary/5"><Check className="inline h-5 w-5 text-green-500" /></td>
-                </tr>
-                <tr className="border-b border-border">
-                  <td className="p-4">Comparaison avec indices</td>
-                  <td className="text-center p-4">-</td>
-                  <td className="text-center p-4 bg-primary/5"><Check className="inline h-5 w-5 text-green-500" /></td>
-                </tr>
-                <tr className="border-b border-border">
-                  <td className="p-4">Exports de données</td>
-                  <td className="text-center p-4">Limité</td>
-                  <td className="text-center p-4 bg-primary/5">Illimité</td>
-                </tr>
-                <tr className="border-b border-border">
-                  <td className="p-4">Support client</td>
-                  <td className="text-center p-4">Email</td>
-                  <td className="text-center p-4 bg-primary/5">Email + Chat prioritaire</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-          
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold mb-2">Questions fréquentes</h2>
-            <p className="text-muted-foreground">Tout ce que vous devez savoir sur nos abonnements</p>
-          </div>
-          
-          <div className="space-y-4">
-            <Card>
-              <CardHeader className="py-4">
-                <CardTitle className="text-lg">Puis-je changer de forfait à tout moment ?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Oui, vous pouvez passer du forfait Standard à Premium à tout moment. Si vous passez de l'abonnement mensuel à l'abonnement annuel, nous vous créditerons le temps restant de votre abonnement mensuel.</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="py-4">
-                <CardTitle className="text-lg">Comment fonctionne la période d'essai ?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Pendant la phase bêta, tous les utilisateurs ont accès à toutes les fonctionnalités premium gratuitement. Une fois la phase bêta terminée, vous pourrez choisir de continuer avec le forfait Premium ou revenir au forfait Standard.</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="py-4">
-                <CardTitle className="text-lg">Quels moyens de paiement acceptez-vous ?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Nous acceptons les cartes de crédit (Visa, Mastercard, American Express) et PayPal. Les paiements sont sécurisés et chiffrés.</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-        
-        <div className="py-12">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-2">Ce que nos utilisateurs disent</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Découvrez comment Trades Tracker aide les traders à améliorer leurs performances
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card className="h-full">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex text-primary">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-current" />
-                      ))}
-                    </div>
-                    <p className="text-muted-foreground italic">"{testimonial.text}"</p>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={testimonial.avatar} />
-                        <AvatarFallback>{testimonial.author.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold">{testimonial.author}</p>
-                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                      </div>
+                      <h3 className="text-lg font-semibold">{feature.name}</h3>
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-        
-        <div className="max-w-3xl mx-auto bg-muted/50 rounded-lg p-8 border border-border">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold mb-2">Encore des questions ?</h2>
-            <p className="text-muted-foreground">Notre équipe est là pour vous aider dans votre choix</p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="outline" className="flex gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Discuter avec un conseiller
-            </Button>
-            <Button className="flex gap-2" asChild>
-              <Link to="/contact">
-                <Users className="h-4 w-4" />
-                Contacter l'équipe
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </AppLayout>
-  );
-};
+        </section>
 
-export default Premium;
+        {/* Testimonials Section with Carousel */}
+        <section className="py-16 md:py-20 bg-background">
+          <div className="container">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <h2 className="text-3xl font-bold mb-4">Ils ont choisi Premium</h2>
+              <p className="text-muted-foreground">
+                Découvrez comment nos abonnés Premium améliorent leurs performances de trading
+              </p>
+            </div>
+            
+            <TestimonialsCarousel staticTestimonials={testimonials} />
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-16 md:py-20 bg-muted/30">
+          <div className="container px-4 mx-auto">
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h2 className="text-3xl font-bold mb-4">Foire aux questions</h2>
+              <p className="text-muted-foreground">
+                Trouvez les réponses aux questions les plus fréquemment posées sur l'abonnement Premium.
+              </p>
+            </div>
+
+            <div className="space-y-6 max-w-2xl mx-auto">
+              {faqData.map((item, index) => (
+                <Card key={index} className="border-primary/20">
+                  <CardHeader>
+                    <div className="flex items-start">
+                      <h3 className="text-lg font-semibold">{item.question}</h3>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <HelpCircle className="h-4 w-4 ml-2 text-muted-foreground cursor-pointer" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Besoin d'aide ? Contactez notre support client.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">{item.answer}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="py-16 md:py-24 bg-primary text-white text-center">
+          <div className="container px-4 mx-auto">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-3xl md:text-4xl font-bold mb-6"
+            >
+              Boostez votre trading dès aujourd'hui !
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-lg md:text-xl mb-8 max-w-3xl mx-auto text-white/90"
+            >
+              Rejoignez la communauté Premium et profitez d'outils exclusifs pour optimiser vos performances et atteindre vos objectifs financiers.
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <Button size="lg" className="rounded-full px-8 bg-secondary text-primary hover:bg-secondary/80" onClick={handleUpgrade}>
+                Passer à Premium
+              </Button>
+            </motion.div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}

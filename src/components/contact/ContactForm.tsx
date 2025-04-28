@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -41,6 +42,18 @@ export function ContactForm() {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
+      // D'abord sauvegarder le message dans la base de données
+      const { error: dbError } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: data.name,
+          email: data.email,
+          message: data.message,
+        });
+
+      if (dbError) throw dbError;
+
+      // Ensuite envoyer le message par email
       const { error } = await supabase.functions.invoke('send-contact-email', {
         body: data
       });

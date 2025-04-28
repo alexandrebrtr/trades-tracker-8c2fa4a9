@@ -4,21 +4,16 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { Card, CardContent } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
+import { TestimonialsCarousel, Testimonial } from '@/components/landing/TestimonialsCarousel';
+import { RatingSystem } from '@/components/landing/RatingSystem';
 import { FileText, BarChart2, Briefcase, TrendingUp, ChartBar, Calendar, Book, Star, MessageSquare, Send } from 'lucide-react';
 import { ContactForm } from '@/components/contact/ContactForm';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useToast } from '@/components/ui/use-toast';
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { toast } = useToast();
-  const [message, setMessage] = useState('');
-  const [userRating, setUserRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
 
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
@@ -58,8 +53,9 @@ export default function LandingPage() {
     }
   ];
 
-  const testimonials = [
+  const testimonials: Testimonial[] = [
     {
+      id: "1",
       text: "Trades Tracker a transformé ma façon d'analyser mes performances. Je peux maintenant identifier facilement mes schémas de trading gagnants.",
       author: "Alexandre D.",
       role: "Day Trader",
@@ -67,6 +63,7 @@ export default function LandingPage() {
       avatar: "/lovable-uploads/6b9faeba-9821-4d33-be9c-6a099aa8c1fe.png"
     },
     {
+      id: "2",
       text: "Interface intuitive, statistiques claires. Exactement ce dont j'avais besoin pour progresser et être plus disciplinée dans mes trades.",
       author: "Marie L.",
       role: "Investisseur particulier",
@@ -74,6 +71,7 @@ export default function LandingPage() {
       avatar: "/lovable-uploads/7b5e102a-70c9-4618-a03e-87c1f375227e.png"
     },
     {
+      id: "3",
       text: "Le journal de trading est devenu mon meilleur allié. Je comprends mieux mes erreurs et améliore constamment ma stratégie.",
       author: "Thomas B.",
       role: "Swing Trader",
@@ -81,6 +79,7 @@ export default function LandingPage() {
       avatar: "/lovable-uploads/68631625-1d14-4206-b940-611ff6fce57e.png"
     },
     {
+      id: "4",
       text: "Après avoir testé plusieurs outils, Trades Tracker est définitivement le plus complet. Les fonctionnalités premium valent vraiment l'investissement.",
       author: "Sophie M.",
       role: "Trader Forex",
@@ -91,33 +90,6 @@ export default function LandingPage() {
 
   const handleDashboardRedirect = () => {
     navigate('/dashboard');
-  };
-
-  const handleSendMessage = () => {
-    if (!message.trim()) {
-      toast({
-        title: "Message vide",
-        description: "Veuillez entrer un message avant d'envoyer",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    toast({
-      title: "Message envoyé",
-      description: "Merci pour votre message. Notre équipe vous répondra prochainement.",
-    });
-    
-    setMessage('');
-  };
-  
-  const handleRating = (rating: number) => {
-    setUserRating(rating);
-    
-    toast({
-      title: "Merci pour votre évaluation !",
-      description: `Vous avez attribué une note de ${rating}/5 à Trades Tracker.`,
-    });
   };
 
   return (
@@ -261,7 +233,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Testimonials Section - Now with Carousel */}
       <section className="py-20 bg-background">
         <div className="container px-4 mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -271,42 +243,11 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="h-full">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex text-primary">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-current" />
-                      ))}
-                    </div>
-                    <p className="text-muted-foreground italic">"{testimonial.text}"</p>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={testimonial.avatar} />
-                        <AvatarFallback>{testimonial.author.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold">{testimonial.author}</p>
-                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+          <TestimonialsCarousel staticTestimonials={testimonials} />
         </div>
       </section>
       
-      {/* Message Space Section */}
+      {/* Contact Form Section */}
       <section className="py-20 bg-muted/30">
         <div className="container px-4 mx-auto">
           <div className="max-w-3xl mx-auto">
@@ -318,28 +259,7 @@ export default function LandingPage() {
             </div>
             
             <div className="bg-background border border-border rounded-lg p-6 shadow-sm">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="message" className="font-medium">Votre message</label>
-                  <Textarea 
-                    id="message"
-                    placeholder="Posez votre question ou partagez votre feedback..."
-                    className="resize-none"
-                    rows={5}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                  />
-                </div>
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={handleSendMessage}
-                    className="flex items-center gap-2"
-                  >
-                    <Send className="h-4 w-4" />
-                    Envoyer le message
-                  </Button>
-                </div>
-              </div>
+              <ContactForm />
             </div>
           </div>
         </div>
@@ -434,7 +354,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer with rating system */}
+      {/* Footer with dynamic rating system */}
       <footer className="py-10 sm:py-12 bg-background/50 border-t border-border">
         <div className="container px-4 mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 mb-8">
@@ -443,36 +363,7 @@ export default function LandingPage() {
               <p className="text-xs sm:text-sm text-muted-foreground">Votre compagnon de trading au quotidien</p>
             </div>
             
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button 
-                    key={star}
-                    className="focus:outline-none"
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    onClick={() => handleRating(star)}
-                  >
-                    <Star 
-                      className={`h-7 w-7 ${
-                        star <= (hoverRating || userRating) 
-                          ? 'text-yellow-500 fill-yellow-500' 
-                          : 'text-muted-foreground'
-                      } transition-colors`}
-                    />
-                  </button>
-                ))}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {userRating > 0 
-                  ? `Merci pour votre note de ${userRating}/5 !` 
-                  : 'Notez notre application'
-                }
-              </div>
-              <div className="text-xs text-muted-foreground">
-                <span className="font-medium">4.8</span>/5 - basé sur <span className="font-medium">1,245</span> avis
-              </div>
-            </div>
+            <RatingSystem />
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 py-8 border-y border-border">
