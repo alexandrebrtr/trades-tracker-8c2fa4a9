@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Check, HelpCircle, Star, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/navigation/Header';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -13,7 +12,6 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { TestimonialsCarousel } from '@/components/landing/TestimonialsCarousel';
 
 export default function Premium() {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const navigate = useNavigate();
 
   const testimonials = [
@@ -66,8 +64,8 @@ export default function Premium() {
       color: "bg-card"
     },
     {
-      name: "Premium",
-      price: billingCycle === 'monthly' ? 10 : 100/12,
+      name: "Premium Mensuel",
+      price: 10,
       description: "Pour les traders sérieux",
       features: [
         "Journal de trading illimité",
@@ -84,10 +82,10 @@ export default function Premium() {
       color: "bg-primary/5 border-primary/30"
     },
     {
-      name: "Premium",
-      price: billingCycle === 'monthly' ? 10 : 100/12,
-      yearPrice: billingCycle === 'annual' ? 100 : 120,
-      description: "Pour les traders sérieux",
+      name: "Premium Annuel",
+      price: 100/12,
+      yearPrice: 100,
+      description: "Pour les traders sérieux avec 16% d'économie",
       features: [
         "Journal de trading illimité",
         "Statistiques avancées",
@@ -159,19 +157,6 @@ export default function Premium() {
         {/* Pricing Section */}
         <section className="py-8 lg:py-16 bg-muted/30">
           <div className="container px-4 mx-auto">
-            <div className="flex justify-center mb-8">
-              <Tabs 
-                value={billingCycle} 
-                onValueChange={(value) => setBillingCycle(value as 'monthly' | 'annual')}
-                className="w-full max-w-xs"
-              >
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="monthly">Mensuel</TabsTrigger>
-                  <TabsTrigger value="annual">Annuel</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {pricingPlans.map((plan, index) => (
                 <Card 
@@ -189,7 +174,7 @@ export default function Premium() {
                     </div>
                   )}
                   
-                  {index === 2 && billingCycle === 'annual' && (
+                  {index === 2 && (
                     <div className="absolute top-0 right-0">
                       <div className="bg-primary text-white text-xs font-medium py-1 px-3 rounded-bl">
                         -16% sur l'année
@@ -211,7 +196,7 @@ export default function Premium() {
                             <span className="text-muted-foreground ml-1">/mois</span>
                           </div>
                           
-                          {index === 2 && billingCycle === 'annual' && (
+                          {index === 2 && (
                             <div className="text-sm text-muted-foreground mt-1">
                               {formatCurrency(plan.yearPrice as number)} facturé annuellement
                             </div>
