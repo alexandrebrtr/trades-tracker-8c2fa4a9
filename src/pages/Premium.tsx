@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { TestimonialsCarousel } from '@/components/landing/TestimonialsCarousel';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { InfoIcon } from 'lucide-react';
 
 export default function Premium() {
   const navigate = useNavigate();
@@ -83,8 +85,8 @@ export default function Premium() {
     },
     {
       name: "Premium Annuel",
-      price: 100/12,
-      yearPrice: 100,
+      price: 99.99/12,
+      yearPrice: 99.99,
       description: "Pour les traders sérieux avec 16% d'économie",
       features: [
         "Journal de trading illimité",
@@ -118,7 +120,7 @@ export default function Premium() {
   ];
 
   const handleUpgrade = () => {
-    navigate('/dashboard');
+    navigate('/payment');
   };
 
   const formatCurrency = (amount: number) => {
@@ -157,6 +159,13 @@ export default function Premium() {
         {/* Pricing Section */}
         <section className="py-8 lg:py-16 bg-muted/30">
           <div className="container px-4 mx-auto">
+            <Alert className="mb-8 bg-primary/10 text-primary border-primary/30 shadow-sm">
+              <InfoIcon className="h-4 w-4 mr-2" />
+              <AlertDescription>
+                <span className="font-medium">Offre de lancement :</span> L'accès Premium est entièrement gratuit jusqu'à la sortie de la version finale du site !
+              </AlertDescription>
+            </Alert>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {pricingPlans.map((plan, index) => (
                 <Card 
@@ -225,13 +234,28 @@ export default function Premium() {
                   </CardContent>
                   
                   <CardFooter>
-                    <Button 
-                      className={cn("w-full", plan.isPopular ? "" : "variant-outline")} 
-                      variant={plan.isPopular ? "default" : "outline"}
-                      onClick={handleUpgrade}
-                    >
-                      {plan.cta}
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="w-full">
+                            <Button 
+                              className={cn("w-full", plan.isPopular ? "" : "variant-outline")} 
+                              variant={plan.isPopular ? "default" : "outline"}
+                              onClick={handleUpgrade}
+                              disabled={index !== 0}
+                            >
+                              {plan.cta}
+                              {index !== 0 && <span className="ml-1 text-xs">(Bientôt disponible)</span>}
+                            </Button>
+                          </div>
+                        </TooltipTrigger>
+                        {index !== 0 && (
+                          <TooltipContent>
+                            <p>Disponible à la sortie de la version finale</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   </CardFooter>
                 </Card>
               ))}
@@ -311,8 +335,14 @@ export default function Premium() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Button size="lg" className="rounded-full px-8 bg-white text-primary hover:bg-white/90" onClick={handleUpgrade}>
+              <Button 
+                size="lg" 
+                className="rounded-full px-8 bg-white text-primary hover:bg-white/90" 
+                onClick={handleUpgrade}
+                disabled={true}
+              >
                 Commencer maintenant
+                <span className="ml-1 text-xs">(Bientôt disponible)</span>
               </Button>
             </motion.div>
           </div>
