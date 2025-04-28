@@ -25,7 +25,7 @@ export function LandingHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/80 backdrop-blur-lg w-full">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background w-full shadow-sm">
       <div className="w-full px-4 mx-auto max-w-7xl">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">

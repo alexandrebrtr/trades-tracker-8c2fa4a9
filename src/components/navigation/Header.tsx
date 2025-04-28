@@ -103,7 +103,7 @@ export function Header({ mobileMode = false }: HeaderProps) {
 
   return (
     <header 
-      className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background/95 backdrop-blur-sm px-4" 
+      className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background px-4" 
       role="banner"
       aria-label="En-tête du site"
     >
