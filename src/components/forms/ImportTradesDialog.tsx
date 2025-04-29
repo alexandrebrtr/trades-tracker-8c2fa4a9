@@ -11,22 +11,30 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/context/AuthContext';
 import { TradeData } from '@/services/TradeData';
 import { useLanguage } from '@/context/LanguageContext';
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 // Define the ImportStats interface to fix the TypeScript errors
 interface ImportStats {
   totalTrades: number;
   successfulImports: number;
   failedImports: number;
-  errors: any[];
+  errors: Array<{
+    message: string;
+    row?: any;
+  }>;
 }
 
-export function ImportTradesDialog() {
+interface ImportTradesDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function ImportTradesDialog({ open, onOpenChange }: ImportTradesDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -84,12 +92,32 @@ export function ImportTradesDialog() {
     }
   };
 
+  // Use the controlled dialog if open/onOpenChange props are provided
+  if (open !== undefined && onOpenChange) {
+    return (
+      <AlertDialog open={open} onOpenChange={onOpenChange}>
+        <AlertDialogContent>
+          {renderDialogContent()}
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
+
+  // Otherwise, render with trigger button
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="outline">Importer depuis CSV</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
+        {renderDialogContent()}
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
+  function renderDialogContent() {
+    return (
+      <>
         <AlertDialogHeader>
           <AlertDialogTitle>Importer des trades depuis CSV</AlertDialogTitle>
           <AlertDialogDescription>
@@ -98,16 +126,14 @@ export function ImportTradesDialog() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="csvData" className="text-right">
-              CSV Data
-            </Label>
-            <Input
+          <div className="grid gap-2">
+            <Label htmlFor="csvData">CSV Data</Label>
+            <Textarea
               id="csvData"
               value={csvData}
               onChange={handleCsvDataChange}
-              className="col-span-3"
-              as="textarea"
+              className="min-h-[200px]"
+              placeholder="Date,Asset,Type,EntryPrice,ExitPrice,Size,P&L"
             />
           </div>
           {stats.errors.length > 0 && (
@@ -135,7 +161,7 @@ export function ImportTradesDialog() {
             {isImporting ? "Importing..." : "Importer"}
           </AlertDialogAction>
         </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
+      </>
+    );
+  }
 }
