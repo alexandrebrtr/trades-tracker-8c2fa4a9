@@ -6,20 +6,15 @@ import { Users } from "lucide-react";
 export default function Team() {
   const team = [
     {
-      name: "Alexandre Martin",
+      name: "Alexandre Berthier",
       role: "CEO & Fondateur",
-      description: "Expert en trading et développement de stratégies"
+      description: "Expert en trading, développement de stratégies et en codage"
     },
     {
-      name: "Sophie Bernard",
-      role: "Directrice Produit",
-      description: "Spécialiste en expérience utilisateur et analyse de données"
+      name: "Neil Yammine",
+      role: "Directeur Marketing",
+      description: "Spécialiste en marketing"
     },
-    {
-      name: "Thomas Dubois",
-      role: "Lead Développeur",
-      description: "Expert en architecture logicielle et performance"
-    }
   ];
 
   return (
