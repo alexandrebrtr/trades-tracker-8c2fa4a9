@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/carousel";
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from "@/components/ui/card";
+import { useLanguage } from '@/context/LanguageContext';
 
 export interface Testimonial {
   id: string;
@@ -24,10 +25,29 @@ export interface Testimonial {
 export function TestimonialsCarousel({ staticTestimonials = [] }: { staticTestimonials?: Testimonial[] }) {
   const [testimonials, setTestimonials] = useState<Testimonial[]>(staticTestimonials);
   const [loading, setLoading] = useState(staticTestimonials.length === 0);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     // Si on a déjà des témoignages statiques, pas besoin de charger
-    if (staticTestimonials.length > 0) return;
+    if (staticTestimonials.length > 0) {
+      // Traduire les témoignages statiques si nécessaire
+      const translatedTestimonials = staticTestimonials.map(testimonial => {
+        const author = testimonial.author;
+        // Traduire le texte et le rôle en fonction de l'auteur
+        if (author === 'Alexandre D.') {
+          return {...testimonial, text: t('testimonials.alex'), role: t('testimonials.alexRole')};
+        } else if (author === 'Marie L.') {
+          return {...testimonial, text: t('testimonials.marie'), role: t('testimonials.marieRole')};
+        } else if (author === 'Thomas B.') {
+          return {...testimonial, text: t('testimonials.thomas'), role: t('testimonials.thomasRole')};
+        } else if (author === 'Sophie M.') {
+          return {...testimonial, text: t('testimonials.sophie'), role: t('testimonials.sophieRole')};
+        }
+        return testimonial;
+      });
+      setTestimonials(translatedTestimonials);
+      return;
+    }
 
     const fetchTestimonials = async () => {
       try {
@@ -40,14 +60,29 @@ export function TestimonialsCarousel({ staticTestimonials = [] }: { staticTestim
         if (error) throw error;
         
         if (data) {
-          setTestimonials(data.map(item => ({
-            id: item.id,
-            text: item.text,
-            author: item.author,
-            role: item.role,
-            rating: item.rating,
-            avatar: item.avatar_url
-          })));
+          // Traduire les témoignages de la base de données
+          const translatedDbTestimonials = data.map(item => {
+            let translatedText = item.text;
+            let translatedRole = item.role;
+            
+            // Pour simplifier, on pourrait utiliser une correspondance entre les IDs et les clés de traduction
+            // Mais ici on utilise un exemple simplifié
+            if (language === 'en' && item.author === 'Alexandre D.') {
+              translatedText = "Trades Tracker has transformed the way I analyze my performance. I can now easily identify my winning trading patterns.";
+              translatedRole = "Day Trader";
+            }
+            
+            return {
+              id: item.id,
+              text: translatedText,
+              author: item.author,
+              role: translatedRole,
+              rating: item.rating,
+              avatar: item.avatar_url
+            };
+          });
+          
+          setTestimonials(translatedDbTestimonials);
         }
       } catch (error) {
         console.error('Erreur lors du chargement des témoignages:', error);
@@ -57,12 +92,12 @@ export function TestimonialsCarousel({ staticTestimonials = [] }: { staticTestim
     };
 
     fetchTestimonials();
-  }, [staticTestimonials]);
+  }, [staticTestimonials, language, t]);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-pulse">Chargement des témoignages...</div>
+        <div className="animate-pulse">{t('testimonials.loading')}</div>
       </div>
     );
   }

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/context/LanguageContext';
 
 // Définir le type pour les notes
 interface RatingData {
@@ -17,6 +18,7 @@ export function RatingSystem() {
   const [averageRating, setAverageRating] = useState(0);
   const [totalRatings, setTotalRatings] = useState(0);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Charger les statistiques des notes
@@ -75,7 +77,7 @@ export function RatingSystem() {
       if (error) throw error;
       
       toast({
-        title: "Merci pour votre note !",
+        title: t('landing.footer.thanks').replace('{rating}', rating.toString()),
         description: `Vous avez attribué une note de ${rating}/5 à Trades Tracker.`,
       });
     } catch (error) {
@@ -112,12 +114,12 @@ export function RatingSystem() {
       </div>
       <div className="text-sm text-muted-foreground">
         {userRating > 0 
-          ? `Merci pour votre note de ${userRating}/5 !` 
-          : 'Notez notre application'
+          ? t('landing.footer.thanks').replace('{rating}', userRating.toString())
+          : t('landing.footer.rateUs')
         }
       </div>
       <div className="text-xs text-muted-foreground">
-        <span className="font-medium">{averageRating}</span>/5 - basé sur <span className="font-medium">{totalRatings}</span> avis
+        <span className="font-medium">{averageRating}</span>/5 - {t('landing.footer.basedOn').replace('{count}', totalRatings.toString())}
       </div>
     </div>
   );

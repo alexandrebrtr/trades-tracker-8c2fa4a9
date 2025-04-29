@@ -10,9 +10,11 @@ import { useAuth } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { DashboardData, Trade } from '@/services/DashboardData';
 import { formatCurrency as formatCurrencyUtil } from '@/utils/formatters';
+import { useLanguage } from '@/context/LanguageContext';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
   const [portfolioBalance, setPortfolioBalance] = useState(0);
   const [monthlyPnL, setMonthlyPnL] = useState(0);
@@ -69,7 +71,7 @@ const Dashboard = () => {
       <AppLayout>
         <div className="flex items-center justify-center h-[80vh]">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <span className="ml-2 text-muted-foreground">Chargement de votre tableau de bord...</span>
+          <span className="ml-2 text-muted-foreground">{t('dashboard.loading')}</span>
         </div>
       </AppLayout>
     );

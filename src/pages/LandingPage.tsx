@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -10,10 +11,12 @@ import { FileText, BarChart2, Briefcase, TrendingUp, ChartBar, Calendar, Book, S
 import { ContactForm } from '@/components/contact/ContactForm';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Textarea } from '@/components/ui/textarea';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { t } = useLanguage();
 
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
@@ -22,33 +25,33 @@ export default function LandingPage() {
 
   const trackingCategories = [
     {
-      title: "Journal de trading",
-      description: "Enregistrez vos trades et analysez vos performances avec +20 métriques",
+      title: t('landing.features.journal'),
+      description: t('landing.features.journalDesc'),
       icon: <FileText className="h-6 w-6" />
     },
     {
-      title: "Analyse technique",
-      description: "Suivez vos stratégies et identifiez vos points forts",
+      title: t('landing.features.technical'),
+      description: t('landing.features.technicalDesc'),
       icon: <BarChart2 className="h-6 w-6" />
     },
     {
-      title: "Gestion du capital",
-      description: "Optimisez votre money management et limitez les risques",
+      title: t('landing.features.capital'),
+      description: t('landing.features.capitalDesc'),
       icon: <Briefcase className="h-6 w-6" />
     },
     {
-      title: "Statistiques avancées",
-      description: "Visualisez vos performances avec des graphiques détaillés",
+      title: t('landing.features.stats'),
+      description: t('landing.features.statsDesc'),
       icon: <TrendingUp className="h-6 w-6" />
     },
     {
-      title: "Calendrier trading",
-      description: "Planifiez et suivez vos sessions de trading efficacement",
+      title: t('landing.features.calendar'),
+      description: t('landing.features.calendarDesc'),
       icon: <Calendar className="h-6 w-6" />
     },
     {
-      title: "Statistiques comparatives",
-      description: "Comparez vos performances avec d'autres traders",
+      title: t('landing.features.comparative'),
+      description: t('landing.features.comparativeDesc'),
       icon: <ChartBar className="h-6 w-6" />
     }
   ];
@@ -56,33 +59,33 @@ export default function LandingPage() {
   const testimonials: Testimonial[] = [
     {
       id: "1",
-      text: "Trades Tracker a transformé ma façon d'analyser mes performances. Je peux maintenant identifier facilement mes schémas de trading gagnants.",
+      text: t('testimonials.alex'),
       author: "Alexandre D.",
-      role: "Day Trader",
+      role: t('testimonials.alexRole'),
       rating: 5,
       avatar: "/lovable-uploads/6b9faeba-9821-4d33-be9c-6a099aa8c1fe.png"
     },
     {
       id: "2",
-      text: "Interface intuitive, statistiques claires. Exactement ce dont j'avais besoin pour progresser et être plus disciplinée dans mes trades.",
+      text: t('testimonials.marie'),
       author: "Marie L.",
-      role: "Investisseur particulier",
+      role: t('testimonials.marieRole'),
       rating: 5,
       avatar: "/lovable-uploads/7b5e102a-70c9-4618-a03e-87c1f375227e.png"
     },
     {
       id: "3",
-      text: "Le journal de trading est devenu mon meilleur allié. Je comprends mieux mes erreurs et améliore constamment ma stratégie.",
+      text: t('testimonials.thomas'),
       author: "Thomas B.",
-      role: "Swing Trader",
+      role: t('testimonials.thomasRole'),
       rating: 5,
       avatar: "/lovable-uploads/68631625-1d14-4206-b940-611ff6fce57e.png"
     },
     {
       id: "4",
-      text: "Après avoir testé plusieurs outils, Trades Tracker est définitivement le plus complet. Les fonctionnalités premium valent vraiment l'investissement.",
+      text: t('testimonials.sophie'),
       author: "Sophie M.",
-      role: "Trader Forex",
+      role: t('testimonials.sophieRole'),
       rating: 5,
       avatar: "/lovable-uploads/75bc79d3-a83c-4eac-88bb-45983d822da6.png"
     }
@@ -108,10 +111,10 @@ export default function LandingPage() {
             >
               <div className="space-y-3 sm:space-y-4 lg:space-y-6">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                  <span className="text-foreground dark:text-white">Suivez, Optimisez, Tradez.</span>
+                  <span className="text-foreground dark:text-white">{t('landing.hero.title')}</span>
                 </h1>
                 <p className="text-sm sm:text-base md:text-lg lg:text-xl text-foreground/90 dark:text-white/90 max-w-xl">
-                  Trades Tracker est l'application qui vous aide à mieux gérer votre trading. Suivez vos performances, analysez vos trades et optimisez votre stratégie.
+                  {t('landing.hero.description')}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <Button 
@@ -119,7 +122,7 @@ export default function LandingPage() {
                     onClick={handleDashboardRedirect} 
                     className="rounded-full px-6 sm:px-8 bg-[#0080ff] hover:bg-[#0080ff]/80 text-white w-full sm:w-auto"
                   >
-                    Démarrer gratuitement
+                    {t('landing.hero.cta')}
                   </Button>
                 </div>
               </div>
@@ -132,15 +135,15 @@ export default function LandingPage() {
               >
                 <div>
                   <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#0080ff' }}>10,000+</div>
-                  <div className="text-xs sm:text-sm lg:text-base text-foreground/80 dark:text-white/80">Traders actifs</div>
+                  <div className="text-xs sm:text-sm lg:text-base text-foreground/80 dark:text-white/80">{t('landing.stats.activeTraders')}</div>
                 </div>
                 <div>
                   <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#0080ff' }}>50M+</div>
-                  <div className="text-xs sm:text-sm lg:text-base text-foreground/80 dark:text-white/80">Trades analysés</div>
+                  <div className="text-xs sm:text-sm lg:text-base text-foreground/80 dark:text-white/80">{t('landing.stats.analyzedTrades')}</div>
                 </div>
                 <div>
                   <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#0080ff' }}>89%</div>
-                  <div className="text-xs sm:text-sm lg:text-base text-foreground/80 dark:text-white/80">Taux de satisfaction</div>
+                  <div className="text-xs sm:text-sm lg:text-base text-foreground/80 dark:text-white/80">{t('landing.stats.satisfaction')}</div>
                 </div>
               </motion.div>
             </motion.div>
@@ -177,10 +180,10 @@ export default function LandingPage() {
             className="max-w-3xl mx-auto text-center mb-12 sm:mb-16"
           >
             <h2 className="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6">
-              Toutes les fonctionnalités dont vous avez besoin
+              {t('landing.features.title')}
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground mb-8">
-              Une suite complète d'outils pour optimiser votre trading
+              {t('landing.features.subtitle')}
             </p>
           </motion.div>
 
@@ -218,16 +221,16 @@ export default function LandingPage() {
           <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8">
             <div className="inline-flex items-center justify-center gap-2 px-4 py-1 rounded-full bg-primary/10 text-primary">
               <Book className="h-4 w-4" />
-              <span className="text-sm font-medium">Blog Trading</span>
+              <span className="text-sm font-medium">{t('landing.blog.section')}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold">
-              Découvrez nos articles sur le trading
+              {t('landing.blog.title')}
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground">
-              Apprenez de l'expérience des meilleurs traders et restez informé des dernières tendances du marché
+              {t('landing.blog.description')}
             </p>
             <Button asChild size="lg" className="rounded-full px-8">
-              <Link to="/blog">Accéder au blog</Link>
+              <Link to="/blog">{t('landing.blog.button')}</Link>
             </Button>
           </div>
         </div>
@@ -237,9 +240,9 @@ export default function LandingPage() {
       <section className="py-20 bg-background">
         <div className="container px-4 mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold mb-4">Ce que disent nos utilisateurs</h2>
+            <h2 className="text-3xl font-bold mb-4">{t('landing.testimonials.title')}</h2>
             <p className="text-muted-foreground">
-              Découvrez comment Trades Tracker aide les traders à améliorer leurs performances
+              {t('landing.testimonials.subtitle')}
             </p>
           </div>
 
@@ -252,9 +255,9 @@ export default function LandingPage() {
         <div className="container px-4 mx-auto">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Une question ? Contactez-nous</h2>
+              <h2 className="text-3xl font-bold mb-4">{t('landing.contact.title')}</h2>
               <p className="text-muted-foreground">
-                Notre équipe est disponible pour répondre à toutes vos questions sur Trades Tracker
+                {t('landing.contact.subtitle')}
               </p>
             </div>
             
@@ -275,17 +278,15 @@ export default function LandingPage() {
                   <div className="text-primary">ⓘ</div>
                 </div>
               </div>
-              <h2 className="text-2xl font-bold">Version Bêta - Premium Offert !</h2>
+              <h2 className="text-2xl font-bold">{t('landing.beta.title')}</h2>
               <p className="text-muted-foreground">
-                Vous utilisez actuellement la version bêta de Trades Tracker. Pendant cette période,{' '}
-                <span className="text-primary">nous offrons l'accès premium gratuitement</span> à tous nos utilisateurs !
+                {t('landing.beta.description')}
               </p>
               <p className="text-sm text-muted-foreground">
-                Pour en bénéficier, il vous suffit d'envoyer un message via notre page contact en précisant votre intérêt
-                pour l'accès premium gratuit.
+                {t('landing.beta.note')}
               </p>
               <Button variant="outline" size="lg" className="rounded-full">
-                Contacter l'équipe
+                {t('landing.beta.contactButton')}
               </Button>
             </div>
 
@@ -295,21 +296,11 @@ export default function LandingPage() {
                   <div className="text-yellow-500">⚠</div>
                 </div>
               </div>
-              <h3 className="text-xl font-semibold">Avertissement important</h3>
+              <h3 className="text-xl font-semibold">{t('landing.warning.title')}</h3>
               <div className="space-y-4 text-sm text-muted-foreground">
-                <p>
-                  Le trading et les investissements sur les marchés financiers comportent un risque substantiel de perte.
-                  Les performances passées ne préjugent pas des résultats futurs.
-                </p>
-                <p>
-                  75% des comptes d'investisseurs particuliers perdent de l'argent lorsqu'ils négocient des produits
-                  financiers.
-                </p>
-                <p>
-                  Cette plateforme est conçue pour le suivi et l'analyse de vos activités de trading, et non pour fournir des
-                  recommandations d'investissement. Veuillez consulter un conseiller financier professionnel avant de
-                  prendre des décisions d'investissement.
-                </p>
+                <p>{t('landing.warning.risk')}</p>
+                <p>{t('landing.warning.lossRate')}</p>
+                <p>{t('landing.warning.purpose')}</p>
               </div>
             </div>
           </div>
@@ -325,7 +316,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6"
           >
-            Prêt à transformer votre trading ?
+            {t('landing.cta.title')}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -334,7 +325,7 @@ export default function LandingPage() {
             transition={{ delay: 0.1 }}
             className="text-base sm:text-lg mb-6 sm:mb-8 text-white/90 max-w-2xl mx-auto"
           >
-            Rejoignez des milliers de traders qui ont amélioré leurs performances grâce à Trades Tracker.
+            {t('landing.cta.subtitle')}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -348,7 +339,7 @@ export default function LandingPage() {
               onClick={handleDashboardRedirect} 
               className="rounded-full px-6 sm:px-8"
             >
-              Commencer gratuitement
+              {t('landing.cta.button')}
             </Button>
           </motion.div>
         </div>
@@ -360,7 +351,7 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 mb-8">
             <div>
               <div className="text-lg sm:text-xl font-semibold text-primary">Trades Tracker</div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Votre compagnon de trading au quotidien</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">{t('landing.footer.slogan')}</p>
             </div>
             
             <RatingSystem />
@@ -368,41 +359,41 @@ export default function LandingPage() {
           
           <div className="grid md:grid-cols-3 gap-8 py-8 border-y border-border">
             <div>
-              <h3 className="font-medium text-lg mb-4">Navigation</h3>
+              <h3 className="font-medium text-lg mb-4">{t('landing.footer.navigation')}</h3>
               <div className="grid grid-cols-2 gap-2">
-                <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-primary">Tableau de bord</Link>
-                <Link to="/journal" className="text-sm text-muted-foreground hover:text-primary">Journal de trading</Link>
-                <Link to="/statistics" className="text-sm text-muted-foreground hover:text-primary">Statistiques</Link>
-                <Link to="/calendar" className="text-sm text-muted-foreground hover:text-primary">Calendrier</Link>
-                <Link to="/premium" className="text-sm text-muted-foreground hover:text-primary">Premium</Link>
-                <Link to="/blog" className="text-sm text-muted-foreground hover:text-primary">Blog</Link>
+                <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-primary">{t('nav.dashboard')}</Link>
+                <Link to="/journal" className="text-sm text-muted-foreground hover:text-primary">{t('nav.journal')}</Link>
+                <Link to="/statistics" className="text-sm text-muted-foreground hover:text-primary">{t('nav.statistics')}</Link>
+                <Link to="/calendar" className="text-sm text-muted-foreground hover:text-primary">{t('nav.calendar')}</Link>
+                <Link to="/premium" className="text-sm text-muted-foreground hover:text-primary">{t('landing.pricing')}</Link>
+                <Link to="/blog" className="text-sm text-muted-foreground hover:text-primary">{t('landing.blog')}</Link>
               </div>
             </div>
             
             <div>
-              <h3 className="font-medium text-lg mb-4">À propos</h3>
+              <h3 className="font-medium text-lg mb-4">{t('landing.footer.about')}</h3>
               <div className="flex flex-col gap-2">
-                <Link to="/about" className="text-sm text-muted-foreground hover:text-primary">Notre équipe</Link>
-                <Link to="/contact" className="text-sm text-muted-foreground hover:text-primary">Contact</Link>
-                <Link to="/premium" className="text-sm text-muted-foreground hover:text-primary">Tarifs</Link>
-                <Link to="/demo" className="text-sm text-muted-foreground hover:text-primary">Démo</Link>
+                <Link to="/about" className="text-sm text-muted-foreground hover:text-primary">{t('landing.team')}</Link>
+                <Link to="/contact" className="text-sm text-muted-foreground hover:text-primary">{t('landing.contact')}</Link>
+                <Link to="/premium" className="text-sm text-muted-foreground hover:text-primary">{t('landing.pricing')}</Link>
+                <Link to="/demo" className="text-sm text-muted-foreground hover:text-primary">{t('landing.demo')}</Link>
               </div>
             </div>
             
             <div>
-              <h3 className="font-medium text-lg mb-4">Légal</h3>
+              <h3 className="font-medium text-lg mb-4">{t('landing.footer.legal')}</h3>
               <div className="flex flex-col gap-2">
-                <Link to="/terms" className="text-sm text-muted-foreground hover:text-primary">Conditions d'utilisation</Link>
-                <Link to="/privacy" className="text-sm text-muted-foreground hover:text-primary">Politique de confidentialité</Link>
-                <Link to="/cookies" className="text-sm text-muted-foreground hover:text-primary">Gestion des cookies</Link>
-                <Link to="/mentions" className="text-sm text-muted-foreground hover:text-primary">Mentions légales</Link>
+                <Link to="/terms" className="text-sm text-muted-foreground hover:text-primary">{t('landing.footer.terms')}</Link>
+                <Link to="/privacy" className="text-sm text-muted-foreground hover:text-primary">{t('landing.footer.privacy')}</Link>
+                <Link to="/cookies" className="text-sm text-muted-foreground hover:text-primary">{t('landing.footer.cookies')}</Link>
+                <Link to="/mentions" className="text-sm text-muted-foreground hover:text-primary">{t('landing.footer.mentions')}</Link>
               </div>
             </div>
           </div>
           
           <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 text-center">
             <p className="text-xs sm:text-sm text-muted-foreground">
-              © 2025 Trades Tracker. Tous droits réservés.
+              {t('landing.footer.copyright')}
             </p>
           </div>
         </div>
