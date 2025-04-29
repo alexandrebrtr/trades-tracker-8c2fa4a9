@@ -28,7 +28,7 @@ export function Header({ mobileMode = false }: HeaderProps) {
   };
 
   // Calculer le nom à afficher - priorité au nom d'utilisateur du profil
-  const displayName = profile?.username || (user?.email ? user.email.split('@')[0] : 'Utilisateur');
+  const displayName = profile?.username || (user?.email ? user.email.split('@')[0] : t('common.user'));
 
   if (mobileMode) {
     return (
@@ -51,10 +51,10 @@ export function Header({ mobileMode = false }: HeaderProps) {
               <Button 
                 variant="ghost" 
                 className="relative h-8 w-8 rounded-full focus-visible:ring-2 focus-visible:ring-primary" 
-                aria-label="Menu utilisateur"
+                aria-label={t('header.userMenu')}
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={profile?.avatar_url || ''} alt={`Avatar de ${displayName}`} />
+                  <AvatarImage src={profile?.avatar_url || ''} alt={`${t('header.avatarAlt')} ${displayName}`} />
                   <AvatarFallback aria-hidden="true">
                     {displayName.charAt(0).toUpperCase()}
                   </AvatarFallback>
@@ -110,7 +110,7 @@ export function Header({ mobileMode = false }: HeaderProps) {
     <header 
       className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background px-4" 
       role="banner"
-      aria-label="En-tête du site"
+      aria-label={t('header.siteHeader')}
     >
       <div className="flex flex-1 items-center justify-end gap-2">
         <LanguageSwitcher />
@@ -133,10 +133,10 @@ export function Header({ mobileMode = false }: HeaderProps) {
               <Button 
                 variant="ghost" 
                 className="relative h-8 w-8 rounded-full focus-visible:ring-2 focus-visible:ring-primary" 
-                aria-label="Menu utilisateur"
+                aria-label={t('header.userMenu')}
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={profile?.avatar_url || ''} alt={`Avatar de ${displayName}`} />
+                  <AvatarImage src={profile?.avatar_url || ''} alt={`${t('header.avatarAlt')} ${displayName}`} />
                   <AvatarFallback aria-hidden="true">
                     {displayName.charAt(0).toUpperCase()}
                   </AvatarFallback>

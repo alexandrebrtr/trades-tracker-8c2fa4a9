@@ -42,6 +42,11 @@ const translations: Record<Language, Record<string, string>> = {
     'landing.login': 'Connexion',
     'landing.signup': 'S\'inscrire',
     
+    // Header
+    'header.siteHeader': 'En-tête du site',
+    'header.userMenu': 'Menu utilisateur',
+    'header.avatarAlt': 'Avatar de',
+    
     // Blog
     'blog.title': 'Blog',
     'blog.subtitle': 'Des articles et analyses pour améliorer votre trading et la gestion de votre portefeuille',
@@ -62,10 +67,12 @@ const translations: Record<Language, Record<string, string>> = {
     // User menu
     'user.profile': 'Profil',
     'user.settings': 'Paramètres',
+    'user.account': 'Mon compte',
     
     // Common
     'common.lightMode': 'Mode clair',
     'common.darkMode': 'Mode sombre',
+    'common.user': 'Utilisateur',
     
     // Dashboard
     'dashboard.title': 'Tableau de bord',
@@ -184,6 +191,11 @@ const translations: Record<Language, Record<string, string>> = {
     'landing.login': 'Login',
     'landing.signup': 'Sign Up',
     
+    // Header
+    'header.siteHeader': 'Site header',
+    'header.userMenu': 'User menu',
+    'header.avatarAlt': 'Avatar of',
+    
     // Blog
     'blog.title': 'Blog',
     'blog.subtitle': 'Articles and analyses to improve your trading and portfolio management',
@@ -204,10 +216,12 @@ const translations: Record<Language, Record<string, string>> = {
     // User menu
     'user.profile': 'Profile',
     'user.settings': 'Settings',
+    'user.account': 'My account',
     
     // Common
     'common.lightMode': 'Light Mode',
     'common.darkMode': 'Dark Mode',
+    'common.user': 'User',
     
     // Dashboard
     'dashboard.title': 'Dashboard',
