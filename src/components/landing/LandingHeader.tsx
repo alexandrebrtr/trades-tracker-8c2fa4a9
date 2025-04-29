@@ -18,11 +18,14 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function LandingHeader() {
   const { theme, toggleTheme } = useTheme();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background w-full shadow-sm">
@@ -40,16 +43,18 @@ export function LandingHeader() {
                   <NavigationMenuList>
                     <NavigationMenuItem>
                       <NavigationMenuTrigger className="text-sm text-muted-foreground hover:text-primary data-[state=open]:text-primary">
-                        Fonctionnalités
+                        {t('landing.features')}
                       </NavigationMenuTrigger>
                       <NavigationMenuContent>
                         <div className="grid gap-3 p-4 w-[400px]">
                           <Link to="/journal" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
                             <Package className="h-4 w-4" />
                             <div>
-                              <div className="font-medium">Journal de trading</div>
+                              <div className="font-medium">{t('nav.journal')}</div>
                               <p className="text-sm text-muted-foreground">
-                                Suivez vos trades et analysez vos performances
+                                {t('fr') === 'fr' ? 
+                                  "Suivez vos trades et analysez vos performances" : 
+                                  "Track your trades and analyze your performance"}
                               </p>
                             </div>
                           </Link>
@@ -57,11 +62,13 @@ export function LandingHeader() {
                             <BarChart3 className="h-4 w-4" />
                             <div>
                               <div className="flex items-center gap-2">
-                                <div className="font-medium">Analyses avancées</div>
+                                <div className="font-medium">{t('fr') === 'fr' ? "Analyses avancées" : "Advanced Analysis"}</div>
                                 <Star className="h-3 w-3 text-yellow-500" fill="currentColor" />
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Statistiques détaillées de votre trading
+                                {t('fr') === 'fr' ? 
+                                  "Statistiques détaillées de votre trading" : 
+                                  "Detailed statistics of your trading"}
                               </p>
                             </div>
                           </Link>
@@ -69,11 +76,13 @@ export function LandingHeader() {
                             <Calendar className="h-4 w-4" />
                             <div>
                               <div className="flex items-center gap-2">
-                                <div className="font-medium">Calendrier des trades</div>
+                                <div className="font-medium">{t('fr') === 'fr' ? "Calendrier des trades" : "Trades Calendar"}</div>
                                 <Star className="h-3 w-3 text-yellow-500" fill="currentColor" />
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Visualisez vos trades dans le temps
+                                {t('fr') === 'fr' ? 
+                                  "Visualisez vos trades dans le temps" : 
+                                  "Visualize your trades over time"}
                               </p>
                             </div>
                           </Link>
@@ -84,41 +93,47 @@ export function LandingHeader() {
                 </NavigationMenu>
 
                 <Link to="/premium" className="text-sm text-muted-foreground hover:text-primary">
-                  Tarifs
+                  {t('landing.pricing')}
                 </Link>
 
                 <NavigationMenu>
                   <NavigationMenuList>
                     <NavigationMenuItem>
                       <NavigationMenuTrigger className="text-sm text-muted-foreground hover:text-primary data-[state=open]:text-primary">
-                        Ressources
+                        {t('landing.resources')}
                       </NavigationMenuTrigger>
                       <NavigationMenuContent>
                         <div className="grid gap-3 p-4 w-[400px]">
                           <Link to="/blog" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
                             <FileText className="h-4 w-4" />
                             <div>
-                              <div className="font-medium">Blog</div>
+                              <div className="font-medium">{t('landing.blog')}</div>
                               <p className="text-sm text-muted-foreground">
-                                Articles et guides sur le trading
+                                {t('fr') === 'fr' ? 
+                                  "Articles et guides sur le trading" : 
+                                  "Articles and guides on trading"}
                               </p>
                             </div>
                           </Link>
                           <Link to="/faq" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
                             <HelpCircle className="h-4 w-4" />
                             <div>
-                              <div className="font-medium">FAQ</div>
+                              <div className="font-medium">{t('landing.faq')}</div>
                               <p className="text-sm text-muted-foreground">
-                                Réponses aux questions fréquentes
+                                {t('fr') === 'fr' ? 
+                                  "Réponses aux questions fréquentes" : 
+                                  "Answers to frequently asked questions"}
                               </p>
                             </div>
                           </Link>
                           <Link to="/demonstration" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
                             <Video className="h-4 w-4" />
                             <div>
-                              <div className="font-medium">Démonstration</div>
+                              <div className="font-medium">{t('landing.demo')}</div>
                               <p className="text-sm text-muted-foreground">
-                                Guide d'utilisation de la plateforme
+                                {t('fr') === 'fr' ? 
+                                  "Guide d'utilisation de la plateforme" : 
+                                  "Platform usage guide"}
                               </p>
                             </div>
                           </Link>
@@ -132,25 +147,29 @@ export function LandingHeader() {
                   <NavigationMenuList>
                     <NavigationMenuItem>
                       <NavigationMenuTrigger className="text-sm text-muted-foreground hover:text-primary data-[state=open]:text-primary">
-                        À propos
+                        {t('landing.about')}
                       </NavigationMenuTrigger>
                       <NavigationMenuContent>
                         <div className="grid gap-3 p-4 w-[400px]">
                           <Link to="/about" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
                             <Users className="h-4 w-4" />
                             <div>
-                              <div className="font-medium">Notre équipe</div>
+                              <div className="font-medium">{t('landing.team')}</div>
                               <p className="text-sm text-muted-foreground">
-                                Découvrez qui nous sommes
+                                {t('fr') === 'fr' ? 
+                                  "Découvrez qui nous sommes" : 
+                                  "Discover who we are"}
                               </p>
                             </div>
                           </Link>
                           <Link to="/contact" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
                             <Phone className="h-4 w-4" />
                             <div>
-                              <div className="font-medium">Nous contacter</div>
+                              <div className="font-medium">{t('landing.contact')}</div>
                               <p className="text-sm text-muted-foreground">
-                                Une question ? Contactez-nous
+                                {t('fr') === 'fr' ? 
+                                  "Une question ? Contactez-nous" : 
+                                  "Have a question? Contact us"}
                               </p>
                             </div>
                           </Link>
@@ -176,25 +195,25 @@ export function LandingHeader() {
                 <SheetContent side="right" className="w-[85%] sm:w-80 pt-16">
                   <div className="flex flex-col space-y-6">
                     <div className="space-y-4">
-                      <div className="text-lg font-medium">Fonctionnalités</div>
+                      <div className="text-lg font-medium">{t('landing.features')}</div>
                       <div className="space-y-2">
                         <SheetClose asChild>
                           <Link to="/journal" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground">
                             <Package className="h-4 w-4" />
-                            Journal de trading
+                            {t('nav.journal')}
                           </Link>
                         </SheetClose>
                         <SheetClose asChild>
                           <Link to="/statistics" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground">
                             <BarChart3 className="h-4 w-4" />
-                            Analyses avancées
+                            {t('nav.statistics')}
                             <Star className="h-3 w-3 text-yellow-500 ml-1" fill="currentColor" />
                           </Link>
                         </SheetClose>
                         <SheetClose asChild>
                           <Link to="/calendar" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground">
                             <Calendar className="h-4 w-4" />
-                            Calendrier
+                            {t('nav.calendar')}
                             <Star className="h-3 w-3 text-yellow-500 ml-1" fill="currentColor" />
                           </Link>
                         </SheetClose>
@@ -206,17 +225,17 @@ export function LandingHeader() {
                     <div className="space-y-2">
                       <SheetClose asChild>
                         <Link to="/premium" className="block p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground">
-                          Tarifs
+                          {t('landing.pricing')}
                         </Link>
                       </SheetClose>
                       <SheetClose asChild>
                         <Link to="/blog" className="block p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground">
-                          Blog
+                          {t('landing.blog')}
                         </Link>
                       </SheetClose>
                       <SheetClose asChild>
                         <Link to="/contact" className="block p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground">
-                          Contact
+                          {t('landing.contact')}
                         </Link>
                       </SheetClose>
                     </div>
@@ -227,13 +246,13 @@ export function LandingHeader() {
                       <div className="flex justify-between">
                         <SheetClose asChild>
                           <Link to="/login" className="w-full">
-                            <Button variant="outline" className="w-full">Connexion</Button>
+                            <Button variant="outline" className="w-full">{t('auth.login')}</Button>
                           </Link>
                         </SheetClose>
                       </div>
                       <SheetClose asChild>
                         <Link to="/dashboard" className="w-full">
-                          <Button className="w-full">S'inscrire</Button>
+                          <Button className="w-full">{t('auth.signup')}</Button>
                         </Link>
                       </SheetClose>
                     </div>
@@ -241,23 +260,26 @@ export function LandingHeader() {
                 </SheetContent>
               </Sheet>
             )}
+            
+            {/* Language switcher */}
+            <LanguageSwitcher />
 
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={toggleTheme} 
               className="h-9 w-9"
-              aria-label={theme === 'dark' ? "Passer au mode clair" : "Passer au mode sombre"}
+              aria-label={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
             >
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
 
             {/* Hide login button on very small screens */}
             <Button asChild variant="ghost" size="sm" className="hidden xs:flex">
-              <Link to="/login">Connexion</Link>
+              <Link to="/login">{t('auth.login')}</Link>
             </Button>
             <Button asChild size="sm">
-              <Link to="/dashboard">S'inscrire</Link>
+              <Link to="/dashboard">{t('auth.signup')}</Link>
             </Button>
           </div>
         </div>

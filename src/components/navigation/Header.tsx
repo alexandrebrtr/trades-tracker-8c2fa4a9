@@ -8,6 +8,8 @@ import { useTheme } from "@/context/ThemeContext";
 import { Link, useNavigate } from "react-router-dom";
 import { LogOut, Settings, User, Moon, Sun, LogIn } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface HeaderProps {
   mobileMode?: boolean;
@@ -16,6 +18,7 @@ interface HeaderProps {
 export function Header({ mobileMode = false }: HeaderProps) {
   const { user, profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -30,11 +33,13 @@ export function Header({ mobileMode = false }: HeaderProps) {
   if (mobileMode) {
     return (
       <div className="flex items-center gap-1">
+        <LanguageSwitcher size="icon" variant="ghost" />
+
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={toggleTheme} 
-          aria-label={theme === 'dark' ? "Passer au mode clair" : "Passer au mode sombre"}
+          aria-label={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
           className="h-8 w-8 focus-visible:ring-2 focus-visible:ring-primary"
         >
           {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -69,19 +74,19 @@ export function Header({ mobileMode = false }: HeaderProps) {
               <DropdownMenuItem asChild>
                 <Link to="/profile" className="flex w-full cursor-pointer items-center">
                   <User className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Profil
+                  {t('user.profile')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/settings" className="flex w-full cursor-pointer items-center">
                   <Settings className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Paramètres
+                  {t('user.settings')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
-                Déconnexion
+                {t('auth.logout')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <div className="p-2">
@@ -93,7 +98,7 @@ export function Header({ mobileMode = false }: HeaderProps) {
           <Button asChild size="sm" className="focus-visible:ring-2 focus-visible:ring-primary h-8">
             <Link to="/login">
               <LogIn className="mr-2 h-4 w-4" aria-hidden="true" />
-              <span className="sr-only md:not-sr-only">Connexion</span>
+              <span className="sr-only md:not-sr-only">{t('auth.login')}</span>
             </Link>
           </Button>
         )}
@@ -108,11 +113,13 @@ export function Header({ mobileMode = false }: HeaderProps) {
       aria-label="En-tête du site"
     >
       <div className="flex flex-1 items-center justify-end gap-2">
+        <LanguageSwitcher />
+        
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={toggleTheme} 
-          aria-label={theme === 'dark' ? "Passer au mode clair" : "Passer au mode sombre"}
+          aria-label={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
           className="h-8 w-8 focus-visible:ring-2 focus-visible:ring-primary"
         >
           {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -149,19 +156,19 @@ export function Header({ mobileMode = false }: HeaderProps) {
               <DropdownMenuItem asChild>
                 <Link to="/profile" className="flex w-full cursor-pointer items-center">
                   <User className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Profil
+                  {t('user.profile')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/settings" className="flex w-full cursor-pointer items-center">
                   <Settings className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Paramètres
+                  {t('user.settings')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
-                Déconnexion
+                {t('auth.logout')}
               </DropdownMenuItem>
               {isMobile && (
                 <>
@@ -177,7 +184,7 @@ export function Header({ mobileMode = false }: HeaderProps) {
           <Button asChild size="sm" className="focus-visible:ring-2 focus-visible:ring-primary h-8">
             <Link to="/login">
               <LogIn className="mr-2 h-4 w-4" aria-hidden="true" />
-              Connexion
+              {t('auth.login')}
             </Link>
           </Button>
         )}

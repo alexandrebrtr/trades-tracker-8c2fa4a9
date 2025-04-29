@@ -2,18 +2,32 @@
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { Card } from "@/components/ui/card";
 import { Users } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Team() {
+  const { t, language } = useLanguage();
+
   const team = [
     {
       name: "Alexandre Berthier",
-      role: "CEO & Fondateur",
-      description: "Expert en trading, développement de stratégies et en codage"
+      role: language === 'fr' ? "CEO & Fondateur" : "CEO & Founder",
+      description: language === 'fr' 
+        ? "Expert en trading, développement de stratégies et en codage" 
+        : "Expert in trading, strategy development, and coding"
     },
     {
       name: "Neil Yammine",
-      role: "Directeur Marketing",
-      description: "Spécialiste en marketing"
+      role: language === 'fr' ? "Directeur Marketing" : "Marketing Director",
+      description: language === 'fr' 
+        ? "Spécialiste en marketing" 
+        : "Marketing specialist"
+    },
+    {
+      name: "Sophie Martin",
+      role: language === 'fr' ? "Analyste Trading" : "Trading Analyst",
+      description: language === 'fr' 
+        ? "Spécialiste en analyse technique et fondamentale" 
+        : "Technical and fundamental analysis specialist"
     },
   ];
 
@@ -27,9 +41,9 @@ export default function Team() {
               <Users className="h-6 w-6 text-primary" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold mb-4">Notre Équipe</h1>
+          <h1 className="text-4xl font-bold mb-4">{t('team.title')}</h1>
           <p className="text-lg text-muted-foreground">
-            Une équipe passionnée dédiée à votre réussite en trading
+            {t('team.subtitle')}
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface NavItem {
   name: string;
@@ -28,6 +29,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   // Update scrolled state based on window scroll position
   useEffect(() => {
@@ -41,32 +43,32 @@ export function Navbar() {
 
   const navItems: NavItem[] = [
     {
-      name: 'Dashboard',
+      name: t('nav.dashboard'),
       path: '/dashboard',
       icon: <LayoutDashboard className="w-4 h-4" aria-hidden="true" />
     },
     {
-      name: 'Calendrier',
+      name: t('nav.calendar'),
       path: '/calendar',
       icon: <Calendar className="w-4 h-4" aria-hidden="true" />
     },
     {
-      name: 'Nouveau Trade',
+      name: t('nav.newTrade'),
       path: '/trade-entry',
       icon: <PlusCircle className="w-4 h-4" aria-hidden="true" />
     },
     {
-      name: 'Statistiques',
+      name: t('nav.statistics'),
       path: '/statistics',
       icon: <BarChart3 className="w-4 h-4" aria-hidden="true" />
     },
     {
-      name: 'Journal',
+      name: t('nav.journal'),
       path: '/journal',
       icon: <Book className="w-4 h-4" aria-hidden="true" />
     },
     {
-      name: 'Paramètres',
+      name: t('nav.settings'),
       path: '/settings',
       icon: <Settings className="w-4 h-4" aria-hidden="true" />
     }
