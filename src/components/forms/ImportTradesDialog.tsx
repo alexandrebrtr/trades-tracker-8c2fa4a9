@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -12,6 +11,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogClose
 } from "@/components/ui/dialog";
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -55,6 +55,7 @@ interface MappedField {
   targetField: string;
 }
 
+// Define ImportStats interface to fix the typing issue
 interface ImportStats {
   total: number;
   valid: number;
@@ -75,6 +76,7 @@ export function ImportTradesDialog({ open, onOpenChange }: { open: boolean; onOp
   const [validationErrors, setValidationErrors] = useState<Record<number, string[]>>({});
   const [progress, setProgress] = useState(0);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('default');
+  // Fix the type here by using the ImportStats interface
   const [stats, setStats] = useState<ImportStats>({
     total: 0,
     valid: 0,

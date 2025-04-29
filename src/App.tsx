@@ -52,7 +52,7 @@ function App() {
                 <Route path="/reset-password" element={<ResetPassword />} />
                 
                 {/* Protected routes */}
-                <Route element={<ProtectedRoute />}>
+                <Route element={<ProtectedRoute>{/* This added children prop fixes the error */}</ProtectedRoute>}>
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/journal" element={<Journal />} />
                   <Route path="/calendar" element={<Calendar />} />
