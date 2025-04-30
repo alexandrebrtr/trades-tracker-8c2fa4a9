@@ -2,14 +2,16 @@
 import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Trade } from '@/components/journal/types';
 import { TradeDetail } from '@/components/journal/TradeDetail';
+import { Button } from '@/components/ui/button';
+import { TradeData } from '@/services/TradeData';
 
-// Import des nouveaux composants
+// Import des composants
 import { JournalHeader } from '@/components/journal/JournalHeader';
 import { JournalSearch } from '@/components/journal/JournalSearch';
 import { JournalTabs } from '@/components/journal/JournalTabs';
@@ -17,10 +19,13 @@ import { JournalFilters } from '@/components/journal/JournalFilters';
 import { JournalFilterTags } from '@/components/journal/JournalFilterTags';
 import { JournalList } from '@/components/journal/JournalList';
 import { JournalDeleteDialog } from '@/components/journal/JournalDeleteDialog';
+import { JournalDeleteAllDialog } from '@/components/journal/JournalDeleteAllDialog';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Journal() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [entries, setEntries] = useState<Trade[]>([]);
   const [filteredEntries, setFilteredEntries] = useState<Trade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,7 +35,9 @@ export default function Journal() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [tradeToDelete, setTradeToDelete] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
   
   // Filtres
@@ -188,19 +195,49 @@ export default function Journal() {
       
       setIsDeleteDialogOpen(false);
       toast({
-        title: "Trade supprimé",
-        description: "Le trade a été supprimé avec succès.",
+        title: t("journal.tradeDeleted"),
+        description: t("journal.tradeDeletedSuccess"),
       });
     } catch (error) {
       console.error('Erreur lors de la suppression du trade:', error);
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la suppression du trade.",
+        title: t("common.error"),
+        description: t("journal.deleteError"),
         variant: "destructive",
       });
     } finally {
       setIsDeleting(false);
       setTradeToDelete(null);
+    }
+  };
+
+  const handleDeleteAllTrades = async () => {
+    if (!user) return;
+    
+    setIsDeletingAll(true);
+    try {
+      const result = await TradeData.deleteAllUserTrades(user.id);
+      
+      if (!result.success) throw new Error(result.message);
+      
+      // Reset all trades
+      setEntries([]);
+      setFilteredEntries([]);
+      
+      setIsDeleteAllDialogOpen(false);
+      toast({
+        title: t("journal.allTradesDeleted"),
+        description: t("journal.allTradesDeletedSuccess"),
+      });
+    } catch (error: any) {
+      console.error('Erreur lors de la suppression de tous les trades:', error);
+      toast({
+        title: t("common.error"),
+        description: error.message || t("journal.deleteAllError"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingAll(false);
     }
   };
 
@@ -251,11 +288,23 @@ export default function Journal() {
   return (
     <AppLayout>
       <div className="page-transition space-y-8">
-        <JournalHeader 
-          dateRange={dateRange} 
-          setDateRange={setDateRange}
-          setIsFilterDialogOpen={setIsFilterDialogOpen}
-        />
+        <div className="flex items-center justify-between">
+          <JournalHeader 
+            dateRange={dateRange} 
+            setDateRange={setDateRange}
+            setIsFilterDialogOpen={setIsFilterDialogOpen}
+          />
+          
+          <Button 
+            variant="destructive"
+            size="sm"
+            onClick={() => setIsDeleteAllDialogOpen(true)}
+            className="flex items-center gap-1"
+          >
+            <Trash className="h-4 w-4" />
+            {t("journal.deleteAllTrades")}
+          </Button>
+        </div>
         
         <div className="grid gap-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -309,6 +358,13 @@ export default function Journal() {
         onConfirmDelete={handleDeleteTrade}
         isDeleting={isDeleting}
         onCancel={() => setTradeToDelete(null)}
+      />
+      
+      <JournalDeleteAllDialog
+        isOpen={isDeleteAllDialogOpen}
+        setIsOpen={setIsDeleteAllDialogOpen}
+        onConfirmDelete={handleDeleteAllTrades}
+        isDeleting={isDeletingAll}
       />
       
       <JournalFilters

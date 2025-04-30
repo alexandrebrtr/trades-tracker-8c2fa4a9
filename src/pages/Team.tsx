@@ -29,12 +29,33 @@ export default function Team() {
         ? "Spécialiste en analyse technique et fondamentale" 
         : "Technical and fundamental analysis specialist"
     },
+    {
+      name: "Marc Dubois",
+      role: language === 'fr' ? "Développeur Senior" : "Senior Developer",
+      description: language === 'fr' 
+        ? "Expert en développement web et applications mobiles" 
+        : "Expert in web and mobile application development"
+    },
+    {
+      name: "Julien Leroy",
+      role: language === 'fr' ? "Designer UX/UI" : "UX/UI Designer",
+      description: language === 'fr' 
+        ? "Créateur d'expériences utilisateur intuitives et modernes" 
+        : "Creator of intuitive and modern user experiences"
+    },
+    {
+      name: "Marie Laurent",
+      role: language === 'fr' ? "Support Client" : "Customer Support",
+      description: language === 'fr' 
+        ? "Toujours disponible pour vous aider à résoudre vos problèmes" 
+        : "Always available to help you solve your problems"
+    }
   ];
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--landing-background))] text-[hsl(var(--landing-foreground))]">
+    <div className="min-h-screen w-full bg-[hsl(var(--landing-background))] text-[hsl(var(--landing-foreground))]">
       <LandingHeader />
-      <div className="container mx-auto px-4 pt-32 pb-20">
+      <div className="w-full mx-auto px-4 pt-32 pb-20">
         <div className="max-w-4xl mx-auto text-center mb-12">
           <div className="flex justify-center mb-4">
             <div className="p-3 rounded-full bg-primary/10">
@@ -46,7 +67,7 @@ export default function Team() {
             {t('team.subtitle')}
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           {team.map((member) => (
             <Card key={member.name} className="p-6">
               <div className="text-center">
