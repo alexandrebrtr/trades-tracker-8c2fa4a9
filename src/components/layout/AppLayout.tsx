@@ -87,20 +87,20 @@ export function AppLayout({ children }: AppLayoutProps) {
       isIosNative && "fullscreen-page ios-device"
     )}>
       {/* Bouton de basculement du menu mobile - visible uniquement sur mobile */}
-      <div className="fixed top-0 left-0 right-0 flex justify-between items-center z-40 px-2 sm:px-4 h-14 bg-background/95 backdrop-blur-sm border-b md:hidden">
+      <div className="fixed top-0 left-0 right-0 flex justify-between items-center z-40 px-2 sm:px-4 h-12 bg-background/95 backdrop-blur-sm border-b md:hidden">
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-8 w-8 focus-visible:ring-2 focus-visible:ring-primary"
           onClick={toggleMobileMenu}
           aria-label="Toggle menu"
           aria-expanded={showMobileMenu}
           aria-controls="sidebar"
         >
           {showMobileMenu ? (
-            <X className="h-5 w-5" aria-hidden="true" />
+            <X className="h-4 w-4" aria-hidden="true" />
           ) : (
-            <Menu className="h-5 w-5" aria-hidden="true" />
+            <Menu className="h-4 w-4" aria-hidden="true" />
           )}
           <span className="sr-only">Toggle menu</span>
         </Button>
@@ -132,7 +132,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         className={cn(
           "transition-all duration-300",
           sidebarCollapsed ? "ml-0 md:ml-16" : "ml-0 md:ml-64",
-          isMobile ? "pt-14" : "pt-0", // Ajustement de l'espace en haut pour mobile
+          isMobile ? "pt-12" : "pt-0", // Ajustement de l'espace en haut pour mobile
           isMobile ? "ease-in-out" : "",
           isIosNative && "ios-main-content" // Classe spécifique pour le contenu iOS
         )}

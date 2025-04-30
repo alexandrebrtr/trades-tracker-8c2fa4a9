@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -102,12 +101,12 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative flex items-center justify-center min-h-screen overflow-hidden py-20 lg:pt-24 lg:pb-16">
         <div className="container px-4 mx-auto">
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+          <div className="flex flex-col lg:flex-row items-center">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="w-full lg:w-5/12 space-y-4 sm:space-y-6 lg:space-y-8 lg:pl-8 pt-16 lg:pt-0"
+              className="w-full lg:w-5/12 space-y-4 sm:space-y-6 lg:space-y-8 pt-16 lg:pt-0"
             >
               <div className="space-y-3 sm:space-y-4 lg:space-y-6">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
@@ -152,13 +151,13 @@ export default function LandingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="w-full lg:w-7/12 lg:absolute lg:right-0 lg:-mr-4 mt-8 lg:mt-0"
+              className="w-full lg:w-7/12"
             >
-              <div className="relative px-4 sm:px-0">
+              <div className="relative w-full h-full">
                 <img
                   src="/lovable-uploads/20fd8bfd-5ad7-4e39-846b-320e2e599978.png"
                   alt="Dashboard Preview"
-                  className="block w-[70%] h-auto object-contain mx-auto lg:max-w-[65%] lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 shadow-lg rounded-lg"
+                  className="block w-full h-auto object-contain lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 shadow-lg rounded-lg"
                 />
               </div>
             </motion.div>

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -108,7 +107,7 @@ export function Header({ mobileMode = false }: HeaderProps) {
 
   return (
     <header 
-      className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background px-4" 
+      className="sticky top-0 z-30 w-full flex h-12 items-center gap-2 border-b bg-background px-2 sm:px-4" 
       role="banner"
       aria-label={t('header.siteHeader')}
     >
@@ -120,9 +119,9 @@ export function Header({ mobileMode = false }: HeaderProps) {
           size="icon" 
           onClick={toggleTheme} 
           aria-label={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
-          className="h-8 w-8 focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-7 w-7 focus-visible:ring-2 focus-visible:ring-primary"
         >
-          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
         </Button>
         
         {!isMobile && <HeaderBalance />}
@@ -132,10 +131,10 @@ export function Header({ mobileMode = false }: HeaderProps) {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="ghost" 
-                className="relative h-8 w-8 rounded-full focus-visible:ring-2 focus-visible:ring-primary" 
+                className="relative h-7 w-7 rounded-full focus-visible:ring-2 focus-visible:ring-primary" 
                 aria-label={t('header.userMenu')}
               >
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-7 w-7">
                   <AvatarImage src={profile?.avatar_url || ''} alt={`${t('header.avatarAlt')} ${displayName}`} />
                   <AvatarFallback aria-hidden="true">
                     {displayName.charAt(0).toUpperCase()}
@@ -181,7 +180,7 @@ export function Header({ mobileMode = false }: HeaderProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button asChild size="sm" className="focus-visible:ring-2 focus-visible:ring-primary h-8">
+          <Button asChild size="sm" className="focus-visible:ring-2 focus-visible:ring-primary h-7">
             <Link to="/login">
               <LogIn className="mr-2 h-4 w-4" aria-hidden="true" />
               {t('auth.login')}
