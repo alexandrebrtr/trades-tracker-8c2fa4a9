@@ -6,27 +6,27 @@ import { Lock } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from '@/hooks/use-mobile';
 
-export interface SidebarNavItemProps {
-  title: string;
-  href: string;
+interface SidebarNavItemProps {
+  name: string;
+  path: string;
   icon: React.ReactNode;
   collapsed: boolean;
-  active: boolean;
   isPremiumFeature?: boolean;
   userHasPremium?: boolean;
   onItemClick?: () => void;
 }
 
 export function SidebarNavItem({ 
-  title, 
-  href, 
+  name, 
+  path, 
   icon, 
   collapsed,
   isPremiumFeature = false,
   userHasPremium = false,
-  active,
   onItemClick
 }: SidebarNavItemProps) {
+  const location = useLocation();
+  const isActive = location.pathname === path;
   const isMobile = useIsMobile();
   
   const handleClick = () => {
@@ -39,7 +39,7 @@ export function SidebarNavItem({
   const itemContent = (
     <div className={cn(
       'flex items-center gap-2 rounded-md px-3 py-2.5', // Slightly increased vertical padding
-      active 
+      isActive 
         ? 'bg-primary text-primary-foreground' 
         : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
       isMobile && !collapsed && 'py-3 text-base', // Increased padding for mobile
@@ -53,7 +53,7 @@ export function SidebarNavItem({
             isMobile && "text-base",
             "ml-2" // Added left margin for better spacing
           )}>
-            {title}
+            {name}
           </span>
           {isPremiumFeature && !userHasPremium && (
             <Lock className="h-3.5 w-3.5 text-yellow-500 flex-shrink-0" aria-label="Fonction premium" />
@@ -65,16 +65,16 @@ export function SidebarNavItem({
 
   const tooltipContent = isPremiumFeature && !userHasPremium 
     ? "Fonctionnalité premium"
-    : title;
+    : name;
     
   // Pour mobile ou quand la sidebar n'est pas repliée, pas besoin de tooltips
   if (isMobile || !collapsed) {
     return (
       <li>
         <Link 
-          to={href} 
-          aria-label={title} 
-          aria-current={active ? 'page' : undefined}
+          to={path} 
+          aria-label={name} 
+          aria-current={isActive ? 'page' : undefined}
           onClick={handleClick}
         >
           {itemContent}
@@ -90,9 +90,9 @@ export function SidebarNavItem({
         <Tooltip delayDuration={300}>
           <TooltipTrigger asChild>
             <Link 
-              to={href}
-              aria-label={title}
-              aria-current={active ? 'page' : undefined}
+              to={path}
+              aria-label={name}
+              aria-current={isActive ? 'page' : undefined}
               onClick={handleClick}
             >
               {itemContent}
@@ -106,3 +106,4 @@ export function SidebarNavItem({
     </li>
   );
 }
+

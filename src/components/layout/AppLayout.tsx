@@ -16,10 +16,9 @@ const Sidebar = lazy(() => import('../navigation/Sidebar').then(mod => ({ defaul
 
 interface AppLayoutProps {
   children: ReactNode;
-  allowAnonymous?: boolean;
 }
 
-export function AppLayout({ children, allowAnonymous = false }: AppLayoutProps) {
+export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { user } = useAuth();
   const isMobile = useIsMobile();
@@ -27,9 +26,6 @@ export function AppLayout({ children, allowAnonymous = false }: AppLayoutProps) 
   
   // Utilisation de l'adaptateur iOS
   useIosAdapter();
-  
-  // Check if the user is allowed to view this page
-  const canViewPage = allowAnonymous || user;
   
   useEffect(() => {
     // Vérification de l'état de la sidebar depuis localStorage
@@ -87,15 +83,15 @@ export function AppLayout({ children, allowAnonymous = false }: AppLayoutProps) 
 
   return (
     <div className={cn(
-      "min-h-screen w-full bg-background overflow-x-hidden",
+      "min-h-screen bg-background overflow-x-hidden",
       isIosNative && "fullscreen-page ios-device"
     )}>
       {/* Bouton de basculement du menu mobile - visible uniquement sur mobile */}
-      <div className="fixed top-0 left-0 right-0 flex justify-between items-center z-40 px-2 sm:px-4 h-10 bg-background/95 backdrop-blur-sm border-b md:hidden">
+      <div className="fixed top-0 left-0 right-0 flex justify-between items-center z-40 px-2 sm:px-4 h-12 bg-background/95 backdrop-blur-sm border-b md:hidden">
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-8 w-8 focus-visible:ring-2 focus-visible:ring-primary"
           onClick={toggleMobileMenu}
           aria-label="Toggle menu"
           aria-expanded={showMobileMenu}
@@ -129,14 +125,14 @@ export function AppLayout({ children, allowAnonymous = false }: AppLayoutProps) 
       )}
       
       <Suspense fallback={null}>
-        <Sidebar allowAnonymous={allowAnonymous} />
+        <Sidebar />
       </Suspense>
       
       <main 
         className={cn(
-          "transition-all duration-300 w-full",
+          "transition-all duration-300",
           sidebarCollapsed ? "ml-0 md:ml-16" : "ml-0 md:ml-64",
-          isMobile ? "pt-10" : "pt-0", // Hauteur du header réduite à 10 (40px)
+          isMobile ? "pt-12" : "pt-0", // Ajustement de l'espace en haut pour mobile
           isMobile ? "ease-in-out" : "",
           isIosNative && "ios-main-content" // Classe spécifique pour le contenu iOS
         )}
@@ -149,19 +145,7 @@ export function AppLayout({ children, allowAnonymous = false }: AppLayoutProps) 
           "container py-3 md:py-6 px-3 md:px-6 max-w-7xl mx-auto",
           isMobile && "px-4 py-4"
         )}>
-          {canViewPage ? (
-            children
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12">
-              <h1 className="text-2xl font-bold">Connectez-vous pour accéder à cette page</h1>
-              <p className="mt-4 text-muted-foreground">
-                Vous devez être connecté pour voir ce contenu.
-              </p>
-              <Button asChild className="mt-8">
-                <a href="/login">Se connecter</a>
-              </Button>
-            </div>
-          )}
+          {children}
         </div>
       </main>
       <Toaster />

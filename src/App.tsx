@@ -13,7 +13,6 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import LandingPage from "./pages/LandingPage";
 import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
 import Team from "./pages/Team";
 import Contact from "./pages/Contact";
 import Portfolio from "./pages/Portfolio";
@@ -42,7 +41,6 @@ function App() {
                 {/* Landing and public routes */}
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:id" element={<BlogPost />} />
                 <Route path="/team" element={<Team />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/premium" element={<Premium />} />
@@ -53,8 +51,8 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 
-                {/* Protected routes that require authentication */}
-                <Route element={<ProtectedRoute>{/* Children prop */}</ProtectedRoute>}>
+                {/* Protected routes */}
+                <Route element={<ProtectedRoute>{/* This added children prop fixes the error */}</ProtectedRoute>}>
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/journal" element={<Journal />} />
                   <Route path="/calendar" element={<Calendar />} />
