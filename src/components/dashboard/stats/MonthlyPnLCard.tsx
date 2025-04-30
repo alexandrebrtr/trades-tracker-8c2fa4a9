@@ -1,15 +1,13 @@
 
 import { DataCard } from "@/components/ui/data-card";
 import { TrendingUp } from "lucide-react";
-import { useCurrency } from "@/context/CurrencyContext";
+import { formatCurrency } from "@/utils/formatters";
 
 interface MonthlyPnLCardProps {
   monthlyPnL: number;
 }
 
 export function MonthlyPnLCard({ monthlyPnL }: MonthlyPnLCardProps) {
-  const { formatCurrency } = useCurrency();
-  
   return (
     <DataCard
       title="Gains du mois"

@@ -1,7 +1,7 @@
 
 import { DataCard } from "@/components/ui/data-card";
 import { Wallet } from "lucide-react";
-import { useCurrency } from "@/context/CurrencyContext";
+import { formatCurrency } from "@/utils/formatters";
 
 interface BalanceCardProps {
   balance: number;
@@ -9,8 +9,6 @@ interface BalanceCardProps {
 }
 
 export function BalanceCard({ balance, monthlyPnL }: BalanceCardProps) {
-  const { formatCurrency } = useCurrency();
-  
   return (
     <DataCard
       title="Solde du portefeuille"

@@ -5,6 +5,9 @@ import { DailyPnLCard } from "./stats/DailyPnLCard";
 import { YearlyPnLCard } from "./stats/YearlyPnLCard";
 import { WinRateCard } from "./stats/WinRateCard";
 import { TotalGainsCard } from "./stats/TotalGainsCard";
+import { MaxDrawdownCard } from "./stats/MaxDrawdownCard";
+import { AvgDurationCard } from "./stats/AvgDurationCard";
+import { LoadingCard } from "./stats/LoadingCard";
 import { useTradeStats } from "@/hooks/useTradeStats";
 import { useState, useEffect } from "react";
 
@@ -36,7 +39,6 @@ export function StatsDisplay({ balance, monthlyPnL, trades }: StatsDisplayProps)
     }
   }, [trades]);
   
-  // Toujours afficher exactement 6 cartes - 3 par rangée
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 animate-fade-in">
       {/* Première rangée: les gains par périodes (jour, mois, année) */}
@@ -44,10 +46,23 @@ export function StatsDisplay({ balance, monthlyPnL, trades }: StatsDisplayProps)
       <MonthlyPnLCard monthlyPnL={monthlyPnL} />
       <YearlyPnLCard yearlyPnL={yearlyPnL} />
       
-      {/* Deuxième rangée: balance, total gains, win rate - Ces cartes sont toujours affichées */}
-      <BalanceCard balance={balance} monthlyPnL={monthlyPnL} />
-      <TotalGainsCard totalGains={totalGains} />
-      <WinRateCard winRate={stats.winRate} />
+      {/* Deuxième rangée: balance, total gains, win rate */}
+      {!isLoading ? (
+        <>
+          <BalanceCard balance={balance} monthlyPnL={monthlyPnL} />
+          <TotalGainsCard totalGains={totalGains} />
+          <WinRateCard winRate={stats.winRate} />
+        </>
+      ) : (
+        // Show loading cards while data is being processed
+        Array.from({ length: 6 }).map((_, index) => (
+          <LoadingCard key={index} index={index} />
+        ))
+      )}
+      
+      {trades.length === 0 && Array.from({ length: 6 }).map((_, index) => (
+        <LoadingCard key={index} index={index} />
+      ))}
     </div>
   );
 }
