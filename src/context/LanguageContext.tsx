@@ -1,8 +1,13 @@
+
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
+// Define Language type
+export type Language = "fr" | "en";
+
 interface LanguageContextProps {
-  language: string;
-  changeLanguage: (lang: string) => void;
+  language: Language;
+  changeLanguage: (lang: Language) => void;
+  setLanguage: (lang: Language) => void; // Added for compatibility
   t: (key: string, vars?: Record<string, string>) => string;
 }
 
@@ -17,9 +22,9 @@ export function useLanguage(): LanguageContextProps {
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState(localStorage.getItem('language') || 'en');
+  const [language, setLanguage] = useState<Language>(localStorage.getItem('language') as Language || 'en');
 
-  const changeLanguage = useCallback((lang: string) => {
+  const changeLanguage = useCallback((lang: Language) => {
     setLanguage(lang);
     localStorage.setItem('language', lang);
   }, []);
@@ -167,6 +172,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const value = {
     language,
     changeLanguage,
+    setLanguage: changeLanguage, // Added for compatibility
     t,
   };
 

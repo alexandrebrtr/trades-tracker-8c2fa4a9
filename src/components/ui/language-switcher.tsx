@@ -18,7 +18,7 @@ export function LanguageSwitcher({
   variant = "ghost", 
   size = "icon" 
 }: LanguageSwitcherProps) {
-  const { language, setLanguage } = useLanguage();
+  const { language, changeLanguage } = useLanguage();
   
   const languages: { code: Language; label: string }[] = [
     { code: "fr", label: "Français" },
@@ -41,7 +41,7 @@ export function LanguageSwitcher({
         {languages.map((lang) => (
           <DropdownMenuItem 
             key={lang.code}
-            onClick={() => setLanguage(lang.code)}
+            onClick={() => changeLanguage(lang.code)}
             className={`cursor-pointer ${language === lang.code ? 'font-medium text-primary' : ''}`}
           >
             {lang.label}
