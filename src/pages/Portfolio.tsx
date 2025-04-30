@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Loader2 } from 'lucide-react';
@@ -6,11 +7,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { CapitalManagement } from '@/components/portfolio/CapitalManagement';
 import { AssetAllocation } from '@/components/portfolio/AssetAllocation';
 import { TradesHistory } from '@/components/portfolio/TradesHistory';
+import { CurrencySelector } from '@/components/portfolio/CurrencySelector';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { useCurrency } from '@/context/CurrencyContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Trade {
   id: string;
@@ -32,6 +36,7 @@ interface Asset {
 export default function Portfolio() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { formatCurrency } = useCurrency();
   
   const [isLoading, setIsLoading] = useState(true);
   const [portfolioId, setPortfolioId] = useState<string | null>(null);
@@ -40,6 +45,7 @@ export default function Portfolio() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [initialSetupDone, setInitialSetupDone] = useState(false);
   const [initialBalance, setInitialBalance] = useState('');
+  const [activeTab, setActiveTab] = useState("capital");
 
   // Charger les données du portfolio de l'utilisateur seulement si l'utilisateur est connecté
   useEffect(() => {
@@ -137,10 +143,6 @@ export default function Portfolio() {
     
     fetchPortfolioData();
   }, [user, authLoading]);
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
-  };
 
   const handleInitialBalanceSubmit = async () => {
     if (!user || !portfolioId) return;
@@ -265,21 +267,41 @@ export default function Portfolio() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <CapitalManagement 
-            portfolioId={portfolioId}
-            portfolioSize={portfolioSize}
-            setPortfolioSize={setPortfolioSize}
-            trades={trades}
-            formatCurrency={formatCurrency}
-          />
-
-          <AssetAllocation 
-            portfolioId={portfolioId}
-            assets={assets}
-            setAssets={setAssets}
-          />
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6">
+            <TabsTrigger value="capital">Capital</TabsTrigger>
+            <TabsTrigger value="allocation">Allocation</TabsTrigger>
+            <TabsTrigger value="settings">Paramètres</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="capital">
+            <div className="grid grid-cols-1 gap-6">
+              <CapitalManagement 
+                portfolioId={portfolioId}
+                portfolioSize={portfolioSize}
+                setPortfolioSize={setPortfolioSize}
+                trades={trades}
+                formatCurrency={formatCurrency}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="allocation">
+            <div className="grid grid-cols-1 gap-6">
+              <AssetAllocation 
+                portfolioId={portfolioId}
+                assets={assets}
+                setAssets={setAssets}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="settings">
+            <div className="grid grid-cols-1 gap-6">
+              <CurrencySelector />
+            </div>
+          </TabsContent>
+        </Tabs>
 
         <TradesHistory 
           trades={trades}

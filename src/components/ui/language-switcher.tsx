@@ -7,7 +7,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { useLanguage, Language } from "@/context/LanguageContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface LanguageSwitcherProps {
   variant?: "default" | "outline" | "ghost";
@@ -18,9 +18,9 @@ export function LanguageSwitcher({
   variant = "ghost", 
   size = "icon" 
 }: LanguageSwitcherProps) {
-  const { language, setLanguage } = useLanguage();
+  const { language, changeLanguage } = useLanguage();
   
-  const languages: { code: Language; label: string }[] = [
+  const languages = [
     { code: "fr", label: "Français" },
     { code: "en", label: "English" },
   ];
@@ -41,7 +41,7 @@ export function LanguageSwitcher({
         {languages.map((lang) => (
           <DropdownMenuItem 
             key={lang.code}
-            onClick={() => setLanguage(lang.code)}
+            onClick={() => changeLanguage(lang.code)}
             className={`cursor-pointer ${language === lang.code ? 'font-medium text-primary' : ''}`}
           >
             {lang.label}

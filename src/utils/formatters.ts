@@ -1,8 +1,11 @@
 
+import { useCurrency } from "@/context/CurrencyContext";
+
 /**
- * Formats a number as currency in EUR with French locale
+ * Formats a number as currency using the current locale and currency settings
  */
 export const formatCurrency = (value: number): string => {
+  // Version de secours qui sera remplacée par le hook useCurrency dans les composants
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
 };
 

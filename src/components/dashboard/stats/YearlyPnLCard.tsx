@@ -1,13 +1,15 @@
 
 import { DataCard } from "@/components/ui/data-card";
 import { TrendingUp } from "lucide-react";
-import { formatCurrency } from "@/utils/formatters";
+import { useCurrency } from "@/context/CurrencyContext";
 
 interface YearlyPnLCardProps {
   yearlyPnL: number;
 }
 
 export function YearlyPnLCard({ yearlyPnL }: YearlyPnLCardProps) {
+  const { formatCurrency } = useCurrency();
+  
   return (
     <DataCard
       title="Gains de l'année"

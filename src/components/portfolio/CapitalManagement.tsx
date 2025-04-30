@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Plus, Minus, Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 import { DataCard } from '@/components/ui/data-card';
 import { useAuth } from '@/context/AuthContext';
+import { useCurrency } from '@/context/CurrencyContext';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CapitalManagementProps {
@@ -21,11 +23,11 @@ export function CapitalManagement({
   portfolioId, 
   portfolioSize, 
   setPortfolioSize, 
-  trades,
-  formatCurrency 
+  trades
 }: CapitalManagementProps) {
   const { toast } = useToast();
   const { user, refreshProfile } = useAuth();
+  const { formatCurrency } = useCurrency();
   const [depositAmount, setDepositAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
 

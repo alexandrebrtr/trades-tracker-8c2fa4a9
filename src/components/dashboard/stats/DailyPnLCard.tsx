@@ -1,13 +1,15 @@
 
 import { DataCard } from "@/components/ui/data-card";
 import { TrendingUp } from "lucide-react";
-import { formatCurrency } from "@/utils/formatters";
+import { useCurrency } from "@/context/CurrencyContext";
 
 interface DailyPnLCardProps {
   dailyPnL: number;
 }
 
 export function DailyPnLCard({ dailyPnL }: DailyPnLCardProps) {
+  const { formatCurrency } = useCurrency();
+  
   return (
     <DataCard
       title="Gains du jour"

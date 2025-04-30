@@ -27,8 +27,9 @@ import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "./components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
 import { PremiumProvider } from "./context/PremiumContext";
-import './App.css';
 import { LanguageProvider } from "./context/LanguageContext";
+import { CurrencyProvider } from "./context/CurrencyContext";
+import './App.css';
 
 function App() {
   return (
@@ -36,45 +37,47 @@ function App() {
       <LanguageProvider>
         <AuthProvider>
           <PremiumProvider>
-            <Router>
-              <Routes>
-                {/* Landing and public routes */}
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/team" element={<Team />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/premium" element={<Premium />} />
-                <Route path="/demonstration" element={<Demonstration />} />
-                
-                {/* Auth routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                
-                {/* Protected routes */}
-                <Route element={<ProtectedRoute>{/* This added children prop fixes the error */}</ProtectedRoute>}>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/journal" element={<Journal />} />
-                  <Route path="/calendar" element={<Calendar />} />
-                  <Route path="/statistics" element={<Statistics />} />
-                  <Route path="/trade-entry" element={<TradeEntry />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/portfolio" element={<Portfolio />} />
-                  <Route path="/payment" element={<Payment />} />
-                  <Route path="/premium-analytics" element={<PremiumAnalytics />} />
-                  <Route path="/admin" element={<AdminPanel />} />
-                </Route>
-                
-                {/* Fallback routes */}
-                <Route path="/404" element={<NotFound />} />
-                <Route path="*" element={<Navigate to="/404" replace />} />
-              </Routes>
-            </Router>
-            
-            {/* Toasters */}
-            <Toaster />
-            <SonnerToaster position="top-right" closeButton richColors />
+            <CurrencyProvider>
+              <Router>
+                <Routes>
+                  {/* Landing and public routes */}
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/team" element={<Team />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/premium" element={<Premium />} />
+                  <Route path="/demonstration" element={<Demonstration />} />
+                  
+                  {/* Auth routes */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  
+                  {/* Protected routes */}
+                  <Route element={<ProtectedRoute>{/* This added children prop fixes the error */}</ProtectedRoute>}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/journal" element={<Journal />} />
+                    <Route path="/calendar" element={<Calendar />} />
+                    <Route path="/statistics" element={<Statistics />} />
+                    <Route path="/trade-entry" element={<TradeEntry />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/portfolio" element={<Portfolio />} />
+                    <Route path="/payment" element={<Payment />} />
+                    <Route path="/premium-analytics" element={<PremiumAnalytics />} />
+                    <Route path="/admin" element={<AdminPanel />} />
+                  </Route>
+                  
+                  {/* Fallback routes */}
+                  <Route path="/404" element={<NotFound />} />
+                  <Route path="*" element={<Navigate to="/404" replace />} />
+                </Routes>
+              </Router>
+              
+              {/* Toasters */}
+              <Toaster />
+              <SonnerToaster position="top-right" closeButton richColors />
+            </CurrencyProvider>
           </PremiumProvider>
         </AuthProvider>
       </LanguageProvider>
