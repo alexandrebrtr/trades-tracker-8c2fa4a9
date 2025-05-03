@@ -16,7 +16,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -41,32 +40,33 @@ export function ContactForm() {
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
+
     try {
-      // D'abord sauvegarder le message dans la base de données
-      const { error: dbError } = await supabase
-        .from('contact_messages')
-        .insert({
-          name: data.name,
-          email: data.email,
-          message: data.message,
+      const formData = new FormData();
+      formData.append("access_key", "512d9327-b0ff-46f3-830b-3c57dc8b40b6");
+      formData.append("name", data.name);
+      formData.append("email", data.email);
+      formData.append("message", data.message);
+
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "Message envoyé !",
+          description: "Nous vous répondrons dans les plus brefs délais.",
         });
-
-      if (dbError) throw dbError;
-
-      // Ensuite envoyer le message par email
-      const { error } = await supabase.functions.invoke('send-contact-email', {
-        body: data
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Message envoyé !",
-        description: "Nous vous répondrons dans les plus brefs délais.",
-      });
-      form.reset();
+        form.reset();
+      } else {
+        console.error("Web3Forms Error:", result);
+        throw new Error(result.message || "Erreur inconnue");
+      }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Erreur Web3Forms:', error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de l'envoi du message.",
