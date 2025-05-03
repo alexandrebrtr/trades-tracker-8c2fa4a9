@@ -100,7 +100,7 @@ export default function LandingPage() {
       
       {/* Hero Section */}
       <section className="relative flex items-center justify-center min-h-screen overflow-hidden py-20 lg:pt-24 lg:pb-16">
-        <div className="container px-4 mx-auto">
+        <div className="w-full px-4 sm:px-6 lg:px-10">
           <div className="flex flex-col lg:flex-row items-center">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
