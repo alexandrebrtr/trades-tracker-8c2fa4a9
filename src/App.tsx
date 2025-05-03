@@ -15,6 +15,7 @@ import LandingPage from "./pages/LandingPage";
 import Blog from "./pages/Blog";
 import Team from "./pages/Team";
 import Contact from "./pages/Contact";
+import FAQ from "./pages/FAQ";
 import Portfolio from "./pages/Portfolio";
 import Payment from "./pages/Payment";
 import Premium from "./pages/Premium";
@@ -45,6 +46,7 @@ function App() {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/premium" element={<Premium />} />
                 <Route path="/demonstration" element={<Demonstration />} />
+                <Route path="/faq" element={<FAQ />} />
                 
                 {/* Auth routes */}
                 <Route path="/login" element={<Login />} />

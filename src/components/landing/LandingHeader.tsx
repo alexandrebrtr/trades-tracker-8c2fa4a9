@@ -151,7 +151,7 @@ export function LandingHeader() {
                       </NavigationMenuTrigger>
                       <NavigationMenuContent>
                         <div className="grid gap-3 p-4 w-[400px]">
-                          <Link to="/about" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+                          <Link to="/team" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
                             <Users className="h-4 w-4" />
                             <div>
                               <div className="font-medium">{t('landing.team')}</div>
