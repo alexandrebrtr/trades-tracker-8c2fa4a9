@@ -53,7 +53,7 @@ export default function Contact() {
                   <Phone className="w-5 h-5 mr-3 text-primary mt-1" />
                   <div>
                     <h3 className="font-medium">Téléphone</h3>
-                    <a href="tel:+33123456789" className="text-muted-foreground hover:text-primary transition-colors">
+                    <a href="tel:+33778406710" className="text-muted-foreground hover:text-primary transition-colors">
                       +33 (0)7 78 40 67 10
                     </a>
                   </div>
@@ -63,7 +63,7 @@ export default function Contact() {
                   <MessageCircle className="w-5 h-5 mr-3 text-primary mt-1" />
                   <div>
                     <h3 className="font-medium">WhatsApp</h3>
-                    <a href="https://wa.me/33123456789" className="text-muted-foreground hover:text-primary transition-colors">
+                    <a href="https://wa.me/33778406710" className="text-muted-foreground hover:text-primary transition-colors">
                       +33 (0)7 78 40 67 10
                     </a>
                   </div>
