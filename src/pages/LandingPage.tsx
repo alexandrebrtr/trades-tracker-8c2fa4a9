@@ -6,9 +6,10 @@ import { LandingHeader } from '@/components/landing/LandingHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { TestimonialsCarousel, Testimonial } from '@/components/landing/TestimonialsCarousel';
 import { RatingSystem } from '@/components/landing/RatingSystem';
-import { FileText, BarChart2, Briefcase, TrendingUp, ChartBar, Calendar, Book, ChevronRight } from 'lucide-react';
+import { FileText, BarChart2, Briefcase, TrendingUp, ChartBar, Calendar, Book, Star, MessageSquare, Send } from 'lucide-react';
 import { ContactForm } from '@/components/contact/ContactForm';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function LandingPage() {
@@ -22,7 +23,7 @@ export default function LandingPage() {
   };
 
   const trackingCategories = [
-    { 
+    {
       title: t('landing.features.journal'),
       description: t('landing.features.journalDesc'),
       icon: <FileText className="h-6 w-6" />
@@ -94,111 +95,77 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--landing-background))] text-[hsl(var(--landing-foreground))] hero-gradient">
+    <div className="min-h-screen bg-[hsl(var(--landing-background))] text-[hsl(var(--landing-foreground))]">
       <LandingHeader />
       
-      {/* Hero Section - Redesigned to match the reference image */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center pt-16 pb-32 overflow-hidden">
-        <div className="absolute inset-0 hero-overlay"></div>
-        
-        {/* Small Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white/10 backdrop-blur-sm text-xs sm:text-sm px-4 py-1.5 rounded-full mb-8 sm:mb-12 border border-white/10 z-10"
-        >
-          {t('landing.hero.nextGen')}
-        </motion.div>
-        
-        {/* Main Title with Highlight */}
-        <div className="text-center max-w-5xl mx-auto px-4 sm:px-6 mb-6 z-10">
-          <motion.h1
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight"
-          >
-            {t('landing.hero.titleStart')} <span className="highlight-text">{t('landing.hero.titleHighlight')}</span> {t('landing.hero.titleEnd')}
-          </motion.h1>
-          
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="mt-6 text-base sm:text-lg lg:text-xl text-white/80 max-w-2xl mx-auto"
-          >
-            {t('landing.hero.description')}
-          </motion.p>
-          
-          {/* CTA Buttons */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10"
-          >
-            <Button 
-              onClick={handleDashboardRedirect}
-              className="primary-button"
-              size={isMobile ? "default" : "lg"}
+      {/* Hero Section */}
+      <section className="relative flex items-center justify-center min-h-screen overflow-hidden py-20 lg:pt-24 lg:pb-16 w-full">
+        <div className="w-full px-4 sm:px-6 lg:px-10">
+          <div className="flex flex-col lg:flex-row items-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="w-full lg:w-5/12 space-y-4 sm:space-y-6 lg:space-y-8 pt-16 lg:pt-0"
             >
-              {t('landing.hero.cta')}
-            </Button>
-            <Button 
-              variant="outline" 
-              className="outline-button"
-              size={isMobile ? "default" : "lg"}
+              <div className="space-y-3 sm:space-y-4 lg:space-y-6">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                  <span className="text-foreground dark:text-white">{t('landing.hero.title')}</span>
+                </h1>
+                <p className="text-sm sm:text-base md:text-lg lg:text-xl text-foreground/90 dark:text-white/90 max-w-xl">
+                  {t('landing.hero.description')}
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <Button 
+                    size={isMobile ? "default" : "lg"} 
+                    onClick={handleDashboardRedirect} 
+                    className="rounded-full px-6 sm:px-8 bg-[#0080ff] hover:bg-[#0080ff]/80 text-white w-full sm:w-auto"
+                  >
+                    {t('landing.hero.cta')}
+                  </Button>
+                </div>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-8 pt-6 sm:pt-8 border-t border-white/10"
+              >
+                <div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#0080ff' }}>10,000+</div>
+                  <div className="text-xs sm:text-sm lg:text-base text-foreground/80 dark:text-white/80">{t('landing.stats.activeTraders')}</div>
+                </div>
+                <div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#0080ff' }}>50M+</div>
+                  <div className="text-xs sm:text-sm lg:text-base text-foreground/80 dark:text-white/80">{t('landing.stats.analyzedTrades')}</div>
+                </div>
+                <div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#0080ff' }}>89%</div>
+                  <div className="text-xs sm:text-sm lg:text-base text-foreground/80 dark:text-white/80">{t('landing.stats.satisfaction')}</div>
+                </div>
+              </motion.div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="w-full lg:w-7/12"
             >
-              {t('landing.hero.learnMore')} <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-          </motion.div>
+              <div className="relative w-full h-full">
+                <img
+                  src="/lovable-uploads/20fd8bfd-5ad7-4e39-846b-320e2e599978.png"
+                  alt="Dashboard Preview"
+                  className="block w-full h-auto object-contain lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 shadow-lg rounded-lg"
+                />
+              </div>
+            </motion.div>
+          </div>
         </div>
-        
-        {/* Dashboard Image with Globe Effect */}
-        <motion.div
-          initial={{ opacity: 0, y: 80 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="w-full max-w-6xl mx-auto px-4 sm:px-6 relative z-10 mt-8 sm:mt-12"
-        >
-          <div className="relative">
-            {/* Purple Globe Effect */}
-            <div className="absolute left-1/2 bottom-full -translate-x-1/2 translate-y-1/4 w-[500px] h-[300px] globe-glow -z-10 opacity-70"></div>
-            
-            {/* Dashboard Image */}
-            <img
-              src="/lovable-uploads/20fd8bfd-5ad7-4e39-846b-320e2e599978.png"
-              alt="Dashboard Preview"
-              className="w-full h-auto rounded-xl shadow-2xl border border-white/10 backdrop-blur-sm"
-            />
-          </div>
-        </motion.div>
-        
-        {/* Stats Section moved below the hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-8 pt-16 max-w-4xl mx-auto px-4 z-10"
-        >
-          <div className="text-center">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 highlight-text">10,000+</div>
-            <div className="text-xs sm:text-sm lg:text-base text-white/70">{t('landing.stats.activeTraders')}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 highlight-text">50M+</div>
-            <div className="text-xs sm:text-sm lg:text-base text-white/70">{t('landing.stats.analyzedTrades')}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 highlight-text">89%</div>
-            <div className="text-xs sm:text-sm lg:text-base text-white/70">{t('landing.stats.satisfaction')}</div>
-          </div>
-        </motion.div>
-        
-        {/* Background Glow Effects */}
-        <div className="absolute top-1/3 right-0 w-1/3 h-1/2 bg-[#6a39ff]/10 blur-[120px] -z-10" />
-        <div className="absolute bottom-0 left-1/4 w-1/2 h-1/2 bg-[#6a39ff]/5 blur-[120px] -z-10" />
+
+        <div className="absolute top-1/2 right-0 w-1/3 h-1/2 bg-primary/10 blur-[120px] -z-10" />
+        <div className="absolute bottom-0 left-1/4 w-1/2 h-1/2 bg-primary/5 blur-[120px] -z-10" />
       </section>
 
       {/* Features Section */}
@@ -268,7 +235,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Testimonials Section - Now with Carousel */}
       <section className="py-20 bg-background w-full">
         <div className="w-full px-4 sm:px-6 lg:px-10 mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -377,7 +344,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer with dynamic rating system */}
       <footer className="py-10 sm:py-12 bg-background/50 border-t border-border w-full">
         <div className="w-full px-4 sm:px-6 lg:px-10 mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 mb-8">

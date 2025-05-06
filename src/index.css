@@ -46,9 +46,8 @@
     --sidebar-ring: 217 91% 60%;
 
     /* Landing page theme colors */
-    --landing-background: 240 25% 10%;
-    --landing-foreground: 210 40% 98%;
-    --highlight-purple: 250 87% 67%;
+    --landing-background: 0 0% 100%;
+    --landing-foreground: 222 47% 11%;
   }
 
   .dark {
@@ -218,36 +217,6 @@
 
   .responsive-container {
     @apply px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8;
-  }
-
-  /* Nouvelles classes pour le style hero */
-  .hero-gradient {
-    background: linear-gradient(to bottom, rgba(11, 15, 35, 1) 0%, rgba(33, 36, 61, 1));
-  }
-
-  .highlight-text {
-    @apply text-[#a07eff];
-  }
-
-  .hero-overlay {
-    background: radial-gradient(circle at center, rgba(106, 57, 255, 0.2) 0%, transparent 70%);
-  }
-
-  .globe-glow {
-    box-shadow: 0 0 80px 10px rgba(106, 57, 255, 0.3);
-    border-radius: 50%;
-  }
-  
-  .hero-button {
-    @apply px-6 py-2.5 rounded-full font-medium transition-all duration-300;
-  }
-
-  .primary-button {
-    @apply bg-primary text-white hover:bg-primary/90 hero-button;
-  }
-  
-  .outline-button {
-    @apply bg-transparent border border-white/20 text-white hover:bg-white/10 hero-button;
   }
 }
 
