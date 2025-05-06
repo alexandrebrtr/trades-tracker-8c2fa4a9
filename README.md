@@ -1,69 +1,62 @@
-# Welcome to your Lovable project
+# 📈 Trades Tracker
 
-## Project info
+**Trades Tracker** is a powerful and intuitive app designed for traders who want to track, analyze, and optimize their trading performance. Perfect for forex, stocks, crypto, and more.
 
-**URL**: https://lovable.dev/projects/923f6c34-b3b2-464f-938b-8ce8b6a6a760
+---
 
-## How can I edit this code?
+## 🚀 Key Features
 
-There are several ways of editing your application.
+- 🧾 **Trade Journal**: Log every trade with full details, screenshots, and personal notes.
+- 📊 **Advanced Statistics**: Track win rate, drawdown, profit/loss ratio, capital growth, and more.
+- 🗓️ **Trade Calendar**: Visualize your trading activity on a calendar view.
+- 💡 **Strategy Analysis**: Analyze performance by asset or strategy used.
+- 📈 **Technical Charts**: View your trades over candlestick charts with pattern annotations.
+- 🧠 **Community Intelligence** *(coming soon)*: Share strategies and insights with others.
+- 🔗 **Broker API Integration** *(coming soon)*: Sync trades automatically from your broker.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/923f6c34-b3b2-464f-938b-8ce8b6a6a760) and start prompting.
+## 🧪 Currently in BETA
 
-Changes made via Lovable will be committed automatically to this repo.
+💎 Join our exclusive WhatsApp beta group and get FREE premium access until official released.
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 📦 Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Frontend: React (Next.js)
+- Backend: Node.js / SQL
+- Database: Supabase
+- Authentication: Supabase Auth
+- Broker APIs: MT5, Binance, OANDA (in progress)
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 📲 Live Preview
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+👉 [www.trades-tracker.com](https://www.trades-tracker.com) *(Public beta)*  
+📱 Join our early access community on WhatsApp: [https://chat.whatsapp.com/HA9yKCp4V1b7SsH2WUewQw](#)
 
-# Step 3: Install the necessary dependencies.
-npm i
+---
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+## 🔮 Coming Soon
 
-**Edit a file directly in GitHub**
+- ChatGPT integration
+- PDF/Excel export (in progress)
+- AI-based trade analysis
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 🤝 Contribute
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Contributions are welcome!  
+Feel free to open an issue or submit a pull request.
 
-## What technologies are used for this project?
+---
 
-This project is built with .
+## 📧 Contact
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/923f6c34-b3b2-464f-938b-8ce8b6a6a760) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+📨 tradestracker.app@gmail.com  
+📷 Instagram: '@trades_tracker_official' 
+📷 Twitter: '@trades_track_of'
+📷 TikTok: '@trades_tracker_official'
