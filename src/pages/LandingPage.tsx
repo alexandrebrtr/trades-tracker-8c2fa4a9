@@ -133,15 +133,15 @@ export default function LandingPage() {
                 className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-8 pt-6 sm:pt-8 border-t border-white/10"
               >
                 <div>
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#0080ff' }}>10,000+</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#0080ff' }}>1000+</div>
                   <div className="text-xs sm:text-sm lg:text-base text-foreground/80 dark:text-white/80">{t('landing.stats.activeTraders')}</div>
                 </div>
                 <div>
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#0080ff' }}>50M+</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#0080ff' }}>1M+</div>
                   <div className="text-xs sm:text-sm lg:text-base text-foreground/80 dark:text-white/80">{t('landing.stats.analyzedTrades')}</div>
                 </div>
                 <div>
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#0080ff' }}>89%</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#0080ff' }}>95%</div>
                   <div className="text-xs sm:text-sm lg:text-base text-foreground/80 dark:text-white/80">{t('landing.stats.satisfaction')}</div>
                 </div>
               </motion.div>
