@@ -41,19 +41,19 @@ export default function FAQ() {
   ];
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--landing-background))] text-[hsl(var(--landing-foreground))]">
+    <div className="min-h-screen hero-gradient text-white">
       <LandingHeader />
       <div className="w-full px-4 sm:px-6 lg:px-10 pt-32 pb-20">
         <div className="max-w-4xl mx-auto mb-12">
           <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-primary/10">
-              <HelpCircle className="h-6 w-6 text-primary" />
+            <div className="p-3 rounded-full bg-[#6a39ff]/20 border border-[#6a39ff]/30">
+              <HelpCircle className="h-6 w-6 text-[#a07eff]" />
             </div>
           </div>
           <h1 className="text-4xl font-bold mb-4 text-center">
             {language === 'fr' ? "Questions Fréquemment Posées" : "Frequently Asked Questions"}
           </h1>
-          <p className="text-lg text-muted-foreground mb-8 text-center">
+          <p className="text-lg text-white/70 mb-8 text-center">
             {language === 'fr' 
               ? "Trouvez des réponses aux questions les plus courantes sur Trades Tracker"
               : "Find answers to the most common questions about Trades Tracker"}
@@ -61,11 +61,15 @@ export default function FAQ() {
           
           <Accordion type="single" collapsible className="w-full space-y-4">
             {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`} className="border rounded-lg shadow-sm">
-                <AccordionTrigger className="px-4 py-3 hover:bg-accent/50 rounded-t-lg font-medium text-left">
+              <AccordionItem 
+                key={index} 
+                value={`item-${index}`} 
+                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg shadow-sm"
+              >
+                <AccordionTrigger className="px-4 py-3 hover:bg-white/5 rounded-t-lg font-medium text-left">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="px-4 pb-3 pt-1 text-muted-foreground">
+                <AccordionContent className="px-4 pb-3 pt-1 text-white/70">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
