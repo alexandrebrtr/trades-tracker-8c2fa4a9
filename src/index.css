@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -45,9 +46,9 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217 91% 60%;
 
-    /* Landing page theme colors */
-    --landing-background: 0 0% 100%;
-    --landing-foreground: 222 47% 11%;
+    /* Landing page theme colors - Updated to dark blue */
+    --landing-background: 222 47% 11%;
+    --landing-foreground: 210 40% 98%;
   }
 
   .dark {
@@ -88,7 +89,7 @@
     --sidebar-border: 217.2 32.6% 22%;
     --sidebar-ring: 217 91% 60%;
 
-    /* Landing page theme colors */
+    /* Landing page theme colors - Updated to dark blue */
     --landing-background: 222 47% 11%;
     --landing-foreground: 210 40% 98%;
   }
@@ -107,6 +108,25 @@
   /* Amélioration des styles de focus pour une meilleure accessibilité */
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-primary;
+  }
+
+  /* Deep blue background with subtle gradient for landing page */
+  .deep-blue-gradient {
+    background: linear-gradient(135deg, hsl(222, 47%, 11%) 0%, hsl(222, 47%, 8%) 100%);
+    position: relative;
+  }
+  
+  /* Add subtle blue glow effect */
+  .deep-blue-gradient::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, hsla(210, 100%, 50%, 0.1), transparent 70%);
+    z-index: 0;
+    pointer-events: none;
   }
 
   /* Amélioration des cibles tactiles pour mobile */

@@ -95,7 +95,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--landing-background))] text-[hsl(var(--landing-foreground))]">
+    <div className="min-h-screen deep-blue-gradient text-[hsl(var(--landing-foreground))]">
       <LandingHeader />
       
       {/* Hero Section */}
@@ -268,7 +268,7 @@ export default function LandingPage() {
       </section>
 
       {/* Beta Version Notice */}
-      <section className="py-16 bg-background w-full">
+      <section className="py-16 bg-background/10 backdrop-blur-sm w-full">
         <div className="w-full px-4 sm:px-6 lg:px-10 mx-auto max-w-4xl">
           <div className="text-center space-y-12">
             <div className="space-y-4">
@@ -345,7 +345,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer with dynamic rating system */}
-      <footer className="py-10 sm:py-12 bg-background/50 border-t border-border w-full">
+      <footer className="py-10 sm:py-12 bg-background/10 backdrop-blur-sm border-t border-white/10 w-full">
         <div className="w-full px-4 sm:px-6 lg:px-10 mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 mb-8">
             <div>
