@@ -41,12 +41,12 @@ export default function FAQ() {
   ];
 
   return (
-    <div className="min-h-screen deep-blue-gradient text-[hsl(var(--landing-foreground))]">
+    <div className="min-h-screen bg-[hsl(var(--landing-background))] text-[hsl(var(--landing-foreground))]">
       <LandingHeader />
       <div className="w-full px-4 sm:px-6 lg:px-10 pt-32 pb-20">
         <div className="max-w-4xl mx-auto mb-12">
           <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-primary/20 backdrop-blur-sm">
+            <div className="p-3 rounded-full bg-primary/10">
               <HelpCircle className="h-6 w-6 text-primary" />
             </div>
           </div>
@@ -61,8 +61,8 @@ export default function FAQ() {
           
           <Accordion type="single" collapsible className="w-full space-y-4">
             {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`} className="border border-white/10 rounded-lg shadow-sm bg-white/5 backdrop-blur-sm">
-                <AccordionTrigger className="px-4 py-3 hover:bg-white/5 rounded-t-lg font-medium text-left">
+              <AccordionItem key={index} value={`item-${index}`} className="border rounded-lg shadow-sm">
+                <AccordionTrigger className="px-4 py-3 hover:bg-accent/50 rounded-t-lg font-medium text-left">
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pb-3 pt-1 text-muted-foreground">
