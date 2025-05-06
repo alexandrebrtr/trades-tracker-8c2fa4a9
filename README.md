@@ -56,7 +56,13 @@ Feel free to open an issue or submit a pull request.
 
 ## 📧 Contact
 
-📨 tradestracker.app@gmail.com  
+📨 trades_tracker_officiel@gmail.com  
 📷 Instagram: '@trades_tracker_official' 
 📷 Twitter: '@trades_track_of'
 📷 TikTok: '@trades_tracker_official'
+
+
+## Dev & design
+
+thanks to Alexandre Berthier for the complet build of our projects
+👉 his portfolio: (https://alexandrebrtr.github.io/Alexandre-Berthier---Portfolio/)
