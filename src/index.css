@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -102,6 +103,13 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     overscroll-behavior-y: none;
+    width: 100vw;
+    overflow-x: hidden;
+  }
+
+  html {
+    width: 100vw;
+    overflow-x: hidden;
   }
 
   /* Amélioration des styles de focus pour une meilleure accessibilité */
@@ -202,7 +210,7 @@
   }
 
   .page-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 py-8;
+    @apply w-full max-w-[2000px] mx-auto px-4 sm:px-6 py-8;
   }
 
   /* Improved touch targets for mobile */
@@ -216,7 +224,11 @@
   }
 
   .responsive-container {
-    @apply px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8;
+    @apply w-full max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8;
+  }
+
+  .full-width-container {
+    @apply w-full max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-10;
   }
 }
 
