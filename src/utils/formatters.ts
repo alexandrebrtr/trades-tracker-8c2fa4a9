@@ -1,51 +1,50 @@
 
 /**
- * Format a number as a percentage
- * @param value - The value to format
- * @param fractionDigits - The number of decimal places to show (default: 2)
- * @returns A formatted percentage string (e.g. "42.50%")
+ * Formats a number as currency in EUR with French locale
  */
-export function formatPercentage(value: number, fractionDigits: number = 2): string {
-  return `${value.toFixed(fractionDigits)}%`;
-}
+export const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+};
 
 /**
- * Format a number as currency
- * @param value - The value to format
- * @param currency - The currency code (default: EUR)
- * @param locale - The locale to use for formatting (default: fr-FR)
- * @returns A formatted currency string
+ * Formats a percentage value with 1 decimal place
  */
-export function formatCurrency(value: number, currency: string = 'EUR', locale: string = 'fr-FR'): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency
+export const formatPercentage = (value: number): string => {
+  return `${value.toFixed(1)}%`;
+};
+
+/**
+ * Formats a number with a specified number of decimal places
+ */
+export const formatNumber = (value: number, decimals: number = 0): string => {
+  return value.toFixed(decimals);
+};
+
+/**
+ * Formats a number with thousands separators
+ */
+export const formatWithThousandsSeparator = (value: number): string => {
+  return new Intl.NumberFormat('fr-FR').format(value);
+};
+
+/**
+ * Formats a number as a compact representation (e.g., 1.2k, 1.5M)
+ */
+export const formatCompact = (value: number): string => {
+  return new Intl.NumberFormat('fr-FR', { 
+    notation: 'compact',
+    compactDisplay: 'short' 
   }).format(value);
-}
+};
 
 /**
- * Format a number with thousands separators
- * @param value - The value to format
- * @param fractionDigits - The number of decimal places to show (default: 0)
- * @returns A formatted number string
+ * Formats a date string to a localized date format
  */
-export function formatNumber(value: number, fractionDigits: number = 0): string {
-  return new Intl.NumberFormat('fr-FR', {
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits
-  }).format(value);
-}
-
-/**
- * Format a date as a string
- * @param date - The date to format
- * @param options - Intl.DateTimeFormatOptions
- * @returns A formatted date string
- */
-export function formatDate(date: Date, options: Intl.DateTimeFormatOptions = {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric'
-}): string {
-  return new Intl.DateTimeFormat('fr-FR', options).format(date);
-}
+export const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('fr-FR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};

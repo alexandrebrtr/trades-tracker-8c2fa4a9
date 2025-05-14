@@ -1,143 +1,162 @@
 
-import { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useTradesFetcher } from '@/hooks/useTradesFetcher';
-import { useAuth } from '@/context/AuthContext';
-import { Skeleton } from '@/components/ui/skeleton';
-import { formatCurrency } from '@/utils/formatters';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer
+} from "recharts";
+import { CHART_CONFIG } from "./chartConfig";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function DrawdownChart() {
-  const [data, setData] = useState<any[]>([]);
-  const [maxDrawdown, setMaxDrawdown] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [drawdownData, setDrawdownData] = useState<any[]>([]);
   const { user } = useAuth();
-  
-  const { trades } = useTradesFetcher(user?.id, 'all');
-  
+
   useEffect(() => {
-    if (trades.length > 0) {
-      // Sort trades by date
-      const sortedTrades = [...trades].sort((a, b) => 
-        new Date(a.date).getTime() - new Date(b.date).getTime()
-      );
-      
-      // Calculate cumulative P&L and drawdown
-      let cumulativePnL = 0;
-      let peak = 0;
-      let currentDrawdown = 0;
-      let maxDrawdownValue = 0;
-      
-      const chartData = sortedTrades.map((trade, index) => {
-        const pnl = Number(trade.pnl) || 0;
-        cumulativePnL += pnl;
-        
-        // Update peak if we have a new high
-        if (cumulativePnL > peak) {
-          peak = cumulativePnL;
-          currentDrawdown = 0;
-        } else {
-          // Calculate current drawdown
-          currentDrawdown = peak - cumulativePnL;
+    const fetchDrawdownData = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const { data: trades, error } = await supabase
+          .from('trades')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('date', { ascending: true });
+
+        if (error) throw error;
+
+        if (!trades || trades.length === 0) {
+          setLoading(false);
+          return;
         }
+
+        // Calculate drawdown series
+        const drawdownSeries = calculateDrawdownSeries(trades);
+        setDrawdownData(drawdownSeries);
         
-        // Update max drawdown if needed
-        if (currentDrawdown > maxDrawdownValue) {
-          maxDrawdownValue = currentDrawdown;
-        }
-        
-        return {
-          date: new Date(trade.date).toISOString().split('T')[0],
-          drawdown: -currentDrawdown, // Negative to show it going down on chart
-          pnl: cumulativePnL
-        };
-      });
-      
-      setData(chartData);
-      setMaxDrawdown(maxDrawdownValue);
-      setLoading(false);
-    } else {
-      // Sample data when no trades are available
-      const sampleData = [
-        { date: '2025-01-01', drawdown: 0, pnl: 0 },
-        { date: '2025-01-02', drawdown: -120, pnl: 350 },
-        { date: '2025-01-03', drawdown: -80, pnl: 650 },
-        { date: '2025-01-04', drawdown: -220, pnl: 430 },
-        { date: '2025-01-05', drawdown: -350, pnl: 300 },
-        { date: '2025-01-06', drawdown: -150, pnl: 500 },
-        { date: '2025-01-07', drawdown: 0, pnl: 800 },
-      ];
-      setData(sampleData);
-      setMaxDrawdown(350);
-      setLoading(false);
-    }
-  }, [trades]);
-  
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-secondary p-3 rounded-md shadow-md border border-border">
-          <p className="text-sm font-semibold">{label}</p>
-          <p className="text-sm text-red-500">
-            Drawdown: {formatCurrency(Math.abs(payload[0].value))}
-          </p>
-          <p className="text-sm">
-            P&L cumulé: {formatCurrency(payload[1].value)}
-          </p>
-        </div>
-      );
-    }
+      } catch (err) {
+        console.error("Error fetching drawdown data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDrawdownData();
+  }, [user]);
+
+  const calculateDrawdownSeries = (trades: any[]) => {
+    let cumulative = 0;
+    let peak = 0;
+    const drawdowns: any[] = [];
     
-    return null;
+    // Group by month to make the chart more readable
+    const monthlyData: Record<string, { balance: number, date: string }> = {};
+    
+    trades.forEach(trade => {
+      cumulative += (trade.pnl || 0);
+      
+      const date = new Date(trade.date);
+      const monthYear = date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+      
+      if (!monthlyData[monthYear]) {
+        monthlyData[monthYear] = { balance: cumulative, date: monthYear };
+      } else {
+        monthlyData[monthYear].balance = cumulative;
+      }
+    });
+    
+    // Calculate drawdowns from monthly data
+    const monthlyValues = Object.values(monthlyData);
+    
+    monthlyValues.forEach((monthData) => {
+      if (monthData.balance > peak) {
+        peak = monthData.balance;
+      }
+      
+      const drawdownPercent = peak !== 0 ? ((peak - monthData.balance) / peak) * 100 : 0;
+      
+      drawdowns.push({
+        date: monthData.date,
+        value: drawdownPercent.toFixed(2)
+      });
+    });
+    
+    return drawdowns;
   };
-  
+
   if (loading) {
-    return <Skeleton className="w-full h-[300px]" />;
+    return (
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle>Analyse des Drawdowns</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="w-full h-[280px]" />
+        </CardContent>
+      </Card>
+    );
   }
-  
+
+  // If no data, display a message
+  if (drawdownData.length === 0) {
+    return (
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle>Analyse des Drawdowns</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center h-[280px]">
+          <p className="text-muted-foreground">
+            Ajoutez des trades pour voir l'analyse des drawdowns.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-full">
+      <CardHeader className="pb-2">
         <CardTitle>Analyse des Drawdowns</CardTitle>
-        <CardDescription>
-          Drawdown Max: {formatCurrency(maxDrawdown)}
-        </CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart
-            data={data}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
-            <Line 
-              type="monotone" 
-              dataKey="drawdown" 
-              stroke="#f87171" 
-              name="Drawdown"
-              strokeWidth={2}
-              dot={false}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="pnl" 
-              stroke="#60a5fa" 
-              name="P&L Cumulé" 
-              strokeWidth={1}
-              dot={false}
-              strokeDasharray="5 5"
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="w-full h-[280px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={drawdownData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+              <YAxis 
+                domain={[0, 'dataMax + 5']} 
+                tick={{ fontSize: 12 }}
+                tickFormatter={(value) => `${value}%`}
+              />
+              <Tooltip 
+                formatter={(value: any) => [`${value}%`, 'Drawdown']} 
+                labelFormatter={(label) => `Date: ${label}`}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="value" 
+                name="Drawdown" 
+                stroke={CHART_CONFIG.danger.theme.light} 
+                fill={CHART_CONFIG.danger.theme.light}
+                fillOpacity={0.3}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );
