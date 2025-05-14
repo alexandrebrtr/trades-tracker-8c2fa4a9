@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { useCurrencySettings } from '@/hooks/useCurrencySettings';
 
 interface Trade {
   id: string;
@@ -32,6 +33,7 @@ interface Asset {
 export default function Portfolio() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { currency } = useCurrencySettings();
   
   const [isLoading, setIsLoading] = useState(true);
   const [portfolioId, setPortfolioId] = useState<string | null>(null);
@@ -139,7 +141,7 @@ export default function Portfolio() {
   }, [user, authLoading]);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currency.code }).format(value);
   };
 
   const handleInitialBalanceSubmit = async () => {

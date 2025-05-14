@@ -8,6 +8,8 @@ import { Plus, Minus, Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 import { DataCard } from '@/components/ui/data-card';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Badge } from '@/components/ui/badge';
+import { CurrencyLabel } from "./CurrencyLabel";
 
 interface CapitalManagementProps {
   portfolioId: string | null;
@@ -139,12 +141,14 @@ export function CapitalManagement({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Gérer le capital</CardTitle>
-        <CardDescription>
-          Ajoutez ou retirez des fonds de votre portefeuille de trading
-        </CardDescription>
+        <CardTitle className="flex items-center justify-between">
+          <span>Gestion du capital</span>
+          <Badge variant="outline">{formatCurrency(portfolioSize)}</Badge>
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4">
+        <CurrencyLabel />
+        
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="deposit">Déposer des fonds</Label>
