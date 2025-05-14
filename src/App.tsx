@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from "@/components/ui/theme-provider"
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -12,8 +13,8 @@ import Settings from './pages/Settings';
 import PremiumAnalytics from './pages/PremiumAnalytics';
 import { AuthProvider } from './context/AuthContext';
 import { PremiumProvider } from './context/PremiumContext';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { Toaster } from "@/components/ui/toaster"
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from "@/components/ui/toaster";
 import { CurrencyContext, useInitCurrencySettings } from './hooks/useCurrencySettings';
 
 const queryClient = new QueryClient();

@@ -1,136 +1,125 @@
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, useContext, createContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from "@/components/ui/use-toast";
 
+// Types
 export type CurrencyCode = 'EUR' | 'USD' | 'GBP' | 'JPY' | 'CHF' | 'CAD' | 'AUD';
+
+export interface CurrencyOption {
+  value: CurrencyCode;
+  label: string;
+  symbol: string;
+}
 
 export interface CurrencySettings {
   code: CurrencyCode;
   symbol: string;
 }
 
-export const CURRENCY_SYMBOLS: Record<CurrencyCode, string> = {
-  EUR: '€',
-  USD: '$',
-  GBP: '£',
-  JPY: '¥',
-  CHF: 'CHF',
-  CAD: 'CA$',
-  AUD: 'A$'
-};
-
-export const CURRENCY_OPTIONS = [
-  { value: 'EUR', label: 'Euro (€)' },
-  { value: 'USD', label: 'Dollar US ($)' },
-  { value: 'GBP', label: 'Livre Sterling (£)' },
-  { value: 'JPY', label: 'Yen Japonais (¥)' },
-  { value: 'CHF', label: 'Franc Suisse (CHF)' },
-  { value: 'CAD', label: 'Dollar Canadien (CA$)' },
-  { value: 'AUD', label: 'Dollar Australien (A$)' },
+export const CURRENCY_OPTIONS: CurrencyOption[] = [
+  { value: 'EUR', label: 'EUR (Euro)', symbol: '€' },
+  { value: 'USD', label: 'USD (Dollar US)', symbol: '$' },
+  { value: 'GBP', label: 'GBP (Livre Sterling)', symbol: '£' },
+  { value: 'JPY', label: 'JPY (Yen Japonais)', symbol: '¥' },
+  { value: 'CHF', label: 'CHF (Franc Suisse)', symbol: 'CHF' },
+  { value: 'CAD', label: 'CAD (Dollar Canadien)', symbol: 'C$' },
+  { value: 'AUD', label: 'AUD (Dollar Australien)', symbol: 'A$' },
 ];
 
-// Create context for currency settings
-export const CurrencyContext = createContext<{
+export const DEFAULT_CURRENCY: CurrencySettings = {
+  code: 'EUR',
+  symbol: '€'
+};
+
+interface CurrencyContextType {
   currency: CurrencySettings;
   setCurrency: (code: CurrencyCode) => Promise<void>;
-}>({
-  currency: { code: 'EUR', symbol: '€' },
+}
+
+export const CurrencyContext = createContext<CurrencyContextType>({
+  currency: DEFAULT_CURRENCY,
   setCurrency: async () => {}
 });
 
-export const useCurrencySettings = () => {
-  return useContext(CurrencyContext);
-};
+export const useCurrencySettings = () => useContext(CurrencyContext);
 
-export const useInitCurrencySettings = () => {
+export function useInitCurrencySettings(): CurrencyContextType {
+  const [currency, setCurrencyState] = useState<CurrencySettings>(DEFAULT_CURRENCY);
   const { user } = useAuth();
-  const [currency, setCurrencyState] = useState<CurrencySettings>({ code: 'EUR', symbol: '€' });
-  
+
   useEffect(() => {
-    const fetchCurrencySettings = async () => {
+    const loadCurrencySettings = async () => {
       if (!user) return;
-      
+
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('settings')
+          .select('currency')
           .eq('id', user.id)
           .single();
-          
+
         if (error) throw error;
         
-        if (data?.settings?.currency) {
-          const currencyCode = data.settings.currency as CurrencyCode;
-          setCurrencyState({
-            code: currencyCode,
-            symbol: CURRENCY_SYMBOLS[currencyCode] || '€'
-          });
+        if (data && data.currency) {
+          const currencyData = data.currency as CurrencySettings;
+          setCurrencyState(currencyData);
         }
-      } catch (err) {
-        console.error('Error fetching currency settings:', err);
+      } catch (error) {
+        console.error('Error loading currency settings:', error);
       }
     };
-    
-    fetchCurrencySettings();
+
+    loadCurrencySettings();
   }, [user]);
-  
-  const setCurrency = async (code: CurrencyCode) => {
-    if (!user) return;
-    
+
+  const setCurrency = async (code: CurrencyCode): Promise<void> => {
+    if (!user) {
+      toast({
+        title: 'Erreur',
+        description: 'Vous devez être connecté pour changer la devise.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     try {
+      const currencyOption = CURRENCY_OPTIONS.find(opt => opt.value === code);
+      
+      if (!currencyOption) {
+        throw new Error('Code devise invalide');
+      }
+
+      const newCurrencySettings = {
+        code,
+        symbol: currencyOption.symbol
+      };
+
+      // Mettre à jour dans la base de données
       const { error } = await supabase
         .from('profiles')
-        .update({
-          settings: {
-            currency: code,
-            // Preserve other settings by spreading them first
-            ...await getCurrentSettings()
-          }
-        })
+        .update({ currency: newCurrencySettings })
         .eq('id', user.id);
-        
+
       if (error) throw error;
-      
-      setCurrencyState({
-        code,
-        symbol: CURRENCY_SYMBOLS[code] || '€'
-      });
+
+      // Mettre à jour l'état local
+      setCurrencyState(newCurrencySettings);
       
       toast({
-        title: "Devise mise à jour",
-        description: `La devise a été changée en ${CURRENCY_OPTIONS.find(c => c.value === code)?.label || code}`,
+        title: 'Devise mise à jour',
+        description: `La devise a été changée en ${code}.`
       });
-    } catch (err) {
-      console.error('Error updating currency settings:', err);
+    } catch (error: any) {
+      console.error('Error updating currency:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour la devise",
-        variant: "destructive",
+        title: 'Erreur',
+        description: error.message || 'Une erreur est survenue lors de la mise à jour de la devise.',
+        variant: 'destructive'
       });
     }
   };
-  
-  // Helper function to get current settings to preserve other fields
-  const getCurrentSettings = async () => {
-    if (!user) return {};
-    
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('settings')
-        .eq('id', user.id)
-        .single();
-        
-      if (error) throw error;
-      
-      return data?.settings || {};
-    } catch (err) {
-      console.error('Error fetching current settings:', err);
-      return {};
-    }
-  };
-  
+
   return { currency, setCurrency };
-};
+}

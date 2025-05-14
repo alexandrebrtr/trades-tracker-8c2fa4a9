@@ -1,7 +1,7 @@
+
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ThemeSelector } from '@/components/settings/ThemeSelector';
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
-// Ajoute les importations
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CurrencySelector } from "@/components/portfolio/CurrencySelector";
 import { AccountSettings } from "@/components/settings/AccountSettings";

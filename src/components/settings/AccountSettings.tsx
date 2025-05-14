@@ -25,7 +25,7 @@ import {
 
 export function AccountSettings() {
   const { toast } = useToast();
-  const { user, setUser } = useAuth();
+  const { user, refreshProfile } = useAuth();
   
   const [email, setEmail] = useState(user?.email || '');
   const [password, setPassword] = useState('');
