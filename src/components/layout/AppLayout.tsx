@@ -142,8 +142,8 @@ export function AppLayout({ children }: AppLayoutProps) {
       >
         {!isMobile && <Header />}
         <div className={cn(
-          "w-full px-3 md:px-6 py-3 md:py-6", // Remplacé container et max-w-7xl par w-full avec padding
-          isMobile && "px-4 py-4"
+          "w-full py-3 md:py-6 pl-3 md:pl-6", // Supprimé le padding droit pour s'étendre complètement
+          isMobile && "pl-4 py-4"
         )}>
           {children}
         </div>
