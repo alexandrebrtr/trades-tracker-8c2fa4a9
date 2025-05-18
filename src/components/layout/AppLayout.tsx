@@ -130,7 +130,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       
       <main 
         className={cn(
-          "transition-all duration-300 w-full",
+          "transition-all duration-300 flex flex-col items-center w-full",
           sidebarCollapsed ? "ml-0 md:ml-16" : "ml-0 md:ml-64",
           isMobile ? "pt-12" : "pt-0", // Ajustement de l'espace en haut pour mobile
           isMobile ? "ease-in-out" : "",
@@ -142,8 +142,8 @@ export function AppLayout({ children }: AppLayoutProps) {
       >
         {!isMobile && <Header />}
         <div className={cn(
-          "w-full py-3 md:py-6 pl-3 md:pl-6", // Uniquement padding à gauche pour permettre l'extension complète à droite
-          isMobile && "pl-4 py-4"
+          "w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-6",
+          isMobile && "py-4"
         )}>
           {children}
         </div>

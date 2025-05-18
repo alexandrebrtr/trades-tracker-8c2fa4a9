@@ -40,3 +40,23 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Classes responsives pour le contenu */
+.content-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .content-container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .content-container {
+    padding: 0 2rem;
+  }
+}
