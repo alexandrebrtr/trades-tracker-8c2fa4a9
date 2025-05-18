@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -100,7 +101,7 @@ export default function LandingPage() {
       
       {/* Hero Section */}
       <section className="relative flex items-center justify-center min-h-screen overflow-hidden py-20 lg:pt-24 lg:pb-16 w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-10">
+        <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="flex flex-col lg:flex-row items-center">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -170,7 +171,7 @@ export default function LandingPage() {
 
       {/* Features Section */}
       <section className="py-16 sm:py-20 lg:py-24 relative overflow-hidden w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-10 mx-auto">
+        <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -186,7 +187,7 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
             {trackingCategories.map((category, index) => (
               <motion.div
                 key={index}
@@ -216,7 +217,7 @@ export default function LandingPage() {
 
       {/* Blog Section */}
       <section className="py-12 sm:py-16 bg-background/50 w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-10 mx-auto">
+        <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8">
             <div className="inline-flex items-center justify-center gap-2 px-4 py-1 rounded-full bg-primary/10 text-primary">
               <Book className="h-4 w-4" />
@@ -237,7 +238,7 @@ export default function LandingPage() {
 
       {/* Testimonials Section - Now with Carousel */}
       <section className="py-20 bg-background w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-10 mx-auto">
+        <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl font-bold mb-4">{t('landing.testimonials.title')}</h2>
             <p className="text-muted-foreground">
@@ -251,7 +252,7 @@ export default function LandingPage() {
       
       {/* Contact Form Section */}
       <section className="py-20 bg-muted/30 w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-10 mx-auto">
+        <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">{t('landing.contact.title')}</h2>
@@ -269,7 +270,7 @@ export default function LandingPage() {
 
       {/* Beta Version Notice */}
       <section className="py-16 bg-background w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-10 mx-auto max-w-4xl">
+        <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto max-w-4xl">
           <div className="text-center space-y-12">
             <div className="space-y-4">
               <div className="flex justify-center">
@@ -308,7 +309,7 @@ export default function LandingPage() {
 
       {/* Transformation CTA Section */}
       <section className="py-20 sm:py-32 bg-primary relative overflow-hidden w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-10 mx-auto text-center text-white">
+        <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto text-center text-white">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -346,7 +347,7 @@ export default function LandingPage() {
 
       {/* Footer with dynamic rating system */}
       <footer className="py-10 sm:py-12 bg-background/50 border-t border-border w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-10 mx-auto">
+        <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 mb-8">
             <div>
               <div className="text-lg sm:text-xl font-semibold text-primary">Trades Tracker</div>

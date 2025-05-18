@@ -43,7 +43,7 @@ export default function FAQ() {
   return (
     <div className="min-h-screen bg-[hsl(var(--landing-background))] text-[hsl(var(--landing-foreground))]">
       <LandingHeader />
-      <div className="w-full px-4 sm:px-6 lg:px-10 pt-32 pb-20">
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 pt-32 pb-20">
         <div className="max-w-4xl mx-auto mb-12">
           <div className="flex justify-center mb-4">
             <div className="p-3 rounded-full bg-primary/10">
