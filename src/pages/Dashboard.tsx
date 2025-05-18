@@ -79,7 +79,7 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
-      <div className="page-transition space-y-8">
+      <div className="w-full space-y-8">
         <DashboardHeader 
           portfolioBalance={portfolioBalance}
           monthlyPnL={monthlyPnL}
@@ -92,7 +92,7 @@ const Dashboard = () => {
           trades={trades || []}
         />
         
-        <PerformanceChart className="mt-8" userId={user?.id} />
+        <PerformanceChart className="w-full mt-8" userId={user?.id} />
         
         <PortfolioDistribution 
           assetData={assetAllocation && assetAllocation.length > 0 ? assetAllocation : null}
