@@ -83,7 +83,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className={cn(
-      "min-h-screen bg-background overflow-x-hidden",
+      "min-h-screen bg-background overflow-x-hidden w-full",
       isIosNative && "fullscreen-page ios-device"
     )}>
       {/* Bouton de basculement du menu mobile - visible uniquement sur mobile */}
@@ -130,7 +130,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       
       <main 
         className={cn(
-          "transition-all duration-300",
+          "transition-all duration-300 w-full",
           sidebarCollapsed ? "ml-0 md:ml-16" : "ml-0 md:ml-64",
           isMobile ? "pt-12" : "pt-0", // Ajustement de l'espace en haut pour mobile
           isMobile ? "ease-in-out" : "",
@@ -142,7 +142,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       >
         {!isMobile && <Header />}
         <div className={cn(
-          "w-full py-3 md:py-6 pl-3 md:pl-6", // Supprimé le padding droit pour s'étendre complètement
+          "w-full py-3 md:py-6 pl-3 md:pl-6", // Uniquement padding à gauche pour permettre l'extension complète à droite
           isMobile && "pl-4 py-4"
         )}>
           {children}

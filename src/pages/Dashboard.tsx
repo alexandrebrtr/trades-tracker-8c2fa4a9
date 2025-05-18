@@ -79,7 +79,7 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
-      <div className="page-transition space-y-8">
+      <div className="page-transition space-y-8 w-full">
         <DashboardHeader 
           portfolioBalance={portfolioBalance}
           monthlyPnL={monthlyPnL}
