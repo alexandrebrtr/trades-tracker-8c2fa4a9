@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -126,14 +127,14 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
     try {
       const now = new Date();
       const expiryDate = status 
-        ? new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+        ? new Date('2025-12-31T23:59:59.000Z') // Use the same date as in the migration
         : null;
       
       const { error } = await supabase
         .from('profiles')
         .update({
           premium: status,
-          premium_since: status ? now.toISOString() : null,
+          premium_since: status ? (premiumSince || now.toISOString()) : null,
           premium_expires: expiryDate ? expiryDate.toISOString() : null
         })
         .eq('id', user.id);
@@ -141,7 +142,9 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
       if (error) throw error;
       
       setIsPremium(status);
-      setPremiumSince(status ? now.toISOString() : null);
+      if (status && !premiumSince) {
+        setPremiumSince(now.toISOString());
+      }
       setPremiumExpires(expiryDate ? expiryDate.toISOString() : null);
       
       console.log(`Premium status updated to: ${status}`);
@@ -175,12 +178,15 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
       if (isDeveloper) {
         setIsPremium(true);
         setPremiumSince(data.premium_since || new Date().toISOString());
-        setPremiumExpires(data.premium_expires || new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString());
+        setPremiumExpires(data.premium_expires || new Date('2025-12-31T23:59:59.000Z').toISOString());
         setUserSettings(data.settings as UserSettings || {});
         console.log('Developer access granted with premium status');
       } else {
         const now = new Date();
         const expiryDate = data.premium_expires ? new Date(data.premium_expires) : null;
+        
+        // With the migration, all users should have premium until 2025-12-31
+        // Check if premium is active and not expired
         const isActive = data.premium && expiryDate && expiryDate > now;
 
         setIsPremium(isActive);
@@ -188,11 +194,13 @@ export const PremiumProvider = ({ children }: PremiumProviderProps) => {
         setPremiumExpires(data.premium_expires);
         setUserSettings(data.settings as UserSettings || {});
 
-        console.log('Premium status loaded:', isActive);
+        console.log('Premium status loaded:', isActive, 'expires:', data.premium_expires);
       }
     } catch (error) {
       console.error('Error loading premium status:', error);
-      setIsPremium(false);
+      // In case of error, assume premium is active until 2025-12-31 for all users
+      setIsPremium(true);
+      setPremiumExpires('2025-12-31T23:59:59.000Z');
     } finally {
       setLoadingPremium(false);
     }
