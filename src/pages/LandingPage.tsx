@@ -376,7 +376,7 @@ export default function LandingPage() {
                 <Link to="/about" className="text-sm text-muted-foreground hover:text-primary">{t('landing.team')}</Link>
                 <Link to="/contact" className="text-sm text-muted-foreground hover:text-primary">{t('landing.contact')}</Link>
                 <Link to="/premium" className="text-sm text-muted-foreground hover:text-primary">{t('landing.pricing')}</Link>
-                <Link to="/demo" className="text-sm text-muted-foreground hover:text-primary">{t('landing.demo')}</Link>
+                <Link to="/Demonstration" className="text-sm text-muted-foreground hover:text-primary">{t('landing.demo')}</Link>
               </div>
             </div>
             
