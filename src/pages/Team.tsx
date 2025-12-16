@@ -9,7 +9,7 @@ export default function Team() {
 
   const team = [
     {
-      name: "Alexandre Berthier",
+      name: "Alexandre Berthier de Grandry",
       role: language === 'fr' ? "CEO & Fondateur" : "CEO & Founder",
       description: language === 'fr' 
         ? "Expert en trading, développement de stratégies et en codage" 
