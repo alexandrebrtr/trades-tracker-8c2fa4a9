@@ -22,13 +22,6 @@ export default function Team() {
         ? "Spécialiste en marketing" 
         : "Marketing specialist"
     },
-    {
-      name: "Sophie Martin",
-      role: language === 'fr' ? "Analyste Trading" : "Trading Analyst",
-      description: language === 'fr' 
-        ? "Spécialiste en analyse technique et fondamentale" 
-        : "Technical and fundamental analysis specialist"
-    },
   ];
 
   return (
