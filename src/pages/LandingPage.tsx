@@ -373,20 +373,20 @@ export default function LandingPage() {
             <div>
               <h3 className="font-medium text-lg mb-4">{t('landing.footer.about')}</h3>
               <div className="flex flex-col gap-2">
-                <Link to="/about" className="text-sm text-muted-foreground hover:text-primary">{t('landing.team')}</Link>
+                <Link to="/team" className="text-sm text-muted-foreground hover:text-primary">{t('landing.team')}</Link>
                 <Link to="/contact" className="text-sm text-muted-foreground hover:text-primary">{t('landing.contact')}</Link>
                 <Link to="/premium" className="text-sm text-muted-foreground hover:text-primary">{t('landing.pricing')}</Link>
-                <Link to="/Demonstration" className="text-sm text-muted-foreground hover:text-primary">{t('landing.demo')}</Link>
+                <Link to="/demonstration" className="text-sm text-muted-foreground hover:text-primary">{t('landing.demo')}</Link>
               </div>
             </div>
             
             <div>
               <h3 className="font-medium text-lg mb-4">{t('landing.footer.legal')}</h3>
               <div className="flex flex-col gap-2">
-                <Link to="/terms" className="text-sm text-muted-foreground hover:text-primary">{t('landing.footer.terms')}</Link>
-                <Link to="/privacy" className="text-sm text-muted-foreground hover:text-primary">{t('landing.footer.privacy')}</Link>
-                <Link to="/cookies" className="text-sm text-muted-foreground hover:text-primary">{t('landing.footer.cookies')}</Link>
-                <Link to="/mentions" className="text-sm text-muted-foreground hover:text-primary">{t('landing.footer.mentions')}</Link>
+                <Link to="/LandingPage" className="text-sm text-muted-foreground hover:text-primary">{t('landing.footer.terms')}</Link>
+                <Link to="/LandingPage" className="text-sm text-muted-foreground hover:text-primary">{t('landing.footer.privacy')}</Link>
+                <Link to="/LandingPage" className="text-sm text-muted-foreground hover:text-primary">{t('landing.footer.cookies')}</Link>
+                <Link to="/LandingPage" className="text-sm text-muted-foreground hover:text-primary">{t('landing.footer.mentions')}</Link>
               </div>
             </div>
           </div>
