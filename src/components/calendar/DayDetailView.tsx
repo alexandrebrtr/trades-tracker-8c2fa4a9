@@ -20,21 +20,20 @@ export function DayDetailView({ date, events, onClose }: DayDetailViewProps) {
   const { toast } = useToast();
   const [dailyPnL, setDailyPnL] = useState(0);
   const [trades, setTrades] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [isFutureDate, setIsFutureDate] = useState(false);
 
-  // Calculate daily PnL and get trades
   useEffect(() => {
     if (!date) return;
-    
-    // Check if the date is in the future
     const today = new Date();
-    const isFuture = isAfter(date, today);
-    setIsFutureDate(isFuture);
-    
+    setIsFutureDate(isAfter(date, today));
+
     const tradesArray = events.filter(event => event.type === 'trade');
+    const txArray = events.filter(event => event.type === 'transaction');
     const totalPnL = tradesArray.reduce((total, trade) => total + (trade.trade?.pnl || 0), 0);
-    
+
     setTrades(tradesArray);
+    setTransactions(txArray);
     setDailyPnL(totalPnL);
   }, [events, date]);
 
