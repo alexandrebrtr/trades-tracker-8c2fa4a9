@@ -19,6 +19,7 @@ const Calendar = () => {
   const { toast } = useToast();
   const [trades, setTrades] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [eventForm, setEventForm] = useState({
     title: '',
