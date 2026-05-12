@@ -213,10 +213,15 @@ export function TradeCalendar({ events, onEventsUpdated }: TradeCalendarProps) {
                   </div>
                 )}
                 
-                {/* Trade count badge - only for days with trades */}
-                {hasTrades && (
-                  <div className="text-xs text-muted-foreground self-end">
-                    {dayEvents.filter(e => e.type === 'trade').length} trade(s)
+                {/* Trade / transaction count badge */}
+                {(hasTrades || dayEvents.some(e => e.type === 'transaction')) && (
+                  <div className="text-xs text-muted-foreground self-end flex flex-col items-end gap-0.5">
+                    {hasTrades && <span>{dayEvents.filter(e => e.type === 'trade').length} trade(s)</span>}
+                    {dayEvents.some(e => e.type === 'transaction') && (
+                      <span className="text-blue-500">
+                        {dayEvents.filter(e => e.type === 'transaction').length} mvt
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
