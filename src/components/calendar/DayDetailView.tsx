@@ -4,7 +4,7 @@ import { format, isSameDay, isAfter } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { X, TrendingUp } from 'lucide-react';
+import { X, TrendingUp, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from './TradeCalendar';
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,21 +20,20 @@ export function DayDetailView({ date, events, onClose }: DayDetailViewProps) {
   const { toast } = useToast();
   const [dailyPnL, setDailyPnL] = useState(0);
   const [trades, setTrades] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [isFutureDate, setIsFutureDate] = useState(false);
 
-  // Calculate daily PnL and get trades
   useEffect(() => {
     if (!date) return;
-    
-    // Check if the date is in the future
     const today = new Date();
-    const isFuture = isAfter(date, today);
-    setIsFutureDate(isFuture);
-    
+    setIsFutureDate(isAfter(date, today));
+
     const tradesArray = events.filter(event => event.type === 'trade');
+    const txArray = events.filter(event => event.type === 'transaction');
     const totalPnL = tradesArray.reduce((total, trade) => total + (trade.trade?.pnl || 0), 0);
-    
+
     setTrades(tradesArray);
+    setTransactions(txArray);
     setDailyPnL(totalPnL);
   }, [events, date]);
 
@@ -60,7 +59,42 @@ export function DayDetailView({ date, events, onClose }: DayDetailViewProps) {
           </Button>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          {/* Transactions section */}
+          {transactions.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-medium mb-3 flex items-center">
+                <ArrowDownCircle className="h-4 w-4 mr-2" />
+                Mouvements de capital ({transactions.length})
+              </h3>
+              {transactions.map((event) => {
+                const tx = event.transaction;
+                const isDeposit = tx?.type === 'deposit';
+                return (
+                  <Card key={event.id} className={cn('overflow-hidden', isDeposit ? 'border-green-500/20' : 'border-orange-500/20')}>
+                    <CardContent className="p-4 flex items-start justify-between">
+                      <div className="flex items-start gap-3">
+                        {isDeposit ? (
+                          <ArrowDownCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                        ) : (
+                          <ArrowUpCircle className="h-5 w-5 text-orange-500 mt-0.5" />
+                        )}
+                        <div>
+                          <div className="font-medium">{isDeposit ? 'Dépôt' : 'Retrait'}</div>
+                          {tx?.notes && <p className="text-sm text-muted-foreground mt-1">{tx.notes}</p>}
+                        </div>
+                      </div>
+                      <div className={cn('font-medium text-right', isDeposit ? 'text-green-500' : 'text-orange-500')}>
+                        {isDeposit ? '+' : '-'}
+                        {Number(tx?.amount).toLocaleString('fr-FR')} €
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
           {/* Trades section */}
           {isFutureDate ? (
             <div className="text-center py-6 text-muted-foreground">
@@ -72,7 +106,7 @@ export function DayDetailView({ date, events, onClose }: DayDetailViewProps) {
                 <TrendingUp className="h-4 w-4 mr-2" />
                 Trades du jour ({trades.length})
               </h3>
-              
+
               {trades.map((event) => (
                 <Card key={event.id} className={cn(
                   "overflow-hidden",
@@ -110,13 +144,14 @@ export function DayDetailView({ date, events, onClose }: DayDetailViewProps) {
                 </Card>
               ))}
             </div>
-          ) : (
+          ) : transactions.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground">
-              Aucun trade pour ce jour.
+              Aucune activité pour ce jour.
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
   );
 }
+

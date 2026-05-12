@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CalendarIcon } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { CapitalManagement } from '@/components/portfolio/CapitalManagement';
@@ -11,6 +11,11 @@ import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface Trade {
   id: string;
@@ -40,6 +45,7 @@ export default function Portfolio() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [initialSetupDone, setInitialSetupDone] = useState(false);
   const [initialBalance, setInitialBalance] = useState('');
+  const [initialDate, setInitialDate] = useState<Date>(new Date());
 
   // Charger les données du portfolio de l'utilisateur seulement si l'utilisateur est connecté
   useEffect(() => {
@@ -77,14 +83,27 @@ export default function Portfolio() {
             .single();
           
           if (createError) throw createError;
-          setPortfolioSize(0);
-          setInitialSetupDone(false);
           currentPortfolioId = newPortfolio.id;
         } else {
-          setPortfolioSize(portfolios[0].balance);
-          setInitialSetupDone(portfolios[0].balance > 0);
           currentPortfolioId = portfolios[0].id;
         }
+
+        // Détermine l'état initial à partir des transactions (source de vérité)
+        const { count: txCount } = await supabase
+          .from('transactions')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        // Récupère le solde réel depuis profiles (mis à jour par les triggers)
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('balance')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        const realBalance = Number(profileData?.balance ?? 0);
+        setPortfolioSize(realBalance);
+        setInitialSetupDone((txCount ?? 0) > 0);
         
         setPortfolioId(currentPortfolioId);
         
@@ -134,8 +153,27 @@ export default function Portfolio() {
         setIsLoading(false);
       }
     };
-    
+
     fetchPortfolioData();
+
+    // Realtime: garder le solde synchronisé partout
+    if (user) {
+      const channel = supabase
+        .channel('portfolio-page-balance')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+          (payload: any) => {
+            if (payload.new && 'balance' in payload.new) {
+              setPortfolioSize(Number(payload.new.balance));
+            }
+          }
+        )
+        .subscribe();
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [user, authLoading]);
 
   const formatCurrency = (value: number) => {
@@ -144,7 +182,7 @@ export default function Portfolio() {
 
   const handleInitialBalanceSubmit = async () => {
     if (!user || !portfolioId) return;
-    
+
     const amount = parseFloat(initialBalance);
     if (isNaN(amount) || amount <= 0) {
       toast({
@@ -154,36 +192,36 @@ export default function Portfolio() {
       });
       return;
     }
-    
+    if (!initialDate) {
+      toast({ title: "Date requise", description: "Sélectionnez la date du dépôt initial.", variant: "destructive" });
+      return;
+    }
+
     try {
-      // Update portfolio balance
-      const { error: portfolioError } = await supabase
-        .from('portfolios')
-        .update({ balance: amount })
-        .eq('id', portfolioId);
-      
-      if (portfolioError) throw portfolioError;
-      
-      // Update user profile balance
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ balance: amount })
-        .eq('id', user.id);
-      
-      if (profileError) throw profileError;
-      
-      setPortfolioSize(amount);
+      // Premier dépôt enregistré comme transaction (les triggers mettent à jour le solde)
+      const { error: txError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'deposit',
+          amount,
+          date: initialDate.toISOString(),
+          notes: 'Dépôt initial',
+        });
+
+      if (txError) throw txError;
+
       setInitialSetupDone(true);
-      
+
       toast({
-        title: "Balance initiale configurée",
-        description: `Votre balance a été configurée à ${formatCurrency(amount)}.`,
+        title: "Dépôt initial enregistré",
+        description: `Capital de départ : ${formatCurrency(amount)}`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la configuration de la balance:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue. Veuillez réessayer.",
+        description: error.message || "Une erreur est survenue. Veuillez réessayer.",
         variant: "destructive",
       });
     }
@@ -224,22 +262,42 @@ export default function Portfolio() {
             <CardHeader>
               <CardTitle>Bienvenue !</CardTitle>
               <CardDescription>
-                Avant de commencer, veuillez définir la balance initiale de votre portefeuille
+                Enregistrez votre premier dépôt pour démarrer le suivi de votre capital
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="initial-balance">Balance initiale</Label>
+                <Label htmlFor="initial-balance">Montant du dépôt initial (€)</Label>
                 <Input
                   id="initial-balance"
                   type="number"
-                  placeholder="Entrez votre balance initiale"
+                  placeholder="Ex: 10000"
                   value={initialBalance}
                   onChange={(e) => setInitialBalance(e.target.value)}
                 />
               </div>
-              <Button 
-                className="w-full" 
+              <div className="space-y-2">
+                <Label>Date du dépôt</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !initialDate && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {initialDate ? format(initialDate, 'PPP', { locale: fr }) : "Choisir une date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={initialDate}
+                      onSelect={(d) => d && setInitialDate(d)}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <Button
+                className="w-full"
                 onClick={handleInitialBalanceSubmit}
                 disabled={!initialBalance || parseFloat(initialBalance) <= 0}
               >

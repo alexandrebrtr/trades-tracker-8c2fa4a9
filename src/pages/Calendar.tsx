@@ -19,6 +19,7 @@ const Calendar = () => {
   const { toast } = useToast();
   const [trades, setTrades] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [eventForm, setEventForm] = useState({
     title: '',
@@ -72,41 +73,55 @@ const Calendar = () => {
       }
     };
     
+    const fetchTransactions = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('user_id', user.id);
+        if (error) throw error;
+        setTransactions(data || []);
+      } catch (error) {
+        console.error('Error fetching transactions:', error);
+      }
+    };
+
     fetchTrades();
     fetchEvents();
-    
+    fetchTransactions();
+
     // Set up real-time subscriptions
     const tradesChannel = supabase
       .channel('trades-changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'trades',
-          filter: `user_id=eq.${user.id}`
-        },
+        { event: '*', schema: 'public', table: 'trades', filter: `user_id=eq.${user.id}` },
         () => fetchTrades()
       )
       .subscribe();
-      
+
     const eventsChannel = supabase
       .channel('events-changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'calendar_events',
-          filter: `user_id=eq.${user.id}`
-        },
+        { event: '*', schema: 'public', table: 'calendar_events', filter: `user_id=eq.${user.id}` },
         () => fetchEvents()
       )
       .subscribe();
-      
+
+    const txChannel = supabase
+      .channel('tx-calendar-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${user.id}` },
+        () => fetchTransactions()
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(tradesChannel);
       supabase.removeChannel(eventsChannel);
+      supabase.removeChannel(txChannel);
     };
   }, [user]);
   
@@ -206,8 +221,17 @@ const Calendar = () => {
       title: event.title,
       description: event.description,
       date: new Date(event.date),
-      type: 'event' as const, // Use const assertion to get literal type instead of string
+      type: 'event' as const,
       event: event
+    })),
+    // Add deposits / withdrawals
+    ...transactions.map(tx => ({
+      id: tx.id,
+      title: tx.type === 'deposit' ? `Dépôt: +${Number(tx.amount).toLocaleString('fr-FR')} €` : `Retrait: -${Number(tx.amount).toLocaleString('fr-FR')} €`,
+      description: tx.notes || null,
+      date: new Date(tx.date),
+      type: 'transaction' as const,
+      transaction: tx
     }))
   ];
   
