@@ -83,14 +83,27 @@ export default function Portfolio() {
             .single();
           
           if (createError) throw createError;
-          setPortfolioSize(0);
-          setInitialSetupDone(false);
           currentPortfolioId = newPortfolio.id;
         } else {
-          setPortfolioSize(portfolios[0].balance);
-          setInitialSetupDone(portfolios[0].balance > 0);
           currentPortfolioId = portfolios[0].id;
         }
+
+        // Détermine l'état initial à partir des transactions (source de vérité)
+        const { count: txCount } = await supabase
+          .from('transactions')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        // Récupère le solde réel depuis profiles (mis à jour par les triggers)
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('balance')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        const realBalance = Number(profileData?.balance ?? 0);
+        setPortfolioSize(realBalance);
+        setInitialSetupDone((txCount ?? 0) > 0);
         
         setPortfolioId(currentPortfolioId);
         
