@@ -262,22 +262,42 @@ export default function Portfolio() {
             <CardHeader>
               <CardTitle>Bienvenue !</CardTitle>
               <CardDescription>
-                Avant de commencer, veuillez définir la balance initiale de votre portefeuille
+                Enregistrez votre premier dépôt pour démarrer le suivi de votre capital
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="initial-balance">Balance initiale</Label>
+                <Label htmlFor="initial-balance">Montant du dépôt initial (€)</Label>
                 <Input
                   id="initial-balance"
                   type="number"
-                  placeholder="Entrez votre balance initiale"
+                  placeholder="Ex: 10000"
                   value={initialBalance}
                   onChange={(e) => setInitialBalance(e.target.value)}
                 />
               </div>
-              <Button 
-                className="w-full" 
+              <div className="space-y-2">
+                <Label>Date du dépôt</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !initialDate && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {initialDate ? format(initialDate, 'PPP', { locale: fr }) : "Choisir une date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={initialDate}
+                      onSelect={(d) => d && setInitialDate(d)}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <Button
+                className="w-full"
                 onClick={handleInitialBalanceSubmit}
                 disabled={!initialBalance || parseFloat(initialBalance) <= 0}
               >
