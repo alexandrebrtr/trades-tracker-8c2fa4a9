@@ -221,8 +221,17 @@ const Calendar = () => {
       title: event.title,
       description: event.description,
       date: new Date(event.date),
-      type: 'event' as const, // Use const assertion to get literal type instead of string
+      type: 'event' as const,
       event: event
+    })),
+    // Add deposits / withdrawals
+    ...transactions.map(tx => ({
+      id: tx.id,
+      title: tx.type === 'deposit' ? `Dépôt: +${Number(tx.amount).toLocaleString('fr-FR')} €` : `Retrait: -${Number(tx.amount).toLocaleString('fr-FR')} €`,
+      description: tx.notes || null,
+      date: new Date(tx.date),
+      type: 'transaction' as const,
+      transaction: tx
     }))
   ];
   
