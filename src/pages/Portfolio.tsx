@@ -153,8 +153,27 @@ export default function Portfolio() {
         setIsLoading(false);
       }
     };
-    
+
     fetchPortfolioData();
+
+    // Realtime: garder le solde synchronisé partout
+    if (user) {
+      const channel = supabase
+        .channel('portfolio-page-balance')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+          (payload: any) => {
+            if (payload.new && 'balance' in payload.new) {
+              setPortfolioSize(Number(payload.new.balance));
+            }
+          }
+        )
+        .subscribe();
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [user, authLoading]);
 
   const formatCurrency = (value: number) => {
