@@ -13,9 +13,10 @@ export interface CalendarEvent {
   title: string;
   description: string | null;
   date: Date;
-  type: 'trade' | 'event';
+  type: 'trade' | 'event' | 'transaction';
   trade?: any;
   event?: any;
+  transaction?: any;
 }
 
 // Define the props interface for the TradeCalendar component
