@@ -68,14 +68,24 @@ export function RatingSystem() {
 
   const handleRating = async (rating: number) => {
     setUserRating(rating);
-    
+
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Connexion requise",
+          description: "Connectez-vous pour laisser une note.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('ratings')
-        .insert({ rating }) as { error: any };
-        
+        .upsert({ rating, user_id: user.id }, { onConflict: 'user_id' }) as { error: any };
+
       if (error) throw error;
-      
+
       toast({
         title: t('landing.footer.thanks').replace('{rating}', rating.toString()),
         description: `Vous avez attribué une note de ${rating}/5 à Trades Tracker.`,

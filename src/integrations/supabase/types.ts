@@ -267,16 +267,19 @@ export type Database = {
           created_at: string
           id: string
           rating: number
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           rating: number
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           rating?: number
+          user_id?: string | null
         }
         Relationships: []
       }
