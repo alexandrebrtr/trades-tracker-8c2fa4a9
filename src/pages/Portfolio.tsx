@@ -45,6 +45,7 @@ export default function Portfolio() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [initialSetupDone, setInitialSetupDone] = useState(false);
   const [initialBalance, setInitialBalance] = useState('');
+  const [initialDate, setInitialDate] = useState<Date>(new Date());
 
   // Charger les données du portfolio de l'utilisateur seulement si l'utilisateur est connecté
   useEffect(() => {
