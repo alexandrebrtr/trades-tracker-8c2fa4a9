@@ -182,7 +182,7 @@ export default function Portfolio() {
 
   const handleInitialBalanceSubmit = async () => {
     if (!user || !portfolioId) return;
-    
+
     const amount = parseFloat(initialBalance);
     if (isNaN(amount) || amount <= 0) {
       toast({
@@ -192,36 +192,36 @@ export default function Portfolio() {
       });
       return;
     }
-    
+    if (!initialDate) {
+      toast({ title: "Date requise", description: "Sélectionnez la date du dépôt initial.", variant: "destructive" });
+      return;
+    }
+
     try {
-      // Update portfolio balance
-      const { error: portfolioError } = await supabase
-        .from('portfolios')
-        .update({ balance: amount })
-        .eq('id', portfolioId);
-      
-      if (portfolioError) throw portfolioError;
-      
-      // Update user profile balance
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ balance: amount })
-        .eq('id', user.id);
-      
-      if (profileError) throw profileError;
-      
-      setPortfolioSize(amount);
+      // Premier dépôt enregistré comme transaction (les triggers mettent à jour le solde)
+      const { error: txError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'deposit',
+          amount,
+          date: initialDate.toISOString(),
+          notes: 'Dépôt initial',
+        });
+
+      if (txError) throw txError;
+
       setInitialSetupDone(true);
-      
+
       toast({
-        title: "Balance initiale configurée",
-        description: `Votre balance a été configurée à ${formatCurrency(amount)}.`,
+        title: "Dépôt initial enregistré",
+        description: `Capital de départ : ${formatCurrency(amount)}`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la configuration de la balance:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue. Veuillez réessayer.",
+        description: error.message || "Une erreur est survenue. Veuillez réessayer.",
         variant: "destructive",
       });
     }
