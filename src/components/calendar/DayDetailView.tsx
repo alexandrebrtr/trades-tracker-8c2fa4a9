@@ -59,7 +59,42 @@ export function DayDetailView({ date, events, onClose }: DayDetailViewProps) {
           </Button>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          {/* Transactions section */}
+          {transactions.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-medium mb-3 flex items-center">
+                <ArrowDownCircle className="h-4 w-4 mr-2" />
+                Mouvements de capital ({transactions.length})
+              </h3>
+              {transactions.map((event) => {
+                const tx = event.transaction;
+                const isDeposit = tx?.type === 'deposit';
+                return (
+                  <Card key={event.id} className={cn('overflow-hidden', isDeposit ? 'border-green-500/20' : 'border-orange-500/20')}>
+                    <CardContent className="p-4 flex items-start justify-between">
+                      <div className="flex items-start gap-3">
+                        {isDeposit ? (
+                          <ArrowDownCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                        ) : (
+                          <ArrowUpCircle className="h-5 w-5 text-orange-500 mt-0.5" />
+                        )}
+                        <div>
+                          <div className="font-medium">{isDeposit ? 'Dépôt' : 'Retrait'}</div>
+                          {tx?.notes && <p className="text-sm text-muted-foreground mt-1">{tx.notes}</p>}
+                        </div>
+                      </div>
+                      <div className={cn('font-medium text-right', isDeposit ? 'text-green-500' : 'text-orange-500')}>
+                        {isDeposit ? '+' : '-'}
+                        {Number(tx?.amount).toLocaleString('fr-FR')} €
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
           {/* Trades section */}
           {isFutureDate ? (
             <div className="text-center py-6 text-muted-foreground">
@@ -71,7 +106,7 @@ export function DayDetailView({ date, events, onClose }: DayDetailViewProps) {
                 <TrendingUp className="h-4 w-4 mr-2" />
                 Trades du jour ({trades.length})
               </h3>
-              
+
               {trades.map((event) => (
                 <Card key={event.id} className={cn(
                   "overflow-hidden",
@@ -109,12 +144,16 @@ export function DayDetailView({ date, events, onClose }: DayDetailViewProps) {
                 </Card>
               ))}
             </div>
-          ) : (
+          ) : transactions.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground">
-              Aucun trade pour ce jour.
+              Aucune activité pour ce jour.
             </div>
-          )}
+          ) : null}
         </div>
+      </div>
+    </div>
+  );
+}
       </div>
     </div>
   );
