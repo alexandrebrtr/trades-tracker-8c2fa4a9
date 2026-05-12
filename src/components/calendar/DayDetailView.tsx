@@ -4,7 +4,7 @@ import { format, isSameDay, isAfter } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { X, TrendingUp } from 'lucide-react';
+import { X, TrendingUp, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from './TradeCalendar';
 import { Card, CardContent } from "@/components/ui/card";
