@@ -154,7 +154,4 @@ export function DayDetailView({ date, events, onClose }: DayDetailViewProps) {
     </div>
   );
 }
-      </div>
-    </div>
-  );
-}
+
