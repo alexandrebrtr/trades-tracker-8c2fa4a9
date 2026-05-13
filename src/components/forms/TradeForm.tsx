@@ -235,7 +235,8 @@ export function TradeForm() {
       const stopLossValue = useStopLoss && stopLoss ? parseFloat(stopLoss.replace(',', '.')) : null;
       const takeProfitValue = useTakeProfit && takeProfit ? parseFloat(takeProfit.replace(',', '.')) : null;
       
-      const newTrade = {
+      const num = (s: string) => s ? parseFloat(s.replace(',', '.')) : null;
+      const newTrade: any = {
         user_id: user.id,
         date: new Date(entryDate).toISOString(),
         symbol: symbolToUse,
@@ -249,9 +250,26 @@ export function TradeForm() {
         notes: notes,
         stop_loss: stopLossValue,
         take_profit: takeProfitValue,
+        asset_class: assetClass,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
+
+      if (isOptions) {
+        newTrade.option_type = optionType;
+        newTrade.strike = num(strike);
+        newTrade.expiration = expiration ? new Date(expiration).toISOString() : null;
+        newTrade.implied_volatility = impliedVol ? parseFloat(impliedVol.replace(',', '.')) / 100 : null;
+        newTrade.premium = num(premium);
+        newTrade.contract_size = num(contractSize) ?? 100;
+        newTrade.risk_free_rate = riskFreeRate ? parseFloat(riskFreeRate.replace(',', '.')) / 100 : 0.04;
+        newTrade.underlying_price = num(underlyingPrice);
+        newTrade.delta = num(delta);
+        newTrade.gamma = num(gamma);
+        newTrade.theta = num(theta);
+        newTrade.vega = num(vega);
+        newTrade.rho = num(rho);
+      }
       
       console.log("Submitting trade:", newTrade);
       
