@@ -64,42 +64,30 @@ export function MonteCarloSimulation({ trades, initialCapital }: MonteCarloSimul
           </p>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Slider
-            label={`Win Rate: ${(params.winRate * 100).toFixed(0)}%`}
-            min={5} max={95} step={1}
-            value={[params.winRate * 100]}
-            onValueChange={([v]) => update('winRate', v / 100)}
-          />
-          <Slider
-            label={`Gain moyen: ${fmt(params.avgWin)}`}
-            min={1} max={Math.max(500, Math.round(params.avgWin * 3))} step={1}
-            value={[params.avgWin]}
-            onValueChange={([v]) => update('avgWin', v)}
-          />
-          <Slider
-            label={`Perte moyenne: ${fmt(params.avgLoss)}`}
-            min={1} max={Math.max(500, Math.round(params.avgLoss * 3))} step={1}
-            value={[params.avgLoss]}
-            onValueChange={([v]) => update('avgLoss', v)}
-          />
-          <Slider
-            label={`Volatilité: ${fmt(params.volatility)}`}
-            min={0} max={Math.max(500, Math.round(params.avgWin * 2))} step={1}
-            value={[params.volatility]}
-            onValueChange={([v]) => update('volatility', v)}
-          />
-          <Slider
-            label={`Nombre de trades: ${params.trades}`}
-            min={20} max={1000} step={10}
-            value={[params.trades]}
-            onValueChange={([v]) => update('trades', v)}
-          />
-          <Slider
-            label={`Simulations: ${params.simulations}`}
-            min={100} max={3000} step={100}
-            value={[params.simulations]}
-            onValueChange={([v]) => update('simulations', v)}
-          />
+          <div className="space-y-2">
+            <Label className="text-xs">Win Rate: <span className="font-semibold">{(params.winRate * 100).toFixed(0)}%</span></Label>
+            <Slider min={5} max={95} step={1} value={[params.winRate * 100]} onValueChange={([v]) => update('winRate', v / 100)} />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Gain moyen: <span className="font-semibold">{fmt(params.avgWin)}</span></Label>
+            <Slider min={1} max={Math.max(500, Math.round(params.avgWin * 3))} step={1} value={[params.avgWin]} onValueChange={([v]) => update('avgWin', v)} />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Perte moyenne: <span className="font-semibold">{fmt(params.avgLoss)}</span></Label>
+            <Slider min={1} max={Math.max(500, Math.round(params.avgLoss * 3))} step={1} value={[params.avgLoss]} onValueChange={([v]) => update('avgLoss', v)} />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Volatilité: <span className="font-semibold">{fmt(params.volatility)}</span></Label>
+            <Slider min={0} max={Math.max(500, Math.round(params.avgWin * 2))} step={1} value={[params.volatility]} onValueChange={([v]) => update('volatility', v)} />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Nombre de trades: <span className="font-semibold">{params.trades}</span></Label>
+            <Slider min={20} max={1000} step={10} value={[params.trades]} onValueChange={([v]) => update('trades', v)} />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Simulations: <span className="font-semibold">{params.simulations}</span></Label>
+            <Slider min={100} max={3000} step={100} value={[params.simulations]} onValueChange={([v]) => update('simulations', v)} />
+          </div>
           <div className="md:col-span-2 flex gap-2 justify-end">
             <Button variant="outline" onClick={() => setParams(auto)}>
               <RotateCcw className="h-4 w-4 mr-2" /> Reset historique
