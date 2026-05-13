@@ -1,16 +1,31 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, DollarSign, Clock, ArrowUp, ArrowDown, Info, Calculator, Search, Flag, Target } from 'lucide-react';
+import { Calendar, DollarSign, Clock, ArrowUp, ArrowDown, Info, Calculator, Search, Flag, Target, Layers, Sigma } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Switch } from '@/components/ui/switch';
+import { blackScholes, yearsTo } from '@/utils/blackScholes';
+
+const ASSET_CLASSES = [
+  { value: 'forex', label: 'Forex' },
+  { value: 'crypto', label: 'Crypto' },
+  { value: 'stocks', label: 'Actions' },
+  { value: 'etf', label: 'ETF' },
+  { value: 'indices', label: 'Indices' },
+  { value: 'commodities', label: 'Commodities' },
+  { value: 'spot', label: 'Spot' },
+  { value: 'cfd', label: 'CFD' },
+  { value: 'futures', label: 'Futures' },
+  { value: 'forwards', label: 'Forwards' },
+  { value: 'options', label: 'Options' },
+];
 
 const strategies = [
   'Day Trading',
