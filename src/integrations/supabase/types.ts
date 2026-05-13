@@ -315,58 +315,115 @@ export type Database = {
       }
       trades: {
         Row: {
+          asset_class: string | null
+          contract_size: number | null
           created_at: string | null
           date: string | null
+          delta: number | null
           entry_price: number
           exit_price: number
+          expiration: string | null
           fees: number | null
+          gamma: number | null
           id: string
+          implied_volatility: number | null
+          instrument_type: string | null
+          market: string | null
+          multiplier: number | null
           notes: string | null
+          option_type: string | null
           pnl: number | null
+          premium: number | null
+          quote_currency: string | null
+          rho: number | null
+          risk_free_rate: number | null
+          sector: string | null
           size: number
           stop_loss: number | null
           strategy: string | null
+          strike: number | null
           symbol: string
           take_profit: number | null
+          theta: number | null
           type: string
+          underlying_price: number | null
           updated_at: string | null
           user_id: string
+          vega: number | null
         }
         Insert: {
+          asset_class?: string | null
+          contract_size?: number | null
           created_at?: string | null
           date?: string | null
+          delta?: number | null
           entry_price: number
           exit_price: number
+          expiration?: string | null
           fees?: number | null
+          gamma?: number | null
           id?: string
+          implied_volatility?: number | null
+          instrument_type?: string | null
+          market?: string | null
+          multiplier?: number | null
           notes?: string | null
+          option_type?: string | null
           pnl?: number | null
+          premium?: number | null
+          quote_currency?: string | null
+          rho?: number | null
+          risk_free_rate?: number | null
+          sector?: string | null
           size: number
           stop_loss?: number | null
           strategy?: string | null
+          strike?: number | null
           symbol: string
           take_profit?: number | null
+          theta?: number | null
           type: string
+          underlying_price?: number | null
           updated_at?: string | null
           user_id: string
+          vega?: number | null
         }
         Update: {
+          asset_class?: string | null
+          contract_size?: number | null
           created_at?: string | null
           date?: string | null
+          delta?: number | null
           entry_price?: number
           exit_price?: number
+          expiration?: string | null
           fees?: number | null
+          gamma?: number | null
           id?: string
+          implied_volatility?: number | null
+          instrument_type?: string | null
+          market?: string | null
+          multiplier?: number | null
           notes?: string | null
+          option_type?: string | null
           pnl?: number | null
+          premium?: number | null
+          quote_currency?: string | null
+          rho?: number | null
+          risk_free_rate?: number | null
+          sector?: string | null
           size?: number
           stop_loss?: number | null
           strategy?: string | null
+          strike?: number | null
           symbol?: string
           take_profit?: number | null
+          theta?: number | null
           type?: string
+          underlying_price?: number | null
           updated_at?: string | null
           user_id?: string
+          vega?: number | null
         }
         Relationships: []
       }
