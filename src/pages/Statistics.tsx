@@ -9,7 +9,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import GeneralView from '@/components/statistics/GeneralView';
 import StrategyAnalysis from '@/components/statistics/StrategyAnalysis';
-import CustomCharts from '@/components/statistics/CustomCharts';
+import AdvancedAnalyticsHub from '@/components/statistics/AdvancedAnalyticsHub';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -124,7 +124,7 @@ const Statistics = () => {
                   <div className="animate-spin h-6 w-6 md:h-8 md:w-8 border-4 border-primary border-r-transparent rounded-full"></div>
                 </div>
               ) : hasData ? (
-                <CustomCharts userId={user?.id} />
+                <AdvancedAnalyticsHub userId={user?.id} />
               ) : (
                 <NoDataView tabName="les analyses avancées" />
               )

@@ -1,16 +1,31 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, DollarSign, Clock, ArrowUp, ArrowDown, Info, Calculator, Search, Flag, Target } from 'lucide-react';
+import { Calendar, DollarSign, Clock, ArrowUp, ArrowDown, Info, Calculator, Search, Flag, Target, Layers, Sigma } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Switch } from '@/components/ui/switch';
+import { blackScholes, yearsTo } from '@/utils/blackScholes';
+
+const ASSET_CLASSES = [
+  { value: 'forex', label: 'Forex' },
+  { value: 'crypto', label: 'Crypto' },
+  { value: 'stocks', label: 'Actions' },
+  { value: 'etf', label: 'ETF' },
+  { value: 'indices', label: 'Indices' },
+  { value: 'commodities', label: 'Commodities' },
+  { value: 'spot', label: 'Spot' },
+  { value: 'cfd', label: 'CFD' },
+  { value: 'futures', label: 'Futures' },
+  { value: 'forwards', label: 'Forwards' },
+  { value: 'options', label: 'Options' },
+];
 
 const strategies = [
   'Day Trading',
@@ -76,6 +91,46 @@ export function TradeForm() {
   const [takeProfit, setTakeProfit] = useState('');
   const [useStopLoss, setUseStopLoss] = useState(false);
   const [useTakeProfit, setUseTakeProfit] = useState(false);
+
+  // Multi-asset / Options state
+  const [assetClass, setAssetClass] = useState<string>('crypto');
+  const [optionType, setOptionType] = useState<'call' | 'put'>('call');
+  const [strike, setStrike] = useState('');
+  const [expiration, setExpiration] = useState('');
+  const [impliedVol, setImpliedVol] = useState(''); // % e.g. 25
+  const [premium, setPremium] = useState('');
+  const [contractSize, setContractSize] = useState('100');
+  const [riskFreeRate, setRiskFreeRate] = useState('4'); // %
+  const [underlyingPrice, setUnderlyingPrice] = useState('');
+  const [autoGreeks, setAutoGreeks] = useState(true);
+  const [delta, setDelta] = useState('');
+  const [gamma, setGamma] = useState('');
+  const [theta, setTheta] = useState('');
+  const [vega, setVega] = useState('');
+  const [rho, setRho] = useState('');
+
+  const isOptions = assetClass === 'options';
+
+  const computedGreeks = useMemo(() => {
+    if (!isOptions) return null;
+    const S = parseFloat((underlyingPrice || entryPrice || '0').replace(',', '.'));
+    const K = parseFloat((strike || '0').replace(',', '.'));
+    const T = expiration ? yearsTo(expiration) : 0;
+    const r = parseFloat((riskFreeRate || '0').replace(',', '.')) / 100;
+    const sigma = parseFloat((impliedVol || '0').replace(',', '.')) / 100;
+    if (!S || !K || !T || !sigma) return null;
+    return blackScholes({ S, K, T, r, sigma, type: optionType });
+  }, [isOptions, underlyingPrice, entryPrice, strike, expiration, riskFreeRate, impliedVol, optionType]);
+
+  useEffect(() => {
+    if (isOptions && autoGreeks && computedGreeks) {
+      setDelta(computedGreeks.delta.toFixed(4));
+      setGamma(computedGreeks.gamma.toFixed(6));
+      setTheta(computedGreeks.theta.toFixed(4));
+      setVega(computedGreeks.vega.toFixed(4));
+      setRho(computedGreeks.rho.toFixed(4));
+    }
+  }, [isOptions, autoGreeks, computedGreeks]);
 
   useEffect(() => {
     const now = new Date();
@@ -180,7 +235,8 @@ export function TradeForm() {
       const stopLossValue = useStopLoss && stopLoss ? parseFloat(stopLoss.replace(',', '.')) : null;
       const takeProfitValue = useTakeProfit && takeProfit ? parseFloat(takeProfit.replace(',', '.')) : null;
       
-      const newTrade = {
+      const num = (s: string) => s ? parseFloat(s.replace(',', '.')) : null;
+      const newTrade: any = {
         user_id: user.id,
         date: new Date(entryDate).toISOString(),
         symbol: symbolToUse,
@@ -194,9 +250,26 @@ export function TradeForm() {
         notes: notes,
         stop_loss: stopLossValue,
         take_profit: takeProfitValue,
+        asset_class: assetClass,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
+
+      if (isOptions) {
+        newTrade.option_type = optionType;
+        newTrade.strike = num(strike);
+        newTrade.expiration = expiration ? new Date(expiration).toISOString() : null;
+        newTrade.implied_volatility = impliedVol ? parseFloat(impliedVol.replace(',', '.')) / 100 : null;
+        newTrade.premium = num(premium);
+        newTrade.contract_size = num(contractSize) ?? 100;
+        newTrade.risk_free_rate = riskFreeRate ? parseFloat(riskFreeRate.replace(',', '.')) / 100 : 0.04;
+        newTrade.underlying_price = num(underlyingPrice);
+        newTrade.delta = num(delta);
+        newTrade.gamma = num(gamma);
+        newTrade.theta = num(theta);
+        newTrade.vega = num(vega);
+        newTrade.rho = num(rho);
+      }
       
       console.log("Submitting trade:", newTrade);
       
@@ -251,6 +324,26 @@ export function TradeForm() {
       <h2 className="text-2xl font-semibold mb-6">Ajouter un nouveau trade</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+        <div className="col-span-full">
+          <Label htmlFor="assetClass" className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-muted-foreground" />
+            Classe d'actif
+          </Label>
+          <Select value={assetClass} onValueChange={setAssetClass}>
+            <SelectTrigger id="assetClass" className="mt-1">
+              <SelectValue placeholder="Sélectionner une classe d'actif" />
+            </SelectTrigger>
+            <SelectContent>
+              {ASSET_CLASSES.map(c => (
+                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            Le formulaire s'adapte au type d'actif. Les options affichent une section dédiée aux Greeks.
+          </p>
+        </div>
+
         <div className="col-span-full mb-2">
           <div className="flex items-center justify-center gap-4">
             <Button
@@ -584,6 +677,88 @@ export function TradeForm() {
           </div>
         </div>
         
+        {isOptions && (
+          <div className="col-span-full mt-4 p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-4">
+            <div className="flex items-center gap-2">
+              <Sigma className="w-5 h-5 text-primary" />
+              <h3 className="text-lg font-semibold">Options & Greeks</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label>Type d'option</Label>
+                <Select value={optionType} onValueChange={(v: 'call' | 'put') => setOptionType(v)}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="call">Call</SelectItem>
+                    <SelectItem value="put">Put</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Strike</Label>
+                <Input className="mt-1" value={strike} onChange={e => setStrike(e.target.value)} placeholder="0.00" />
+              </div>
+              <div>
+                <Label>Expiration</Label>
+                <Input className="mt-1" type="date" value={expiration} onChange={e => setExpiration(e.target.value)} />
+              </div>
+              <div>
+                <Label>Volatilité implicite (%)</Label>
+                <Input className="mt-1" value={impliedVol} onChange={e => setImpliedVol(e.target.value)} placeholder="25" />
+              </div>
+              <div>
+                <Label>Prime</Label>
+                <Input className="mt-1" value={premium} onChange={e => setPremium(e.target.value)} placeholder="0.00" />
+              </div>
+              <div>
+                <Label>Taille du contrat</Label>
+                <Input className="mt-1" value={contractSize} onChange={e => setContractSize(e.target.value)} placeholder="100" />
+              </div>
+              <div>
+                <Label>Prix du sous-jacent</Label>
+                <Input className="mt-1" value={underlyingPrice} onChange={e => setUnderlyingPrice(e.target.value)} placeholder="0.00" />
+              </div>
+              <div>
+                <Label>Taux sans risque (%)</Label>
+                <Input className="mt-1" value={riskFreeRate} onChange={e => setRiskFreeRate(e.target.value)} placeholder="4" />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-border/40">
+              <Label className="flex items-center gap-2">
+                <Calculator className="w-4 h-4" />
+                Greeks calculés (Black-Scholes)
+              </Label>
+              <div className="flex items-center gap-2">
+                <Switch checked={autoGreeks} onCheckedChange={setAutoGreeks} id="autoGreeks" />
+                <Label htmlFor="autoGreeks" className="text-xs text-muted-foreground">
+                  {autoGreeks ? 'Auto' : 'Manuel'}
+                </Label>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {[
+                { label: 'Δ Delta', value: delta, set: setDelta },
+                { label: 'Γ Gamma', value: gamma, set: setGamma },
+                { label: 'Θ Theta', value: theta, set: setTheta },
+                { label: 'ν Vega', value: vega, set: setVega },
+                { label: 'ρ Rho', value: rho, set: setRho },
+              ].map(g => (
+                <div key={g.label}>
+                  <Label className="text-xs">{g.label}</Label>
+                  <Input
+                    className="mt-1"
+                    value={g.value}
+                    onChange={e => g.set(e.target.value)}
+                    disabled={autoGreeks}
+                    placeholder="—"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="col-span-full mt-2">
           <Label htmlFor="notes" className="flex items-center gap-2">
             <Info className="w-4 h-4 text-muted-foreground" />
