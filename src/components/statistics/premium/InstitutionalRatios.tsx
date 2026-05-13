@@ -8,7 +8,7 @@ import {
 import { computeQuantMetrics, returnDistribution } from '@/utils/quantStats';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
-  AreaChart, Area, ReferenceLine,
+  AreaChart, Area, ReferenceLine, Cell,
 } from 'recharts';
 
 interface InstitutionalRatiosProps {
@@ -112,7 +112,7 @@ export function InstitutionalRatios({ trades, initialCapital }: InstitutionalRat
               <ReferenceLine x="0" stroke="hsl(var(--border))" />
               <Bar dataKey="count" radius={[3, 3, 0, 0]}>
                 {dist.map((d, i) => (
-                  <Bar key={i} dataKey="count" fill={d.value >= 0 ? 'hsl(var(--profit))' : 'hsl(var(--loss))'} />
+                  <Cell key={i} fill={d.value >= 0 ? 'hsl(var(--profit))' : 'hsl(var(--loss))'} />
                 ))}
               </Bar>
             </BarChart>
