@@ -92,6 +92,46 @@ export function TradeForm() {
   const [useStopLoss, setUseStopLoss] = useState(false);
   const [useTakeProfit, setUseTakeProfit] = useState(false);
 
+  // Multi-asset / Options state
+  const [assetClass, setAssetClass] = useState<string>('crypto');
+  const [optionType, setOptionType] = useState<'call' | 'put'>('call');
+  const [strike, setStrike] = useState('');
+  const [expiration, setExpiration] = useState('');
+  const [impliedVol, setImpliedVol] = useState(''); // % e.g. 25
+  const [premium, setPremium] = useState('');
+  const [contractSize, setContractSize] = useState('100');
+  const [riskFreeRate, setRiskFreeRate] = useState('4'); // %
+  const [underlyingPrice, setUnderlyingPrice] = useState('');
+  const [autoGreeks, setAutoGreeks] = useState(true);
+  const [delta, setDelta] = useState('');
+  const [gamma, setGamma] = useState('');
+  const [theta, setTheta] = useState('');
+  const [vega, setVega] = useState('');
+  const [rho, setRho] = useState('');
+
+  const isOptions = assetClass === 'options';
+
+  const computedGreeks = useMemo(() => {
+    if (!isOptions) return null;
+    const S = parseFloat((underlyingPrice || entryPrice || '0').replace(',', '.'));
+    const K = parseFloat((strike || '0').replace(',', '.'));
+    const T = expiration ? yearsTo(expiration) : 0;
+    const r = parseFloat((riskFreeRate || '0').replace(',', '.')) / 100;
+    const sigma = parseFloat((impliedVol || '0').replace(',', '.')) / 100;
+    if (!S || !K || !T || !sigma) return null;
+    return blackScholes({ S, K, T, r, sigma, type: optionType });
+  }, [isOptions, underlyingPrice, entryPrice, strike, expiration, riskFreeRate, impliedVol, optionType]);
+
+  useEffect(() => {
+    if (isOptions && autoGreeks && computedGreeks) {
+      setDelta(computedGreeks.delta.toFixed(4));
+      setGamma(computedGreeks.gamma.toFixed(6));
+      setTheta(computedGreeks.theta.toFixed(4));
+      setVega(computedGreeks.vega.toFixed(4));
+      setRho(computedGreeks.rho.toFixed(4));
+    }
+  }, [isOptions, autoGreeks, computedGreeks]);
+
   useEffect(() => {
     const now = new Date();
     const formattedDate = now.toISOString().slice(0, 16); // Format yyyy-MM-ddThh:mm
