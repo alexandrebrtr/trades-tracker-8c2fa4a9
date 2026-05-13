@@ -324,6 +324,26 @@ export function TradeForm() {
       <h2 className="text-2xl font-semibold mb-6">Ajouter un nouveau trade</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+        <div className="col-span-full">
+          <Label htmlFor="assetClass" className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-muted-foreground" />
+            Classe d'actif
+          </Label>
+          <Select value={assetClass} onValueChange={setAssetClass}>
+            <SelectTrigger id="assetClass" className="mt-1">
+              <SelectValue placeholder="Sélectionner une classe d'actif" />
+            </SelectTrigger>
+            <SelectContent>
+              {ASSET_CLASSES.map(c => (
+                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            Le formulaire s'adapte au type d'actif. Les options affichent une section dédiée aux Greeks.
+          </p>
+        </div>
+
         <div className="col-span-full mb-2">
           <div className="flex items-center justify-center gap-4">
             <Button
