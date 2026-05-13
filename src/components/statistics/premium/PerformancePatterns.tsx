@@ -44,8 +44,8 @@ export function PerformancePatterns({ trades }: PerformancePatternsProps) {
                 <div key={h} className="text-[10px] text-center text-muted-foreground">{h}h</div>
               ))}
               {DAYS.map((day, dIdx) => (
-                <>
-                  <div key={`d-${dIdx}`} className="text-xs text-muted-foreground pr-2 flex items-center">{day}</div>
+                <Fragment key={dIdx}>
+                  <div className="text-xs text-muted-foreground pr-2 flex items-center">{day}</div>
                   {Array.from({ length: 24 }).map((_, h) => {
                     const cell = heatmap.find(c => c.day === dIdx && c.hour === h)!;
                     return (
@@ -57,7 +57,7 @@ export function PerformancePatterns({ trades }: PerformancePatternsProps) {
                       />
                     );
                   })}
-                </>
+                </Fragment>
               ))}
             </div>
           </div>
