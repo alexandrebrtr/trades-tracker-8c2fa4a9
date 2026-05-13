@@ -91,7 +91,7 @@ export function PerformancePatterns({ trades }: PerformancePatternsProps) {
                 <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
                 <Bar dataKey="pnl" radius={[3, 3, 0, 0]}>
                   {dayPerf.map((d, i) => (
-                    <Bar key={i} dataKey="pnl" fill={d.pnl >= 0 ? 'hsl(var(--profit))' : 'hsl(var(--loss))'} />
+                    <Cell key={i} fill={d.pnl >= 0 ? 'hsl(var(--profit))' : 'hsl(var(--loss))'} />
                   ))}
                 </Bar>
               </BarChart>
