@@ -677,6 +677,88 @@ export function TradeForm() {
           </div>
         </div>
         
+        {isOptions && (
+          <div className="col-span-full mt-4 p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-4">
+            <div className="flex items-center gap-2">
+              <Sigma className="w-5 h-5 text-primary" />
+              <h3 className="text-lg font-semibold">Options & Greeks</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label>Type d'option</Label>
+                <Select value={optionType} onValueChange={(v: 'call' | 'put') => setOptionType(v)}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="call">Call</SelectItem>
+                    <SelectItem value="put">Put</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Strike</Label>
+                <Input className="mt-1" value={strike} onChange={e => setStrike(e.target.value)} placeholder="0.00" />
+              </div>
+              <div>
+                <Label>Expiration</Label>
+                <Input className="mt-1" type="date" value={expiration} onChange={e => setExpiration(e.target.value)} />
+              </div>
+              <div>
+                <Label>Volatilité implicite (%)</Label>
+                <Input className="mt-1" value={impliedVol} onChange={e => setImpliedVol(e.target.value)} placeholder="25" />
+              </div>
+              <div>
+                <Label>Prime</Label>
+                <Input className="mt-1" value={premium} onChange={e => setPremium(e.target.value)} placeholder="0.00" />
+              </div>
+              <div>
+                <Label>Taille du contrat</Label>
+                <Input className="mt-1" value={contractSize} onChange={e => setContractSize(e.target.value)} placeholder="100" />
+              </div>
+              <div>
+                <Label>Prix du sous-jacent</Label>
+                <Input className="mt-1" value={underlyingPrice} onChange={e => setUnderlyingPrice(e.target.value)} placeholder="0.00" />
+              </div>
+              <div>
+                <Label>Taux sans risque (%)</Label>
+                <Input className="mt-1" value={riskFreeRate} onChange={e => setRiskFreeRate(e.target.value)} placeholder="4" />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-border/40">
+              <Label className="flex items-center gap-2">
+                <Calculator className="w-4 h-4" />
+                Greeks calculés (Black-Scholes)
+              </Label>
+              <div className="flex items-center gap-2">
+                <Switch checked={autoGreeks} onCheckedChange={setAutoGreeks} id="autoGreeks" />
+                <Label htmlFor="autoGreeks" className="text-xs text-muted-foreground">
+                  {autoGreeks ? 'Auto' : 'Manuel'}
+                </Label>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {[
+                { label: 'Δ Delta', value: delta, set: setDelta },
+                { label: 'Γ Gamma', value: gamma, set: setGamma },
+                { label: 'Θ Theta', value: theta, set: setTheta },
+                { label: 'ν Vega', value: vega, set: setVega },
+                { label: 'ρ Rho', value: rho, set: setRho },
+              ].map(g => (
+                <div key={g.label}>
+                  <Label className="text-xs">{g.label}</Label>
+                  <Input
+                    className="mt-1"
+                    value={g.value}
+                    onChange={e => g.set(e.target.value)}
+                    disabled={autoGreeks}
+                    placeholder="—"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="col-span-full mt-2">
           <Label htmlFor="notes" className="flex items-center gap-2">
             <Info className="w-4 h-4 text-muted-foreground" />
