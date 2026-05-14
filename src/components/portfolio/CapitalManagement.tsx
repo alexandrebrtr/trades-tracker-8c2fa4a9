@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
+import { useAccount } from '@/context/AccountContext';
 
 interface CapitalManagementProps {
   portfolioId: string | null;
@@ -39,6 +40,7 @@ export function CapitalManagement({
 }: CapitalManagementProps) {
   const { toast } = useToast();
   const { user, refreshProfile } = useAuth();
+  const { activeAccountId, refresh: refreshAccounts } = useAccount();
   const [depositAmount, setDepositAmount] = useState('');
   const [depositDate, setDepositDate] = useState<Date>(new Date());
   const [depositNotes, setDepositNotes] = useState('');
@@ -49,27 +51,29 @@ export function CapitalManagement({
   const [submitting, setSubmitting] = useState(false);
 
   const loadTransactions = async () => {
-    if (!user) return;
+    if (!user || !activeAccountId) { setTransactions([]); return; }
     const { data, error } = await supabase
       .from('transactions')
       .select('*')
       .eq('user_id', user.id)
+      .eq('account_id', activeAccountId)
       .order('date', { ascending: false })
       .limit(20);
     if (!error && data) setTransactions(data as Transaction[]);
   };
 
   const refreshBalance = async () => {
-    if (!user) return;
+    if (!user || !activeAccountId) return;
     const { data } = await supabase
-      .from('profiles')
+      .from('trading_accounts' as any)
       .select('balance')
-      .eq('id', user.id)
+      .eq('id', activeAccountId)
       .maybeSingle();
-    if (data?.balance !== undefined && data.balance !== null) {
-      setPortfolioSize(Number(data.balance));
+    if (data && (data as any).balance !== undefined && (data as any).balance !== null) {
+      setPortfolioSize(Number((data as any).balance));
     }
     await refreshProfile();
+    await refreshAccounts();
   };
 
   useEffect(() => {
@@ -77,7 +81,7 @@ export function CapitalManagement({
     loadTransactions();
 
     const channel = supabase
-      .channel('transactions-capital')
+      .channel('transactions-capital-' + (activeAccountId || 'none'))
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${user.id}` },
@@ -91,7 +95,7 @@ export function CapitalManagement({
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, activeAccountId]);
 
   const submitTransaction = async (type: 'deposit' | 'withdrawal') => {
     if (!user) return;
@@ -117,6 +121,7 @@ export function CapitalManagement({
     try {
       const { error } = await supabase.from('transactions').insert({
         user_id: user.id,
+        account_id: activeAccountId,
         type,
         amount,
         date: date.toISOString(),
