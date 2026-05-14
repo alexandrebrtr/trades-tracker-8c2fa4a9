@@ -158,12 +158,12 @@ export default function Portfolio() {
     fetchPortfolioData();
 
     // Realtime: garder le solde synchronisé partout
-    if (user) {
+    if (user && activeAccountId) {
       const channel = supabase
-        .channel('portfolio-page-balance')
+        .channel('portfolio-page-account-' + activeAccountId)
         .on(
           'postgres_changes',
-          { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+          { event: '*', schema: 'public', table: 'trading_accounts', filter: `id=eq.${activeAccountId}` },
           (payload: any) => {
             if (payload.new && 'balance' in payload.new) {
               setPortfolioSize(Number(payload.new.balance));
@@ -175,7 +175,7 @@ export default function Portfolio() {
         supabase.removeChannel(channel);
       };
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, activeAccountId]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
