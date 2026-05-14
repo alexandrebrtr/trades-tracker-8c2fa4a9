@@ -12,9 +12,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useAccount } from '@/context/AccountContext';
 
 const Calendar = () => {
   const { isLoading, user } = useAuth();
+  const { activeAccountId } = useAccount();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [trades, setTrades] = useState<any[]>([]);
@@ -41,7 +43,7 @@ const Calendar = () => {
   }, [user, isLoading, navigate, toast]);
   
   useEffect(() => {
-    if (!user) return;
+    if (!user || !activeAccountId) return;
     
     // Fetch user trades
     const fetchTrades = async () => {
@@ -49,7 +51,8 @@ const Calendar = () => {
         const { data, error } = await supabase
           .from('trades')
           .select('*')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .eq('account_id', activeAccountId);
           
         if (error) throw error;
         setTrades(data || []);
@@ -64,7 +67,8 @@ const Calendar = () => {
         const { data, error } = await supabase
           .from('calendar_events')
           .select('*')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .eq('account_id', activeAccountId);
           
         if (error) throw error;
         setEvents(data || []);
@@ -78,7 +82,8 @@ const Calendar = () => {
         const { data, error } = await supabase
           .from('transactions')
           .select('*')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .eq('account_id', activeAccountId);
         if (error) throw error;
         setTransactions(data || []);
       } catch (error) {
