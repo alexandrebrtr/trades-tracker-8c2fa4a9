@@ -204,6 +204,7 @@ export default function Portfolio() {
         .from('transactions')
         .insert({
           user_id: user.id,
+          account_id: activeAccountId,
           type: 'deposit',
           amount,
           date: initialDate.toISOString(),

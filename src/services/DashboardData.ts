@@ -14,7 +14,7 @@ export interface Trade {
 }
 
 export const DashboardData = {
-  async fetchUserData(userId: string) {
+  async fetchUserData(userId: string, accountId?: string | null) {
     let portfolioBalance = 0;
     let monthlyPnL = 0;
     let trades: Trade[] = [];
@@ -22,41 +22,25 @@ export const DashboardData = {
     let strategyAllocation: any[] = [];
 
     try {
-      // Récupérer les données du portfolio
-      const { data: portfolios, error: portfolioError } = await supabase
-        .from('portfolios')
-        .select('*')
-        .eq('user_id', userId)
-        .limit(1);
-      
-      if (portfolioError) throw portfolioError;
-      
-      if (portfolios && portfolios.length > 0) {
-        portfolioBalance = portfolios[0].balance;
-        
-        // Récupérer les allocations d'actifs
-        const { data: allocations, error: allocationsError } = await supabase
-          .from('asset_allocations')
-          .select('*')
-          .eq('portfolio_id', portfolios[0].id);
-        
-        if (allocationsError) throw allocationsError;
-        
-        if (allocations && allocations.length > 0) {
-          assetAllocation = allocations.map(a => ({
-            name: a.name,
-            value: a.allocation
-          }));
-        }
+      // Solde du compte actif (si fourni)
+      if (accountId) {
+        const { data: acc } = await supabase
+          .from('trading_accounts' as any)
+          .select('balance')
+          .eq('id', accountId)
+          .maybeSingle();
+        if (acc) portfolioBalance = Number((acc as any).balance) || 0;
       }
-      
-      // Récupérer les trades
-      const { data: tradesData, error: tradesError } = await supabase
+
+      // Récupérer les trades du compte actif
+      let tradesQuery = supabase
         .from('trades')
         .select('*')
         .eq('user_id', userId)
         .order('date', { ascending: false })
         .limit(5);
+      if (accountId) tradesQuery = tradesQuery.eq('account_id', accountId);
+      const { data: tradesData, error: tradesError } = await tradesQuery;
       
       if (tradesError) throw tradesError;
       
