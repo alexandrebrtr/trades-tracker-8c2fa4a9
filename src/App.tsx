@@ -30,6 +30,8 @@ import { Toaster as SonnerToaster } from "sonner";
 import { PremiumProvider } from "./context/PremiumContext";
 import './App.css';
 import { LanguageProvider } from "./context/LanguageContext";
+import { AccountProvider } from "./context/AccountContext";
+import Accounts from "./pages/Accounts";
 
 function App() {
   return (
@@ -37,6 +39,7 @@ function App() {
       <LanguageProvider>
         <AuthProvider>
           <PremiumProvider>
+            <AccountProvider>
             <Router>
               <Routes>
                 {/* Landing and public routes */}
@@ -66,6 +69,7 @@ function App() {
                   <Route path="/payment" element={<Payment />} />
                   <Route path="/premium-analytics" element={<PremiumAnalytics />} />
                   <Route path="/admin" element={<AdminPanel />} />
+                  <Route path="/accounts" element={<Accounts />} />
                 </Route>
                 
                 {/* Fallback routes */}
@@ -77,6 +81,7 @@ function App() {
             {/* Toasters */}
             <Toaster />
             <SonnerToaster position="top-right" closeButton richColors />
+            </AccountProvider>
           </PremiumProvider>
         </AuthProvider>
       </LanguageProvider>
