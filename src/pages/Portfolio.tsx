@@ -16,6 +16,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { useAccount } from '@/context/AccountContext';
 
 interface Trade {
   id: string;
@@ -36,6 +37,7 @@ interface Asset {
 
 export default function Portfolio() {
   const { user, isLoading: authLoading } = useAuth();
+  const { activeAccount, activeAccountId } = useAccount();
   const { toast } = useToast();
   
   const [isLoading, setIsLoading] = useState(true);
