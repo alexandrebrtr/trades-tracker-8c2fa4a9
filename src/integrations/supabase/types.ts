@@ -51,6 +51,7 @@ export type Database = {
       }
       calendar_events: {
         Row: {
+          account_id: string | null
           created_at: string
           date: string
           description: string | null
@@ -60,6 +61,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_id?: string | null
           created_at?: string
           date: string
           description?: string | null
@@ -69,6 +71,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_id?: string | null
           created_at?: string
           date?: string
           description?: string | null
@@ -114,6 +117,7 @@ export type Database = {
       }
       custom_charts: {
         Row: {
+          account_id: string | null
           config: Json
           created_at: string
           id: string
@@ -122,6 +126,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_id?: string | null
           config: Json
           created_at?: string
           id?: string
@@ -130,6 +135,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_id?: string | null
           config?: Json
           created_at?: string
           id?: string
@@ -315,6 +321,7 @@ export type Database = {
       }
       trades: {
         Row: {
+          account_id: string | null
           asset_class: string | null
           contract_size: number | null
           created_at: string | null
@@ -352,6 +359,7 @@ export type Database = {
           vega: number | null
         }
         Insert: {
+          account_id?: string | null
           asset_class?: string | null
           contract_size?: number | null
           created_at?: string | null
@@ -389,6 +397,7 @@ export type Database = {
           vega?: number | null
         }
         Update: {
+          account_id?: string | null
           asset_class?: string | null
           contract_size?: number | null
           created_at?: string | null
@@ -427,8 +436,69 @@ export type Database = {
         }
         Relationships: []
       }
+      trading_accounts: {
+        Row: {
+          account_type: string
+          archived: boolean
+          balance: number
+          broker: string | null
+          created_at: string
+          currency: string
+          daily_drawdown: number | null
+          id: string
+          initial_capital: number
+          is_default: boolean
+          leverage: number
+          max_drawdown: number | null
+          name: string
+          profit_target: number | null
+          prop_firm_status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_type?: string
+          archived?: boolean
+          balance?: number
+          broker?: string | null
+          created_at?: string
+          currency?: string
+          daily_drawdown?: number | null
+          id?: string
+          initial_capital?: number
+          is_default?: boolean
+          leverage?: number
+          max_drawdown?: number | null
+          name: string
+          profit_target?: number | null
+          prop_firm_status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_type?: string
+          archived?: boolean
+          balance?: number
+          broker?: string | null
+          created_at?: string
+          currency?: string
+          daily_drawdown?: number | null
+          id?: string
+          initial_capital?: number
+          is_default?: boolean
+          leverage?: number
+          max_drawdown?: number | null
+          name?: string
+          profit_target?: number | null
+          prop_firm_status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
+          account_id: string | null
           amount: number
           created_at: string
           date: string
@@ -439,6 +509,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_id?: string | null
           amount: number
           created_at?: string
           date?: string
@@ -449,6 +520,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_id?: string | null
           amount?: number
           created_at?: string
           date?: string
@@ -465,6 +537,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      recalculate_account_balance: {
+        Args: { _account_id: string }
+        Returns: number
+      }
       recalculate_user_balance: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {

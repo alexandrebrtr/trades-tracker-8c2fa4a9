@@ -3,18 +3,20 @@ import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { getStartDateFromTimeframe } from '@/utils/dateUtils';
 import { RealtimeService } from '@/services/RealtimeService';
+import { useAccount } from '@/context/AccountContext';
 
 /**
- * Hook to fetch trade data from Supabase
+ * Hook to fetch trade data from Supabase, scoped to the active account.
  */
 export const useTradesFetcher = (userId: any, selectedPeriod: string) => {
+  const { activeAccountId } = useAccount();
   const [isLoading, setIsLoading] = useState(true);
   const [trades, setTrades] = useState<any[]>([]);
   const [error, setError] = useState<Error | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
-    if (!userId) {
+    if (!userId || !activeAccountId) {
       setIsLoading(false);
       setTrades([]);
       return;
@@ -23,21 +25,16 @@ export const useTradesFetcher = (userId: any, selectedPeriod: string) => {
     const fetchTrades = async () => {
       setIsLoading(true);
       setError(null);
-      
       try {
-        // Calculate start date based on selected timeframe
         const startDate = getStartDateFromTimeframe(selectedPeriod);
-        
-        // Fetch user trades
         const { data, error } = await supabase
           .from('trades')
           .select('*')
           .eq('user_id', userId)
+          .eq('account_id', activeAccountId)
           .gte('date', startDate.toISOString())
           .order('date', { ascending: true });
-
         if (error) throw error;
-        
         setTrades(data || []);
       } catch (err: any) {
         console.error('Error fetching trades data:', err.message);
@@ -48,33 +45,15 @@ export const useTradesFetcher = (userId: any, selectedPeriod: string) => {
       }
     };
 
-    // Subscribe to trades changes
-    const subscription = RealtimeService.subscribeToTrades(userId, (payload) => {
-      // Rechargement complet lors d'un changement
-      fetchTrades();
-    });
-
+    const subscription = RealtimeService.subscribeToTrades(userId, () => fetchTrades());
     fetchTrades();
+    return () => { subscription(); };
+  }, [userId, selectedPeriod, activeAccountId]);
 
-    // Cleanup subscription
-    return () => {
-      subscription();
-    };
-  }, [userId, selectedPeriod]);
-
-  /**
-   * Synchroniser manuellement les trades depuis un broker connecté
-   * @param brokerSettings Paramètres du broker
-   */
-  const syncTradesFromBroker = async (brokerSettings: {
-    name: string;
-    apiKey: string;
-    secretKey: string;
-  }) => {
+  const syncTradesFromBroker = async (brokerSettings: { name: string; apiKey: string; secretKey: string; }) => {
     if (!userId || !brokerSettings.name || !brokerSettings.apiKey || !brokerSettings.secretKey) {
       return { success: false, error: "Informations manquantes" };
     }
-
     setIsSyncing(true);
     try {
       const result = await RealtimeService.syncTradesFromBroker(userId, brokerSettings);

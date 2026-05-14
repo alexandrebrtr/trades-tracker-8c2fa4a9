@@ -11,9 +11,12 @@ import { Loader2 } from 'lucide-react';
 import { DashboardData, Trade } from '@/services/DashboardData';
 import { formatCurrency as formatCurrencyUtil } from '@/utils/formatters';
 import { useLanguage } from '@/context/LanguageContext';
+import { useAccount } from '@/context/AccountContext';
+import { PropFirmTracker } from '@/components/accounts/PropFirmTracker';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { activeAccount, activeAccountId } = useAccount();
   const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
   const [portfolioBalance, setPortfolioBalance] = useState(0);
@@ -30,13 +33,12 @@ const Dashboard = () => {
       // Sinon, utiliser des données fictives
       loadDemoData();
     }
-  }, [user]);
+  }, [user, activeAccountId]);
 
   const loadUserData = async () => {
     setIsLoading(true);
     try {
-      // Récupérer toutes les données utilisateur sans filtrage par date
-      const data = await DashboardData.fetchUserData(user!.id);
+      const data = await DashboardData.fetchUserData(user!.id, activeAccountId);
       
       setPortfolioBalance(data.portfolioBalance);
       setMonthlyPnL(data.monthlyPnL);
@@ -85,6 +87,10 @@ const Dashboard = () => {
           monthlyPnL={monthlyPnL}
           formatCurrency={formatCurrency}
         />
+        
+        {activeAccount?.account_type === 'prop_firm' && (
+          <PropFirmTracker account={activeAccount} trades={trades} />
+        )}
         
         <StatsDisplay 
           balance={portfolioBalance}

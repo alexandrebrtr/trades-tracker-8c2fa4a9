@@ -18,7 +18,8 @@ import {
   Wallet,
   ChevronDown,
   Contact,
-  CreditCard
+  CreditCard,
+  Briefcase
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -128,6 +129,11 @@ export function Sidebar() {
       name: 'Profil',
       path: '/profile',
       icon: <User className="w-5 h-5" aria-hidden="true" />
+    },
+    {
+      name: 'Comptes de trading',
+      path: '/accounts',
+      icon: <Briefcase className="w-5 h-5" aria-hidden="true" />
     },
     {
       name: 'Portefeuille',

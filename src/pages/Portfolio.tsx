@@ -16,6 +16,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { useAccount } from '@/context/AccountContext';
 
 interface Trade {
   id: string;
@@ -36,6 +37,7 @@ interface Asset {
 
 export default function Portfolio() {
   const { user, isLoading: authLoading } = useAuth();
+  const { activeAccount, activeAccountId } = useAccount();
   const { toast } = useToast();
   
   const [isLoading, setIsLoading] = useState(true);
@@ -88,26 +90,20 @@ export default function Portfolio() {
           currentPortfolioId = portfolios[0].id;
         }
 
-        // Détermine l'état initial à partir des transactions (source de vérité)
+        // Compte les transactions du compte actif
         const { count: txCount } = await supabase
           .from('transactions')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .eq('account_id', activeAccountId || '');
 
-        // Récupère le solde réel depuis profiles (mis à jour par les triggers)
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('balance')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        const realBalance = Number(profileData?.balance ?? 0);
+        // Solde réel depuis le compte actif
+        const realBalance = Number(activeAccount?.balance ?? 0);
         setPortfolioSize(realBalance);
-        setInitialSetupDone((txCount ?? 0) > 0);
+        setInitialSetupDone((txCount ?? 0) > 0 || Number(activeAccount?.initial_capital ?? 0) > 0);
         
         setPortfolioId(currentPortfolioId);
         
-        // Charger les allocations d'actifs
         if (currentPortfolioId) {
           const { data: allocations, error: allocationsError } = await supabase
             .from('asset_allocations')
@@ -125,27 +121,32 @@ export default function Portfolio() {
           }
         }
         
-        // Charger les trades
-        const { data: tradesData, error: tradesError } = await supabase
-          .from('trades')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('date', { ascending: false })
-          .limit(10);
-        
-        if (tradesError) throw tradesError;
-        
-        if (tradesData) {
-          setTrades(tradesData.map(t => ({
-            id: t.id,
-            date: new Date(t.date),
-            symbol: t.symbol,
-            type: t.type.toLowerCase() as 'long' | 'short',
-            entry_price: t.entry_price,
-            exit_price: t.exit_price,
-            size: t.size,
-            pnl: t.pnl || 0
-          })));
+        // Trades du compte actif
+        if (activeAccountId) {
+          const { data: tradesData, error: tradesError } = await supabase
+            .from('trades')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('account_id', activeAccountId)
+            .order('date', { ascending: false })
+            .limit(10);
+          
+          if (tradesError) throw tradesError;
+          
+          if (tradesData) {
+            setTrades(tradesData.map(t => ({
+              id: t.id,
+              date: new Date(t.date),
+              symbol: t.symbol,
+              type: t.type.toLowerCase() as 'long' | 'short',
+              entry_price: t.entry_price,
+              exit_price: t.exit_price,
+              size: t.size,
+              pnl: t.pnl || 0
+            })));
+          }
+        } else {
+          setTrades([]);
         }
       } catch (error) {
         console.error('Erreur lors du chargement des données:', error);
@@ -157,12 +158,12 @@ export default function Portfolio() {
     fetchPortfolioData();
 
     // Realtime: garder le solde synchronisé partout
-    if (user) {
+    if (user && activeAccountId) {
       const channel = supabase
-        .channel('portfolio-page-balance')
+        .channel('portfolio-page-account-' + activeAccountId)
         .on(
           'postgres_changes',
-          { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+          { event: '*', schema: 'public', table: 'trading_accounts', filter: `id=eq.${activeAccountId}` },
           (payload: any) => {
             if (payload.new && 'balance' in payload.new) {
               setPortfolioSize(Number(payload.new.balance));
@@ -174,7 +175,7 @@ export default function Portfolio() {
         supabase.removeChannel(channel);
       };
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, activeAccountId]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
@@ -203,6 +204,7 @@ export default function Portfolio() {
         .from('transactions')
         .insert({
           user_id: user.id,
+          account_id: activeAccountId,
           type: 'deposit',
           amount,
           date: initialDate.toISOString(),

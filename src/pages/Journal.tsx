@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Trade } from '@/components/journal/types';
 import { TradeDetail } from '@/components/journal/TradeDetail';
+import { useAccount } from '@/context/AccountContext';
 
 // Import des nouveaux composants
 import { JournalHeader } from '@/components/journal/JournalHeader';
@@ -20,6 +21,7 @@ import { JournalDeleteDialog } from '@/components/journal/JournalDeleteDialog';
 
 export default function Journal() {
   const { user } = useAuth();
+  const { activeAccountId } = useAccount();
   const { toast } = useToast();
   const [entries, setEntries] = useState<Trade[]>([]);
   const [filteredEntries, setFilteredEntries] = useState<Trade[]>([]);
@@ -52,10 +54,10 @@ export default function Journal() {
   useEffect(() => {
     if (!user) return;
     fetchTrades();
-  }, [user]);
+  }, [user, activeAccountId]);
 
   const fetchTrades = async () => {
-    if (!user) return;
+    if (!user || !activeAccountId) { setEntries([]); setIsLoading(false); return; }
     
     setIsLoading(true);
     try {
@@ -63,6 +65,7 @@ export default function Journal() {
         .from('trades')
         .select('*')
         .eq('user_id', user.id)
+        .eq('account_id', activeAccountId)
         .order('date', { ascending: false });
 
       if (error) throw error;

@@ -9,6 +9,7 @@ import { LogOut, Settings, User, Moon, Sun, LogIn } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { useLanguage } from "@/context/LanguageContext";
+import { AccountSwitcher } from "@/components/accounts/AccountSwitcher";
 
 interface HeaderProps {
   mobileMode?: boolean;
@@ -124,6 +125,7 @@ export function Header({ mobileMode = false }: HeaderProps) {
           {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
         </Button>
         
+        {user && <AccountSwitcher />}
         {!isMobile && <HeaderBalance />}
         
         {user ? (
