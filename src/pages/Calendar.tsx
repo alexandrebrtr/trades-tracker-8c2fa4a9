@@ -128,7 +128,7 @@ const Calendar = () => {
       supabase.removeChannel(eventsChannel);
       supabase.removeChannel(txChannel);
     };
-  }, [user]);
+  }, [user, activeAccountId]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -157,9 +157,10 @@ const Calendar = () => {
         .from('calendar_events')
         .insert({
           user_id: user.id,
+          account_id: activeAccountId,
           title: eventForm.title,
           description: eventForm.description,
-          date: eventForm.date // This is already a string from the input
+          date: eventForm.date
         });
         
       if (error) throw error;
