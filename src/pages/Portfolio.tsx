@@ -90,26 +90,20 @@ export default function Portfolio() {
           currentPortfolioId = portfolios[0].id;
         }
 
-        // Détermine l'état initial à partir des transactions (source de vérité)
+        // Compte les transactions du compte actif
         const { count: txCount } = await supabase
           .from('transactions')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .eq('account_id', activeAccountId || '');
 
-        // Récupère le solde réel depuis profiles (mis à jour par les triggers)
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('balance')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        const realBalance = Number(profileData?.balance ?? 0);
+        // Solde réel depuis le compte actif
+        const realBalance = Number(activeAccount?.balance ?? 0);
         setPortfolioSize(realBalance);
-        setInitialSetupDone((txCount ?? 0) > 0);
+        setInitialSetupDone((txCount ?? 0) > 0 || Number(activeAccount?.initial_capital ?? 0) > 0);
         
         setPortfolioId(currentPortfolioId);
         
-        // Charger les allocations d'actifs
         if (currentPortfolioId) {
           const { data: allocations, error: allocationsError } = await supabase
             .from('asset_allocations')
@@ -127,27 +121,32 @@ export default function Portfolio() {
           }
         }
         
-        // Charger les trades
-        const { data: tradesData, error: tradesError } = await supabase
-          .from('trades')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('date', { ascending: false })
-          .limit(10);
-        
-        if (tradesError) throw tradesError;
-        
-        if (tradesData) {
-          setTrades(tradesData.map(t => ({
-            id: t.id,
-            date: new Date(t.date),
-            symbol: t.symbol,
-            type: t.type.toLowerCase() as 'long' | 'short',
-            entry_price: t.entry_price,
-            exit_price: t.exit_price,
-            size: t.size,
-            pnl: t.pnl || 0
-          })));
+        // Trades du compte actif
+        if (activeAccountId) {
+          const { data: tradesData, error: tradesError } = await supabase
+            .from('trades')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('account_id', activeAccountId)
+            .order('date', { ascending: false })
+            .limit(10);
+          
+          if (tradesError) throw tradesError;
+          
+          if (tradesData) {
+            setTrades(tradesData.map(t => ({
+              id: t.id,
+              date: new Date(t.date),
+              symbol: t.symbol,
+              type: t.type.toLowerCase() as 'long' | 'short',
+              entry_price: t.entry_price,
+              exit_price: t.exit_price,
+              size: t.size,
+              pnl: t.pnl || 0
+            })));
+          }
+        } else {
+          setTrades([]);
         }
       } catch (error) {
         console.error('Erreur lors du chargement des données:', error);
