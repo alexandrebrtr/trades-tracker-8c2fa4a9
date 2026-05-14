@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Switch } from '@/components/ui/switch';
 import { blackScholes, yearsTo } from '@/utils/blackScholes';
+import { useAccount } from '@/context/AccountContext';
 
 const ASSET_CLASSES = [
   { value: 'forex', label: 'Forex' },
@@ -64,6 +65,7 @@ const orderTypes = [
 export function TradeForm() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { activeAccountId } = useAccount();
   const navigate = useNavigate();
   
   const [entryDate, setEntryDate] = useState('');
@@ -238,6 +240,7 @@ export function TradeForm() {
       const num = (s: string) => s ? parseFloat(s.replace(',', '.')) : null;
       const newTrade: any = {
         user_id: user.id,
+        account_id: activeAccountId,
         date: new Date(entryDate).toISOString(),
         symbol: symbolToUse,
         type: direction,
