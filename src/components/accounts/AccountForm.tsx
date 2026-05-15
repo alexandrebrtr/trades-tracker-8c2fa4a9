@@ -78,14 +78,44 @@ export function AccountForm({ open, onOpenChange, account }: Props) {
     } else {
       res = await supabase.from('trading_accounts' as any).insert(payload).select().single();
     }
-    setSubmitting(false);
     if (res.error) {
+      setSubmitting(false);
       toast({ title: 'Erreur', description: res.error.message, variant: 'destructive' });
       return;
     }
+
+    // Auto-create initial deposit transaction when creating account with capital > 0
+    if (!account && (res as any).data?.id) {
+      const newAccountId = (res as any).data.id;
+      const initial = payload.initial_capital;
+      if (initial && initial > 0) {
+        const { error: txError } = await supabase.from('transactions').insert({
+          user_id: user.id,
+          account_id: newAccountId,
+          type: 'deposit',
+          amount: initial,
+          date: new Date().toISOString(),
+          notes: 'Capital Initial',
+        });
+        if (txError) console.error('Initial deposit insert error:', txError);
+
+        // Also log it as a calendar event for visibility
+        await supabase.from('calendar_events').insert({
+          user_id: user.id,
+          account_id: newAccountId,
+          title: 'Capital Initial',
+          description: `Dépôt initial de ${initial} ${payload.currency}`,
+          date: new Date().toISOString(),
+        });
+      }
+      await refresh();
+      setActiveAccountId(newAccountId);
+    } else {
+      await refresh();
+    }
+
+    setSubmitting(false);
     toast({ title: account ? 'Compte mis à jour' : 'Compte créé' });
-    await refresh();
-    if (!account && (res as any).data?.id) setActiveAccountId((res as any).data.id);
     onOpenChange(false);
   };
 

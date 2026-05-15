@@ -2,8 +2,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getStartDateForTimeframe, generateMockData, generatePerformanceData } from '@/utils/chartUtils';
+import { useAccount } from '@/context/AccountContext';
 
 export const useChartData = (userId?: string, timeframe: '1W' | '1M' | '3M' | '6M' | '1Y' | 'ALL' = '1M') => {
+  const { activeAccountId, activeAccount } = useAccount();
   const [data, setData] = useState<any[]>([]);
   const [isPositive, setIsPositive] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -12,7 +14,7 @@ export const useChartData = (userId?: string, timeframe: '1W' | '1M' | '3M' | '6
     const fetchData = async () => {
       setIsLoading(true);
       
-      if (!userId) {
+      if (!userId || !activeAccountId) {
         // Générer des données fictives si aucun utilisateur n'est connecté
         const mockData = generateMockData(timeframe);
         setData(mockData);
@@ -22,26 +24,17 @@ export const useChartData = (userId?: string, timeframe: '1W' | '1M' | '3M' | '6
       }
 
       try {
-        // Récupérer le solde du portfolio d'abord
-        const { data: portfolios, error: portfolioError } = await supabase
-          .from('portfolios')
-          .select('balance')
-          .eq('user_id', userId)
-          .limit(1);
+        const initialBalance = Number(activeAccount?.initial_capital ?? 0) || 0;
 
-        if (portfolioError) throw portfolioError;
-
-        const initialBalance = portfolios && portfolios.length > 0 ? portfolios[0].balance : 10000;
-        
         // Déterminer la date de début en fonction de la période sélectionnée
         const startDate = getStartDateForTimeframe(timeframe);
-        
-        // Récupérer les trades de l'utilisateur pour la période
-        // Pour ALL, ne pas limiter par startDate pour inclure tous les trades
+
+        // Récupérer les trades du compte actif pour la période
         let query = supabase
           .from('trades')
           .select('*')
-          .eq('user_id', userId);
+          .eq('user_id', userId)
+          .eq('account_id', activeAccountId);
           
         // Ajouter le filtre de date sauf pour ALL
         if (timeframe !== 'ALL') {
@@ -74,7 +67,7 @@ export const useChartData = (userId?: string, timeframe: '1W' | '1M' | '3M' | '6
     };
 
     fetchData();
-  }, [userId, timeframe]);
+  }, [userId, timeframe, activeAccountId, activeAccount?.initial_capital]);
 
   return { data, isPositive, isLoading };
 };
