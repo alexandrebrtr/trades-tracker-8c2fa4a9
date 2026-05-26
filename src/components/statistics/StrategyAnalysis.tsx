@@ -1,357 +1,216 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { 
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line
+import { useEffect, useMemo, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
+import { supabase } from '@/integrations/supabase/client';
+import { useAccount } from '@/context/AccountContext';
+import {
+  ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis,
+  CartesianGrid, Tooltip, Legend, RadarChart, Radar, PolarGrid,
+  PolarAngleAxis, PolarRadiusAxis, Cell, ReferenceLine,
 } from 'recharts';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
-import { ArrowDown, ArrowUp, PieChart as PieChartIcon, BarChart2, LineChart as LineChartIcon, Zap } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
+import { computeQuantMetrics, equityCurve } from '@/utils/quantStats';
+import {
+  Zap, Trophy, TrendingUp, TrendingDown, Target, Activity,
+  Clock, Calendar, AlertTriangle, CheckCircle2, Sparkles,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+const SERIES_COLORS = ['hsl(var(--primary))', 'hsl(var(--profit))', 'hsl(var(--loss))', '#f59e0b', '#8b5cf6', '#06b6d4'];
+const DAYS_FR = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
-interface StrategyMetrics {
+const fmtCur = (v: number, ccy = 'EUR') =>
+  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: ccy, maximumFractionDigits: 0 }).format(v || 0);
+const fmtPct = (v: number, d = 1) => `${(v ?? 0).toFixed(d)}%`;
+const fmtNum = (v: number, d = 2) => (v ?? 0).toFixed(d);
+
+interface StrategyData {
   name: string;
-  winRate: number;
-  totalTrades: number;
-  averagePnL: number;
-  totalPnL: number;
-  bestTrade: number;
-  worstTrade: number;
-  profitFactor: number;
-  averageDuration: string;
+  trades: any[];
+  metrics: ReturnType<typeof computeQuantMetrics>;
+  equity: number[];
+  stability: number; // 0..100
+  avgDurationDays: number;
 }
 
-const StrategyAnalysis = ({ userId }: { userId?: string }) => {
-  const [selectedPeriod, setSelectedPeriod] = useState("all");
-  const { user } = useAuth();
+export default function StrategyAnalysis({ userId }: { userId?: string }) {
+  const { activeAccountId, activeAccount } = useAccount();
+  const ccy = activeAccount?.currency || 'EUR';
+  const initialCapital = activeAccount?.initial_capital || 10000;
+  const [period, setPeriod] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [strategyPerformanceData, setStrategyPerformanceData] = useState<any[]>([]);
-  const [strategyCategoryData, setStrategyCategoryData] = useState<any[]>([]);
-  const [timePerformanceData, setTimePerformanceData] = useState<any[]>([]);
-  const [strategyMetrics, setStrategyMetrics] = useState<StrategyMetrics[]>([]);
   const [trades, setTrades] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchData = async () => {
+    if (!userId) { setLoading(false); return; }
+    (async () => {
       setLoading(true);
-      try {
-        // Calculate start date based on selected timeframe
-        const startDate = getStartDateFromTimeframe(selectedPeriod);
-        
-        // Fetch user trades
-        const { data: tradesData, error: tradesError } = await supabase
-          .from('trades')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('date', startDate.toISOString())
-          .order('date', { ascending: true });
+      const startDate = (() => {
+        const n = new Date();
+        if (period === 'month') return new Date(n.setMonth(n.getMonth() - 1));
+        if (period === 'quarter') return new Date(n.setMonth(n.getMonth() - 3));
+        if (period === 'year') return new Date(n.setFullYear(n.getFullYear() - 1));
+        return new Date(2000, 0, 1);
+      })();
+      let q = supabase.from('trades').select('*').eq('user_id', userId)
+        .gte('date', startDate.toISOString()).order('date', { ascending: true });
+      if (activeAccountId) q = q.eq('account_id', activeAccountId);
+      const { data } = await q;
+      setTrades(data || []);
+      setLoading(false);
+    })();
+  }, [userId, period, activeAccountId]);
 
-        if (tradesError) throw tradesError;
-
-        // Process trades data for analysis
-        processTradesData(tradesData || []);
-        setTrades(tradesData || []);
-        
-      } catch (error: any) {
-        console.error('Error fetching analytics data:', error.message);
-        // Use default data if we couldn't fetch user data
-        useDefaultData();
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [user, selectedPeriod]);
-
-  const getStartDateFromTimeframe = (tf: string): Date => {
-    const now = new Date();
-    switch (tf) {
-      case 'month':
-        return new Date(now.setMonth(now.getMonth() - 1));
-      case 'quarter':
-        return new Date(now.setMonth(now.getMonth() - 3));
-      case 'year':
-        return new Date(now.setFullYear(now.getFullYear() - 1));
-      case 'all':
-      default:
-        return new Date(2000, 0, 1); // A date far in the past
+  const strategies = useMemo<StrategyData[]>(() => {
+    const groups = new Map<string, any[]>();
+    for (const t of trades) {
+      const k = t.strategy || 'Non définie';
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k)!.push(t);
     }
-  };
-
-  const processTradesData = (trades: any[]) => {
-    if (!trades || trades.length === 0) {
-      useDefaultData();
-      return;
-    }
-
-    // Process strategy performance data
-    const strategies: Record<string, { 
-      wins: number, 
-      losses: number, 
-      totalTrades: number, 
-      totalPnL: number,
-      bestTrade: number,
-      worstTrade: number,
-      durations: number[], // in days
-      tradeValues: number[]
-    }> = {};
-    
-    trades.forEach(trade => {
-      const strategyName = trade.strategy || 'Non définie';
-      
-      if (!strategies[strategyName]) {
-        strategies[strategyName] = { 
-          wins: 0, 
-          losses: 0, 
-          totalTrades: 0, 
-          totalPnL: 0,
-          bestTrade: -Infinity,
-          worstTrade: Infinity,
-          durations: [],
-          tradeValues: []
-        };
-      }
-      
-      strategies[strategyName].totalTrades += 1;
-      strategies[strategyName].totalPnL += (trade.pnl || 0);
-      strategies[strategyName].tradeValues.push(trade.pnl || 0);
-      
-      // Calculate trade duration if entry and exit dates are available
-      if (trade.date) {
-        const tradeDate = new Date(trade.date);
-        const currentDate = new Date();
-        const durationDays = Math.floor((currentDate.getTime() - tradeDate.getTime()) / (1000 * 60 * 60 * 24));
-        strategies[strategyName].durations.push(durationDays);
-      }
-      
-      // Track best and worst trades
-      if (trade.pnl > strategies[strategyName].bestTrade) {
-        strategies[strategyName].bestTrade = trade.pnl;
-      }
-      if (trade.pnl < strategies[strategyName].worstTrade) {
-        strategies[strategyName].worstTrade = trade.pnl;
-      }
-      
-      if (trade.pnl > 0) {
-        strategies[strategyName].wins += 1;
-      } else if (trade.pnl < 0) {
-        strategies[strategyName].losses += 1;
-      }
-    });
-    
-    // Convert to array format for charts
-    const performanceData = Object.entries(strategies).map(([name, data]) => ({
-      name,
-      winRate: data.totalTrades > 0 ? Math.round((data.wins / data.totalTrades) * 100) : 0,
-      totalTrades: data.totalTrades,
-      averagePnL: data.totalTrades > 0 ? Math.round(data.totalPnL / data.totalTrades) : 0
-    }));
-    
-    setStrategyPerformanceData(performanceData.length > 0 ? performanceData : getDefaultPerformanceData());
-    
-    // Process detailed strategy metrics
-    const detailedMetrics: StrategyMetrics[] = Object.entries(strategies).map(([name, data]) => {
-      // Calculate average duration
-      const avgDurationDays = data.durations.length > 0 
-        ? Math.round(data.durations.reduce((sum, days) => sum + days, 0) / data.durations.length) 
+    const out: StrategyData[] = [];
+    for (const [name, tr] of groups) {
+      const sorted = [...tr].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const pnls = sorted.map(t => Number(t.pnl) || 0);
+      const eq = equityCurve(pnls, initialCapital);
+      const metrics = computeQuantMetrics(sorted, initialCapital);
+      // Stability score: ratio of positive months / variance penalty
+      const cumReturns: number[] = [];
+      let acc = 0;
+      pnls.forEach(p => { acc += p; cumReturns.push(acc); });
+      const positiveRatio = pnls.length ? pnls.filter(p => p > 0).length / pnls.length : 0;
+      const stability = Math.min(100, Math.max(0,
+        positiveRatio * 100 * 0.6 +
+        Math.max(0, 40 - Math.min(40, metrics.maxDrawdownPct))
+      ));
+      // average duration in days: use date deltas if available
+      const days = sorted.length > 1
+        ? (new Date(sorted[sorted.length - 1].date).getTime() - new Date(sorted[0].date).getTime()) / 86400000 / sorted.length
         : 0;
-      
-      // Calculate profit factor (sum of profits / sum of losses)
-      const profits = data.tradeValues.filter(val => val > 0).reduce((sum, val) => sum + val, 0);
-      const losses = Math.abs(data.tradeValues.filter(val => val < 0).reduce((sum, val) => sum + val, 0));
-      const profitFactor = losses > 0 ? Number((profits / losses).toFixed(2)) : data.wins > 0 ? 999 : 0;
-      
+      out.push({ name, trades: sorted, metrics, equity: eq, stability, avgDurationDays: days });
+    }
+    return out.sort((a, b) => b.metrics.totalReturn - a.metrics.totalReturn);
+  }, [trades, initialCapital]);
+
+  // Comparative equity series
+  const compareSeries = useMemo(() => {
+    const maxLen = Math.max(0, ...strategies.map(s => s.equity.length));
+    return Array.from({ length: maxLen }, (_, i) => {
+      const row: any = { idx: i };
+      strategies.forEach(s => { row[s.name] = s.equity[i] ?? null; });
+      return row;
+    });
+  }, [strategies]);
+
+  // Radar normalised
+  const radarData = useMemo(() => {
+    if (!strategies.length) return [];
+    const axes = ['Win Rate', 'Profit Factor', 'Sharpe', 'Recovery', 'Expectancy', 'Stabilité'];
+    const max = {
+      'Win Rate': 100,
+      'Profit Factor': Math.max(3, ...strategies.map(s => s.metrics.profitFactor)),
+      Sharpe: Math.max(2, ...strategies.map(s => s.metrics.sharpeRatio)),
+      Recovery: Math.max(3, ...strategies.map(s => s.metrics.recoveryFactor)),
+      Expectancy: Math.max(1, ...strategies.map(s => Math.abs(s.metrics.expectancy))),
+      Stabilité: 100,
+    } as Record<string, number>;
+    return axes.map(axis => {
+      const row: any = { axis };
+      strategies.slice(0, 5).forEach(s => {
+        let v = 0;
+        if (axis === 'Win Rate') v = s.metrics.winRate;
+        else if (axis === 'Profit Factor') v = s.metrics.profitFactor;
+        else if (axis === 'Sharpe') v = Math.max(0, s.metrics.sharpeRatio);
+        else if (axis === 'Recovery') v = Math.max(0, s.metrics.recoveryFactor);
+        else if (axis === 'Expectancy') v = Math.max(0, s.metrics.expectancy);
+        else if (axis === 'Stabilité') v = s.stability;
+        row[s.name] = Math.min(100, (v / max[axis]) * 100);
+      });
+      return row;
+    });
+  }, [strategies]);
+
+  // Behavioral: best hours / days / assets
+  const behavior = useMemo(() => {
+    const hours = new Map<number, { pnl: number; count: number }>();
+    const days = new Map<number, { pnl: number; count: number }>();
+    const assets = new Map<string, { pnl: number; count: number; wins: number }>();
+    for (const t of trades) {
+      const d = new Date(t.date); const pnl = Number(t.pnl) || 0;
+      const h = d.getHours(), w = d.getDay();
+      const ch = hours.get(h) || { pnl: 0, count: 0 }; ch.pnl += pnl; ch.count++; hours.set(h, ch);
+      const cd = days.get(w) || { pnl: 0, count: 0 }; cd.pnl += pnl; cd.count++; days.set(w, cd);
+      const sym = t.symbol || 'N/A';
+      const ca = assets.get(sym) || { pnl: 0, count: 0, wins: 0 };
+      ca.pnl += pnl; ca.count++; if (pnl > 0) ca.wins++; assets.set(sym, ca);
+    }
+    const topHours = Array.from(hours, ([hour, v]) => ({ label: `${hour}h`, ...v }))
+      .sort((a, b) => b.pnl - a.pnl);
+    const topDays = Array.from(days, ([d, v]) => ({ label: DAYS_FR[d], ...v }))
+      .sort((a, b) => b.pnl - a.pnl);
+    const topAssets = Array.from(assets, ([name, v]) => ({
+      name, pnl: v.pnl, count: v.count, winRate: v.count ? (v.wins / v.count) * 100 : 0,
+    })).sort((a, b) => b.pnl - a.pnl).slice(0, 8);
+    return { topHours, topDays, topAssets };
+  }, [trades]);
+
+  // Loss patterns: longest losing streak per strategy, frequent losing setups
+  const lossPatterns = useMemo(() => {
+    return strategies.map(s => {
+      const losses = s.trades.filter(t => (t.pnl || 0) < 0);
+      const lossRate = s.trades.length ? (losses.length / s.trades.length) * 100 : 0;
       return {
-        name,
-        winRate: data.totalTrades > 0 ? Math.round((data.wins / data.totalTrades) * 100) : 0,
-        totalTrades: data.totalTrades,
-        averagePnL: data.totalTrades > 0 ? Math.round(data.totalPnL / data.totalTrades) : 0,
-        totalPnL: Math.round(data.totalPnL),
-        bestTrade: Math.round(data.bestTrade !== -Infinity ? data.bestTrade : 0),
-        worstTrade: Math.round(data.worstTrade !== Infinity ? data.worstTrade : 0),
-        profitFactor,
-        averageDuration: `${avgDurationDays} jours`
+        name: s.name,
+        consecutiveLosses: s.metrics.consecutiveLosses,
+        lossRate,
+        avgLoss: s.metrics.avgLoss,
+        risk: s.metrics.profitFactor < 1 ? 'Élevé' : s.metrics.profitFactor < 1.5 ? 'Modéré' : 'Faible',
       };
     });
-    
-    setStrategyMetrics(detailedMetrics.length > 0 ? detailedMetrics : getDefaultStrategyMetrics());
-    
-    // Process strategy category data
-    const categoryData = Object.entries(strategies).map(([name, data]) => ({
-      name,
-      value: data.totalTrades
-    }));
-    
-    setStrategyCategoryData(categoryData.length > 0 ? categoryData : getDefaultCategoryData());
-    
-    // Process time performance data
-    const monthlyPerformance: Record<string, Record<string, number>> = {};
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    // Initialize data structure
-    months.forEach(month => {
-      monthlyPerformance[month] = {};
-      Object.keys(strategies).forEach(strategy => {
-        monthlyPerformance[month][strategy] = 0;
-      });
-    });
-    
-    // Fill with actual data
-    trades.forEach(trade => {
-      if (!trade.strategy) return;
-      
-      const date = new Date(trade.date);
-      const month = months[date.getMonth()];
-      
-      monthlyPerformance[month][trade.strategy] = 
-        (monthlyPerformance[month][trade.strategy] || 0) + (trade.pnl || 0);
-    });
-    
-    // Convert to array format for charts
-    const timeData = months.map(month => {
-      const monthData: any = { month };
-      
-      Object.entries(strategies).forEach(([strategy]) => {
-        monthData[strategy] = Math.round(monthlyPerformance[month][strategy] || 0);
-      });
-      
-      return monthData;
-    });
-    
-    setTimePerformanceData(
-      timeData.some(month => Object.keys(month).length > 1) ? 
-      timeData : getDefaultTimePerformanceData()
-    );
-  };
+  }, [strategies]);
 
-  const useDefaultData = () => {
-    setStrategyPerformanceData(getDefaultPerformanceData());
-    setStrategyCategoryData(getDefaultCategoryData());
-    setTimePerformanceData(getDefaultTimePerformanceData());
-    setStrategyMetrics(getDefaultStrategyMetrics());
-  };
-
-  const getDefaultPerformanceData = () => [
-    { name: 'Momentum', winRate: 68, totalTrades: 42, averagePnL: 320 },
-    { name: 'Breakout', winRate: 52, totalTrades: 35, averagePnL: 180 },
-    { name: 'Support/Resistance', winRate: 75, totalTrades: 28, averagePnL: 450 },
-    { name: 'Swing Trading', winRate: 63, totalTrades: 30, averagePnL: 280 },
-    { name: 'Trend Following', winRate: 71, totalTrades: 25, averagePnL: 390 },
-  ];
-
-  const getDefaultCategoryData = () => [
-    { name: 'Momentum', value: 42 },
-    { name: 'Breakout', value: 35 },
-    { name: 'Support/Resistance', value: 28 },
-    { name: 'Swing Trading', value: 30 },
-    { name: 'Trend Following', value: 25 },
-  ];
-
-  const getDefaultTimePerformanceData = () => [
-    { month: 'Jan', Momentum: 28, Breakout: -12, 'Support/Resistance': 40, 'Swing Trading': 15, 'Trend Following': 32 },
-    { month: 'Feb', Momentum: -15, Breakout: 25, 'Support/Resistance': 35, 'Swing Trading': 22, 'Trend Following': 18 },
-    { month: 'Mar', Momentum: 35, Breakout: 30, 'Support/Resistance': -10, 'Swing Trading': 42, 'Trend Following': 25 },
-    { month: 'Apr', Momentum: 40, Breakout: 15, 'Support/Resistance': 28, 'Swing Trading': -18, 'Trend Following': 30 },
-    { month: 'May', Momentum: 22, Breakout: -20, 'Support/Resistance': 45, 'Swing Trading': 30, 'Trend Following': 20 },
-    { month: 'Jun', Momentum: -10, Breakout: 35, 'Support/Resistance': 30, 'Swing Trading': 25, 'Trend Following': -15 },
-  ];
-
-  const getDefaultStrategyMetrics = (): StrategyMetrics[] => [
-    { 
-      name: 'Momentum', winRate: 68, totalTrades: 42, averagePnL: 320, 
-      totalPnL: 13440, bestTrade: 1200, worstTrade: -480, profitFactor: 2.8, averageDuration: '5 jours' 
-    },
-    { 
-      name: 'Breakout', winRate: 52, totalTrades: 35, averagePnL: 180, 
-      totalPnL: 6300, bestTrade: 980, worstTrade: -520, profitFactor: 1.6, averageDuration: '3 jours'
-    },
-    { 
-      name: 'Support/Resistance', winRate: 75, totalTrades: 28, averagePnL: 450, 
-      totalPnL: 12600, bestTrade: 1450, worstTrade: -360, profitFactor: 3.5, averageDuration: '7 jours'
-    },
-    { 
-      name: 'Swing Trading', winRate: 63, totalTrades: 30, averagePnL: 280, 
-      totalPnL: 8400, bestTrade: 1120, worstTrade: -540, profitFactor: 2.2, averageDuration: '12 jours'
-    },
-    { 
-      name: 'Trend Following', winRate: 71, totalTrades: 25, averagePnL: 390, 
-      totalPnL: 9750, bestTrade: 1350, worstTrade: -410, profitFactor: 3.1, averageDuration: '15 jours'
-    }
-  ];
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+  const tooltipStyle = {
+    background: 'hsl(var(--card))',
+    border: '1px solid hsl(var(--border))',
+    borderRadius: 8,
+    fontSize: 12,
   };
 
   if (loading) {
     return (
-      <div className="grid gap-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Analyse des Stratégies</h2>
-          <Skeleton className="h-10 w-[180px]" />
+      <div className="grid gap-4">
+        <Skeleton className="h-10 w-64" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48" />)}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-48" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-[350px]" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-48" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-[350px]" />
-            </CardContent>
-          </Card>
-        </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-64" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-[400px]" />
-          </CardContent>
-        </Card>
       </div>
     );
   }
 
+  if (!strategies.length) {
+    return (
+      <Card className="py-16">
+        <CardContent className="text-center">
+          <Sparkles className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+          <p className="text-muted-foreground">Aucune stratégie analysable sur cette période.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <div className="grid gap-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Analyse des Stratégies</h2>
-        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Période" />
-          </SelectTrigger>
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Analyse Stratégique</h2>
+          <p className="text-sm text-muted-foreground">{strategies.length} stratégies · {trades.length} trades</p>
+        </div>
+        <Select value={period} onValueChange={setPeriod}>
+          <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="month">Dernier mois</SelectItem>
             <SelectItem value="quarter">Dernier trimestre</SelectItem>
@@ -361,273 +220,361 @@ const StrategyAnalysis = ({ userId }: { userId?: string }) => {
         </Select>
       </div>
 
-      {/* Detailed Strategy Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {strategyMetrics.map((strategy) => (
-          <Card key={strategy.name} className="overflow-hidden aspect-square">
+      {/* Strategy cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {strategies.map((s, idx) => (
+          <Card key={s.name} className={cn(
+            'overflow-hidden border bg-gradient-to-br from-card to-card/50 transition-all hover:shadow-lg hover:-translate-y-0.5',
+            idx === 0 && 'border-primary/40'
+          )}>
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
             <CardHeader className="pb-3">
-              <div className="flex justify-between items-center">
+              <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-primary" />
-                    {strategy.name}
+                  <CardTitle className="text-base flex items-center gap-2">
+                    {idx === 0 && <Trophy className="h-4 w-4 text-amber-500" />}
+                    {idx > 0 && <Zap className="h-4 w-4 text-primary" />}
+                    {s.name}
                   </CardTitle>
-                  <CardDescription>
-                    {strategy.totalTrades} trades sur cette stratégie
-                  </CardDescription>
+                  <p className="text-xs text-muted-foreground mt-0.5">{s.metrics.tradeCount} trades</p>
                 </div>
-                <Badge 
-                  variant={strategy.winRate >= 50 ? "default" : "destructive"} 
-                  className="text-md px-3 py-1"
-                >
-                  {strategy.winRate}% taux de réussite
+                <Badge variant={s.metrics.totalReturn >= 0 ? 'default' : 'destructive'} className="font-mono">
+                  {s.metrics.totalReturn >= 0 ? '+' : ''}{fmtCur(s.metrics.totalReturn, ccy)}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="bg-secondary/20 p-3 rounded-lg">
-                  <p className="text-xs text-muted-foreground">P&L Total</p>
-                  <p className={`text-lg font-semibold ${strategy.totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {formatCurrency(strategy.totalPnL)}
-                  </p>
-                </div>
-                <div className="bg-secondary/20 p-3 rounded-lg">
-                  <p className="text-xs text-muted-foreground">P&L Moyen</p>
-                  <p className={`text-lg font-semibold ${strategy.averagePnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {formatCurrency(strategy.averagePnL)}
-                  </p>
-                </div>
-                <div className="bg-secondary/20 p-3 rounded-lg">
-                  <p className="text-xs text-muted-foreground">Profit Factor</p>
-                  <p className={`text-lg font-semibold ${strategy.profitFactor >= 1 ? 'text-green-500' : 'text-red-500'}`}>
-                    {strategy.profitFactor}
-                  </p>
-                </div>
-                <div className="bg-secondary/20 p-3 rounded-lg">
-                  <p className="text-xs text-muted-foreground">Durée Moyenne</p>
-                  <p className="text-lg font-semibold">
-                    {strategy.averageDuration}
-                  </p>
-                </div>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <Metric label="Win Rate" value={fmtPct(s.metrics.winRate)} tone={s.metrics.winRate >= 50 ? 'profit' : 'neutral'} />
+                <Metric label="PF" value={fmtNum(s.metrics.profitFactor)} tone={s.metrics.profitFactor >= 1.5 ? 'profit' : 'neutral'} />
+                <Metric label="Sharpe" value={fmtNum(s.metrics.sharpeRatio)} tone={s.metrics.sharpeRatio >= 1 ? 'profit' : 'neutral'} />
+                <Metric label="Max DD" value={fmtPct(s.metrics.maxDrawdownPct)} tone="loss" />
+                <Metric label="Expectancy" value={fmtCur(s.metrics.expectancy, ccy)} tone={s.metrics.expectancy >= 0 ? 'profit' : 'loss'} />
+                <Metric label="RR moy." value={fmtNum(s.metrics.payoffRatio)} />
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-between border border-border p-3 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <ArrowUp className="h-5 w-5 text-green-500" />
-                    <span className="text-sm">Meilleur Trade</span>
-                  </div>
-                  <span className="text-lg font-semibold text-green-500">
-                    {formatCurrency(strategy.bestTrade)}
-                  </span>
+              <div>
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
+                  <span>Stabilité</span><span>{s.stability.toFixed(0)}/100</span>
                 </div>
-                
-                <div className="flex items-center justify-between border border-border p-3 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <ArrowDown className="h-5 w-5 text-red-500" />
-                    <span className="text-sm">Pire Trade</span>
-                  </div>
-                  <span className="text-lg font-semibold text-red-500">
-                    {formatCurrency(strategy.worstTrade)}
-                  </span>
-                </div>
+                <Progress value={s.stability} className="h-1.5" />
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {s.avgDurationDays.toFixed(1)} j/trade</span>
+                <span className="flex items-center gap-1"><Activity className="h-3 w-3" /> Vol {fmtPct(s.metrics.volatility)}</span>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <Tabs defaultValue="performance" className="w-full">
-        <TabsList className="grid grid-cols-4 w-full max-w-md mx-auto mb-6">
-          <TabsTrigger value="performance" className="flex items-center gap-1">
-            <BarChart2 className="h-4 w-4" />
-            <span>Performance</span>
-          </TabsTrigger>
-          <TabsTrigger value="distribution" className="flex items-center gap-1">
-            <PieChartIcon className="h-4 w-4" />
-            <span>Distribution</span>
-          </TabsTrigger>
-          <TabsTrigger value="timeline" className="flex items-center gap-1">
-            <LineChartIcon className="h-4 w-4" />
-            <span>Timeline</span>
-          </TabsTrigger>
-          <TabsTrigger value="trades" className="flex items-center gap-1">
-            <Table className="h-4 w-4" />
-            <span>Trades</span>
-          </TabsTrigger>
+      <Tabs defaultValue="comparison" className="w-full">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full max-w-2xl">
+          <TabsTrigger value="comparison">Comparaison</TabsTrigger>
+          <TabsTrigger value="behavior">Comportement</TabsTrigger>
+          <TabsTrigger value="quant">Quantitatif</TabsTrigger>
+          <TabsTrigger value="risk">Risques</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="performance">
+
+        <TabsContent value="comparison" className="mt-4 space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Performance par Stratégie</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Tableau comparatif & classement</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-[400px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={strategyPerformanceData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    barSize={35}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis yAxisId="left" />
-                    <YAxis yAxisId="right" orientation="right" />
-                    <Tooltip />
-                    <Legend />
-                    <Bar 
-                      yAxisId="left" 
-                      dataKey="winRate" 
-                      fill="#0088FE" 
-                      name="Taux de réussite (%)" 
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar 
-                      yAxisId="right" 
-                      dataKey="averagePnL" 
-                      fill="#00C49F" 
-                      name="P&L moyen (€)" 
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+            <CardContent className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>#</TableHead>
+                    <TableHead>Stratégie</TableHead>
+                    <TableHead className="text-right">PnL</TableHead>
+                    <TableHead className="text-right">Trades</TableHead>
+                    <TableHead className="text-right">Win Rate</TableHead>
+                    <TableHead className="text-right">PF</TableHead>
+                    <TableHead className="text-right">Sharpe</TableHead>
+                    <TableHead className="text-right">Sortino</TableHead>
+                    <TableHead className="text-right">Max DD</TableHead>
+                    <TableHead className="text-right">Expectancy</TableHead>
+                    <TableHead className="text-right">Stabilité</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {strategies.map((s, i) => (
+                    <TableRow key={s.name} className="hover:bg-muted/40">
+                      <TableCell className="font-mono text-xs">
+                        {i === 0 ? <Trophy className="h-4 w-4 text-amber-500" /> : `#${i + 1}`}
+                      </TableCell>
+                      <TableCell className="font-medium">{s.name}</TableCell>
+                      <TableCell className={cn('text-right font-mono', s.metrics.totalReturn >= 0 ? 'text-profit' : 'text-loss')}>
+                        {fmtCur(s.metrics.totalReturn, ccy)}
+                      </TableCell>
+                      <TableCell className="text-right">{s.metrics.tradeCount}</TableCell>
+                      <TableCell className="text-right">{fmtPct(s.metrics.winRate)}</TableCell>
+                      <TableCell className="text-right">{fmtNum(s.metrics.profitFactor)}</TableCell>
+                      <TableCell className="text-right">{fmtNum(s.metrics.sharpeRatio)}</TableCell>
+                      <TableCell className="text-right">{fmtNum(s.metrics.sortinoRatio)}</TableCell>
+                      <TableCell className="text-right text-loss">{fmtPct(s.metrics.maxDrawdownPct)}</TableCell>
+                      <TableCell className={cn('text-right', s.metrics.expectancy >= 0 ? 'text-profit' : 'text-loss')}>
+                        {fmtCur(s.metrics.expectancy, ccy)}
+                      </TableCell>
+                      <TableCell className="text-right">{s.stability.toFixed(0)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
-        </TabsContent>
-        
-        <TabsContent value="distribution">
-          <Card>
-            <CardHeader>
-              <CardTitle>Répartition des Stratégies</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={strategyCategoryData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={150}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                    >
-                      {strategyCategoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => [`${value} trades`, 'Quantité']} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="timeline">
-          <Card>
-            <CardHeader>
-              <CardTitle>Performance dans le Temps par Stratégie</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={timePerformanceData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [`${value} €`, 'P&L']} />
-                    <Legend />
-                    {Object.keys(timePerformanceData[0] || {})
-                      .filter(key => key !== 'month')
-                      .map((strategy, index) => (
-                        <Line 
-                          key={strategy}
-                          type="monotone" 
-                          dataKey={strategy} 
-                          stroke={COLORS[index % COLORS.length]} 
-                          activeDot={{ r: 8 }} 
-                        />
-                      ))
-                    }
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-base">Courbes d'equity comparées</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={compareSeries}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
+                    <XAxis dataKey="idx" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => fmtCur(v, ccy)} width={70} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => fmtCur(Number(v), ccy)} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
+                    {strategies.slice(0, 6).map((s, i) => (
+                      <Line key={s.name} type="monotone" dataKey={s.name} stroke={SERIES_COLORS[i % SERIES_COLORS.length]}
+                        strokeWidth={2} dot={false} />
+                    ))}
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-base">Radar multi-métriques</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <RadarChart data={radarData}>
+                    <PolarGrid stroke="hsl(var(--border))" />
+                    <PolarAngleAxis dataKey="axis" tick={{ fontSize: 11 }} />
+                    <PolarRadiusAxis tick={{ fontSize: 9 }} angle={90} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
+                    {strategies.slice(0, 5).map((s, i) => (
+                      <Radar key={s.name} name={s.name} dataKey={s.name}
+                        stroke={SERIES_COLORS[i % SERIES_COLORS.length]}
+                        fill={SERIES_COLORS[i % SERIES_COLORS.length]} fillOpacity={0.15} />
+                    ))}
+                  </RadarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="behavior" className="mt-4 space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2"><Clock className="h-4 w-4" /> Heures les plus rentables</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={behavior.topHours.slice(0, 12)}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
+                    <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => fmtCur(v, ccy)} width={70} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => fmtCur(Number(v), ccy)} />
+                    <ReferenceLine y={0} stroke="hsl(var(--border))" />
+                    <Bar dataKey="pnl" radius={[3, 3, 0, 0]}>
+                      {behavior.topHours.slice(0, 12).map((d, i) => (
+                        <Cell key={i} fill={d.pnl >= 0 ? 'hsl(var(--profit))' : 'hsl(var(--loss))'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2"><Calendar className="h-4 w-4" /> Meilleurs jours</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={behavior.topDays}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
+                    <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => fmtCur(v, ccy)} width={70} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => fmtCur(Number(v), ccy)} />
+                    <ReferenceLine y={0} stroke="hsl(var(--border))" />
+                    <Bar dataKey="pnl" radius={[3, 3, 0, 0]}>
+                      {behavior.topDays.map((d, i) => (
+                        <Cell key={i} fill={d.pnl >= 0 ? 'hsl(var(--profit))' : 'hsl(var(--loss))'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2"><Target className="h-4 w-4" /> Actifs les plus rentables</CardTitle>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Actif</TableHead>
+                    <TableHead className="text-right">Trades</TableHead>
+                    <TableHead className="text-right">Win Rate</TableHead>
+                    <TableHead className="text-right">PnL</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {behavior.topAssets.map(a => (
+                    <TableRow key={a.name}>
+                      <TableCell className="font-medium">{a.name}</TableCell>
+                      <TableCell className="text-right">{a.count}</TableCell>
+                      <TableCell className="text-right">{fmtPct(a.winRate)}</TableCell>
+                      <TableCell className={cn('text-right font-mono', a.pnl >= 0 ? 'text-profit' : 'text-loss')}>
+                        {fmtCur(a.pnl, ccy)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
-        
-        <TabsContent value="trades">
+
+        <TabsContent value="quant" className="mt-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Détails des stratégies</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Analyse quantitative détaillée</CardTitle>
+              <p className="text-xs text-muted-foreground">Métriques avancées par stratégie</p>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Stratégie</TableHead>
+                    <TableHead className="text-right">Expectancy</TableHead>
+                    <TableHead className="text-right">Avg Win</TableHead>
+                    <TableHead className="text-right">Avg Loss</TableHead>
+                    <TableHead className="text-right">RR</TableHead>
+                    <TableHead className="text-right">Volatilité</TableHead>
+                    <TableHead className="text-right">Calmar</TableHead>
+                    <TableHead className="text-right">Recovery</TableHead>
+                    <TableHead className="text-right">VaR 95%</TableHead>
+                    <TableHead className="text-right">CVaR 95%</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {strategies.map(s => (
+                    <TableRow key={s.name}>
+                      <TableCell className="font-medium">{s.name}</TableCell>
+                      <TableCell className={cn('text-right', s.metrics.expectancy >= 0 ? 'text-profit' : 'text-loss')}>
+                        {fmtCur(s.metrics.expectancy, ccy)}
+                      </TableCell>
+                      <TableCell className="text-right text-profit">{fmtCur(s.metrics.avgWin, ccy)}</TableCell>
+                      <TableCell className="text-right text-loss">{fmtCur(-s.metrics.avgLoss, ccy)}</TableCell>
+                      <TableCell className="text-right">{fmtNum(s.metrics.payoffRatio)}</TableCell>
+                      <TableCell className="text-right">{fmtPct(s.metrics.volatility)}</TableCell>
+                      <TableCell className="text-right">{fmtNum(s.metrics.calmarRatio)}</TableCell>
+                      <TableCell className="text-right">{fmtNum(s.metrics.recoveryFactor)}</TableCell>
+                      <TableCell className="text-right text-loss">{fmtCur(s.metrics.valueAtRisk95, ccy)}</TableCell>
+                      <TableCell className="text-right text-loss">{fmtCur(s.metrics.conditionalVaR95, ccy)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="risk" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-500" /> Détection de patterns à risque
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Stratégie</TableHead>
-                      <TableHead className="text-right">Trades</TableHead>
-                      <TableHead className="text-right">P&L Total</TableHead>
-                      <TableHead className="text-right">Meilleur trade</TableHead>
-                      <TableHead className="text-right">Pire trade</TableHead>
-                      <TableHead className="text-right">Win rate</TableHead>
-                      <TableHead className="text-right">P&L Moyen</TableHead>
-                      <TableHead className="text-right">Profit Factor</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {strategyMetrics.map((strategy) => (
-                      <TableRow key={strategy.name}>
-                        <TableCell className="font-medium">{strategy.name}</TableCell>
-                        <TableCell className="text-right">{strategy.totalTrades}</TableCell>
-                        <TableCell className={cn(
-                          "text-right font-medium",
-                          strategy.totalPnL >= 0 ? "text-green-500" : "text-red-500"
-                        )}>
-                          {formatCurrency(strategy.totalPnL)}
-                        </TableCell>
-                        <TableCell className="text-right text-green-500">
-                          {formatCurrency(strategy.bestTrade)}
-                        </TableCell>
-                        <TableCell className="text-right text-red-500">
-                          {formatCurrency(strategy.worstTrade)}
-                        </TableCell>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {lossPatterns.map(p => (
+                  <div key={p.name} className="border border-border rounded-lg p-3 bg-card/40">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-sm">{p.name}</span>
+                      <Badge variant={p.risk === 'Faible' ? 'default' : p.risk === 'Modéré' ? 'secondary' : 'destructive'}>
+                        Risque {p.risk}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div>
+                        <p className="text-muted-foreground">Pertes consécutives</p>
+                        <p className="font-mono font-semibold">{p.consecutiveLosses}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Taux de perte</p>
+                        <p className="font-mono font-semibold">{fmtPct(p.lossRate)}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Perte moyenne</p>
+                        <p className="font-mono font-semibold text-loss">{fmtCur(-p.avgLoss, ccy)}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-profit" /> Efficacité du risk management
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Stratégie</TableHead>
+                    <TableHead className="text-right">Profit Factor</TableHead>
+                    <TableHead className="text-right">Risk of Ruin</TableHead>
+                    <TableHead className="text-right">Max Streak Pertes</TableHead>
+                    <TableHead className="text-right">Verdict</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {strategies.map(s => {
+                    const score = s.metrics.profitFactor >= 1.5 && s.metrics.riskOfRuin < 5;
+                    return (
+                      <TableRow key={s.name}>
+                        <TableCell className="font-medium">{s.name}</TableCell>
+                        <TableCell className="text-right">{fmtNum(s.metrics.profitFactor)}</TableCell>
+                        <TableCell className="text-right">{fmtPct(s.metrics.riskOfRuin)}</TableCell>
+                        <TableCell className="text-right">{s.metrics.consecutiveLosses}</TableCell>
                         <TableCell className="text-right">
-                          {strategy.winRate.toFixed(1)}%
-                        </TableCell>
-                        <TableCell className={cn(
-                          "text-right",
-                          strategy.averagePnL >= 0 ? "text-green-500" : "text-red-500"
-                        )}>
-                          {formatCurrency(strategy.averagePnL)}
-                        </TableCell>
-                        <TableCell className={cn(
-                          "text-right",
-                          strategy.profitFactor >= 1 ? "text-green-500" : "text-red-500"
-                        )}>
-                          {strategy.profitFactor.toFixed(2)}
+                          <Badge variant={score ? 'default' : 'secondary'}>
+                            {score ? 'Sain' : 'À surveiller'}
+                          </Badge>
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
     </div>
   );
-};
+}
 
-export default StrategyAnalysis;
+function Metric({ label, value, tone = 'neutral' }: { label: string; value: string; tone?: 'profit' | 'loss' | 'neutral' }) {
+  return (
+    <div className="bg-muted/40 rounded p-2">
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className={cn('font-mono font-semibold text-sm',
+        tone === 'profit' ? 'text-profit' : tone === 'loss' ? 'text-loss' : 'text-foreground')}>
+        {value}
+      </p>
+    </div>
+  );
+}
