@@ -341,5 +341,3 @@ export function QuantAnalytics({ trades, initialCapital }: Props) {
   );
 }
 
-// React import for Fragment
-import { Fragment } from 'react';
