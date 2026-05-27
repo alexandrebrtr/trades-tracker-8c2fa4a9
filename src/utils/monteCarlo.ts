@@ -1,39 +1,52 @@
 /**
- * Monte Carlo simulator for trading equity curves.
- * Two modes:
- *  - "historical": resamples observed PnL distribution (bootstrap).
- *  - "parametric": draws from win/loss params (winRate, avgWin, avgLoss, volatility).
+ * Advanced Monte Carlo simulator for trading equity curves.
+ * Modes:
+ *  - "historical": bootstrap resampling of observed PnL distribution
+ *  - "parametric": draws from win/loss params with gaussian noise
+ *  - "hybrid": blends bootstrap with parametric noise + volatility regime
+ *  - "stress": shocks distribution (fat-tail losses, vol spike)
  */
+
+export type MCMode = 'historical' | 'parametric' | 'hybrid' | 'stress';
 
 export interface MCParams {
   initialCapital: number;
-  trades: number;          // number of trades to simulate forward
-  simulations: number;     // number of paths
-  winRate: number;         // 0..1
-  avgWin: number;          // currency
-  avgLoss: number;         // positive number, currency
-  volatility: number;      // additional gaussian noise on each PnL (currency stdev)
-  riskOfRuinThreshold: number; // % of initial capital below which we flag ruin
+  trades: number;
+  simulations: number;
+  winRate: number;
+  avgWin: number;
+  avgLoss: number;
+  volatility: number;
+  riskOfRuinThreshold: number; // % of initial capital
+  mode: MCMode;
+  historicalPnls?: number[];
+  volRegime?: number; // multiplier 0.5 .. 3
+  stressFactor?: number; // 1..3 (loss tail amplifier)
 }
 
 export interface MCResult {
-  paths: number[][];          // [simulations][trades+1] equity curves
-  finalEquity: number[];      // distribution of final equities
-  pessimistic: number[];      // 5th percentile path
-  realistic: number[];        // median path
-  optimistic: number[];       // 95th percentile path
+  finalEquity: number[];
+  pessimistic: number[];   // P5
+  lowerBand: number[];     // P25
+  realistic: number[];     // P50
+  upperBand: number[];     // P75
+  optimistic: number[];    // P95
   meanPath: number[];
-  riskOfRuin: number;         // probability the equity went below threshold
-  maxDrawdownDist: number[];  // % drawdown per path
-  expectedReturn: number;     // mean final return %
-  var95: number;              // 95% historical VaR on final equity
-  cvar95: number;             // expected shortfall beyond VaR
+  riskOfRuin: number;
+  survivalProbability: number;
+  drawdownProbability50: number; // probability dd > 50%
+  drawdownProbability25: number; // probability dd > 25%
+  maxDrawdownDist: number[];
+  expectedReturn: number;
+  medianReturn: number;
+  var95: number;
+  cvar95: number;
+  bestCase: number;
+  worstCase: number;
+  samplePaths: number[][]; // a few paths for spaghetti chart
 }
 
-// Mulberry32 PRNG for reproducible sims (seedable later if desired)
 const rng = () => Math.random();
-
-// Box-Muller for standard normal
 const gauss = () => {
   const u = 1 - rng();
   const v = rng();
@@ -46,51 +59,83 @@ const percentile = (sorted: number[], p: number) => {
   return sorted[idx];
 };
 
-const drawTrade = (p: MCParams) => {
-  const win = rng() < p.winRate;
-  const base = win ? p.avgWin : -p.avgLoss;
-  const noise = gauss() * p.volatility;
-  return base + noise;
+const drawTrade = (p: MCParams): number => {
+  const vReg = p.volRegime ?? 1;
+  const stress = p.stressFactor ?? 1;
+  switch (p.mode) {
+    case 'historical': {
+      const arr = p.historicalPnls && p.historicalPnls.length ? p.historicalPnls : [p.avgWin, -p.avgLoss];
+      return arr[Math.floor(rng() * arr.length)];
+    }
+    case 'parametric': {
+      const win = rng() < p.winRate;
+      const base = win ? p.avgWin : -p.avgLoss;
+      return base + gauss() * p.volatility * vReg;
+    }
+    case 'hybrid': {
+      const arr = p.historicalPnls && p.historicalPnls.length ? p.historicalPnls : [p.avgWin, -p.avgLoss];
+      const sample = arr[Math.floor(rng() * arr.length)];
+      return sample + gauss() * p.volatility * 0.5 * vReg;
+    }
+    case 'stress': {
+      const win = rng() < Math.max(0.05, p.winRate - 0.1);
+      const base = win ? p.avgWin * 0.85 : -p.avgLoss * stress;
+      // Occasional fat-tail shock
+      const shock = rng() < 0.05 ? -p.avgLoss * stress * 2 : 0;
+      return base + gauss() * p.volatility * vReg * 1.5 + shock;
+    }
+  }
 };
 
 export const runMonteCarlo = (p: MCParams): MCResult => {
-  const sims = Math.max(10, Math.min(5000, p.simulations));
-  const n = Math.max(1, Math.min(2000, p.trades));
-  const paths: number[][] = [];
+  const sims = Math.max(50, Math.min(5000, p.simulations));
+  const n = Math.max(10, Math.min(2000, p.trades));
   const finalEquity: number[] = [];
   const maxDDs: number[] = [];
   const ruinThreshold = p.initialCapital * (p.riskOfRuinThreshold / 100);
   let ruined = 0;
+  let dd50 = 0, dd25 = 0;
+  const samplePaths: number[][] = [];
+
+  // Store paths transposed: step-major to compute bands without keeping all
+  const stepValues: number[][] = Array.from({ length: n + 1 }, () => []);
 
   for (let s = 0; s < sims; s++) {
-    const path: number[] = new Array(n + 1);
-    path[0] = p.initialCapital;
+    let eq = p.initialCapital;
     let peak = p.initialCapital;
     let maxDD = 0;
     let didRuin = false;
+    stepValues[0].push(eq);
+    const path = s < 20 ? [eq] : null;
     for (let i = 1; i <= n; i++) {
-      const next = path[i - 1] + drawTrade(p);
-      path[i] = next;
-      if (next > peak) peak = next;
-      const dd = peak > 0 ? ((peak - next) / peak) * 100 : 0;
+      eq += drawTrade(p);
+      stepValues[i].push(eq);
+      if (path) path.push(eq);
+      if (eq > peak) peak = eq;
+      const dd = peak > 0 ? ((peak - eq) / peak) * 100 : 0;
       if (dd > maxDD) maxDD = dd;
-      if (next <= ruinThreshold) didRuin = true;
+      if (eq <= ruinThreshold) didRuin = true;
     }
-    paths.push(path);
-    finalEquity.push(path[n]);
+    finalEquity.push(eq);
     maxDDs.push(maxDD);
     if (didRuin) ruined++;
+    if (maxDD > 50) dd50++;
+    if (maxDD > 25) dd25++;
+    if (path) samplePaths.push(path);
   }
 
-  // Build percentile bands per step
   const pessimistic: number[] = [];
+  const lowerBand: number[] = [];
   const realistic: number[] = [];
+  const upperBand: number[] = [];
   const optimistic: number[] = [];
   const meanPath: number[] = [];
   for (let i = 0; i <= n; i++) {
-    const slice = paths.map(pp => pp[i]).sort((a, b) => a - b);
+    const slice = stepValues[i].sort((a, b) => a - b);
     pessimistic.push(percentile(slice, 0.05));
+    lowerBand.push(percentile(slice, 0.25));
     realistic.push(percentile(slice, 0.5));
+    upperBand.push(percentile(slice, 0.75));
     optimistic.push(percentile(slice, 0.95));
     meanPath.push(slice.reduce((s, v) => s + v, 0) / slice.length);
   }
@@ -99,26 +144,24 @@ export const runMonteCarlo = (p: MCParams): MCResult => {
   const var95 = p.initialCapital - percentile(sortedFinal, 0.05);
   const tailCount = Math.max(1, Math.floor(0.05 * sortedFinal.length));
   const cvar95 = p.initialCapital - sortedFinal.slice(0, tailCount).reduce((s, v) => s + v, 0) / tailCount;
-
-  const expectedReturn =
-    ((meanPath[meanPath.length - 1] - p.initialCapital) / p.initialCapital) * 100;
+  const expectedReturn = ((meanPath[meanPath.length - 1] - p.initialCapital) / p.initialCapital) * 100;
+  const medianReturn = ((realistic[realistic.length - 1] - p.initialCapital) / p.initialCapital) * 100;
 
   return {
-    paths,
-    finalEquity,
-    pessimistic,
-    realistic,
-    optimistic,
-    meanPath,
+    finalEquity, pessimistic, lowerBand, realistic, upperBand, optimistic, meanPath,
     riskOfRuin: (ruined / sims) * 100,
+    survivalProbability: 100 - (ruined / sims) * 100,
+    drawdownProbability50: (dd50 / sims) * 100,
+    drawdownProbability25: (dd25 / sims) * 100,
     maxDrawdownDist: maxDDs,
-    expectedReturn,
-    var95,
-    cvar95,
+    expectedReturn, medianReturn,
+    var95, cvar95,
+    bestCase: sortedFinal[sortedFinal.length - 1],
+    worstCase: sortedFinal[0],
+    samplePaths,
   };
 };
 
-/** Derive default MC params from historical trades. */
 export const paramsFromHistory = (
   trades: { pnl?: number | null }[],
   initialCapital: number,
@@ -135,7 +178,7 @@ export const paramsFromHistory = (
   const variance = pnls.length
     ? pnls.reduce((s, x) => s + (x - m) ** 2, 0) / pnls.length
     : 0;
-  const volatility = Math.sqrt(variance) * 0.3; // damp historical noise
+  const volatility = Math.sqrt(variance) * 0.5;
 
   return {
     initialCapital,
@@ -145,6 +188,10 @@ export const paramsFromHistory = (
     avgWin: Math.max(1, avgWin),
     avgLoss: Math.max(1, avgLoss),
     volatility,
-    riskOfRuinThreshold: 50, // 50% of initial capital
+    riskOfRuinThreshold: 50,
+    mode: pnls.length >= 20 ? 'hybrid' : 'parametric',
+    historicalPnls: pnls,
+    volRegime: 1,
+    stressFactor: 1.5,
   };
 };
