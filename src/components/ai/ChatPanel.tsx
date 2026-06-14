@@ -180,8 +180,8 @@ export function ChatPanel({ conversationId, activeAccountId, onActivity }: Props
 
   return (
     <div className="flex h-full flex-col">
-      <ScrollArea className="flex-1">
-        <div ref={scrollRef} className="mx-auto max-w-3xl space-y-6 px-4 py-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-3xl space-y-6 px-4 py-6">
           {loadingHistory && (
             <div className="flex justify-center py-10">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -216,7 +216,7 @@ export function ChatPanel({ conversationId, activeAccountId, onActivity }: Props
 
           {streaming && <ChatMessage role="assistant" content={streamingText} streaming />}
         </div>
-      </ScrollArea>
+      </div>
 
       <div className="border-t bg-background/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto max-w-3xl">
