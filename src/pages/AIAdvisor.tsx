@@ -32,7 +32,7 @@ export default function AIAdvisor() {
       .select("id, title, updated_at")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false });
-    const list = (data || []) as Conversation[];
+    const list = (data || []) as unknown as Conversation[];
     setConversations(list);
     return list;
   }, [user]);
@@ -48,8 +48,8 @@ export default function AIAdvisor() {
       toast({ title: "Erreur", description: error?.message || "Impossible de créer la conversation", variant: "destructive" });
       return null;
     }
-    setConversations((prev) => [data as Conversation, ...prev]);
-    return (data as Conversation).id;
+    setConversations((prev) => [data as unknown as Conversation, ...prev]);
+    return (data as unknown as Conversation).id;
   }, [user, activeAccountId, toast]);
 
   // Bootstrap: load conversations and ensure an active conversation
