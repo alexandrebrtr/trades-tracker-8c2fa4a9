@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { ChatMessage } from "./ChatMessage";
 import { Brain, Send, Loader2, PieChart, Trophy, CalendarDays, CalendarRange, TrendingUp, Square } from "lucide-react";
 
