@@ -19,7 +19,8 @@ import {
   ChevronDown,
   Contact,
   CreditCard,
-  Briefcase
+  Briefcase,
+  Brain
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -121,6 +122,11 @@ export function Sidebar() {
       name: 'Tableau de bord',
       path: '/dashboard',
       icon: <LayoutDashboard className="w-5 h-5" aria-hidden="true" />
+    },
+    {
+      name: 'AI Advisor',
+      path: '/ai-advisor',
+      icon: <Brain className="w-5 h-5" aria-hidden="true" />
     },
   ];
 
