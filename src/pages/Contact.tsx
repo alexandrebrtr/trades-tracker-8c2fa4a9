@@ -1,7 +1,7 @@
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Phone, MapPin, Globe, Facebook, X, Instagram, MessageCircle } from "lucide-react";
+import { Mail, Phone, MapPin, Globe, Facebook, Linkedin, Instagram, MessageCircle } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 
@@ -96,8 +96,8 @@ export default function Contact() {
                     </a>
                   </Button>
                   <Button variant="outline" size="icon" asChild>
-                    <a href="https://twitter.com/trades_track_of" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
-                      <X className="h-5 w-5" />
+                    <a href="https://www.linkedin.com/in/alexandre-berthier-dg" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn - Alexandre Berthier">
+                      <Linkedin className="h-5 w-5" />
                     </a>
                   </Button>
                   <Button variant="outline" size="icon" asChild>
