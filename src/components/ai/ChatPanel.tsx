@@ -53,7 +53,7 @@ export function ChatPanel({ conversationId, activeAccountId, onActivity }: Props
       .order("created_at", { ascending: true })
       .then(({ data }: any) => {
         if (!active) return;
-        setMessages((data || []) as Message[]);
+        setMessages((data || []) as unknown as Message[]);
         setLoadingHistory(false);
       });
     return () => {
