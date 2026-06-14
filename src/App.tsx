@@ -32,6 +32,7 @@ import './App.css';
 import { LanguageProvider } from "./context/LanguageContext";
 import { AccountProvider } from "./context/AccountContext";
 import Accounts from "./pages/Accounts";
+import AIAdvisor from "./pages/AIAdvisor";
 
 function App() {
   return (
@@ -70,6 +71,8 @@ function App() {
                   <Route path="/premium-analytics" element={<PremiumAnalytics />} />
                   <Route path="/admin" element={<AdminPanel />} />
                   <Route path="/accounts" element={<Accounts />} />
+                  <Route path="/ai-advisor" element={<AIAdvisor />} />
+                  <Route path="/ai-advisor/:conversationId" element={<AIAdvisor />} />
                 </Route>
                 
                 {/* Fallback routes */}
