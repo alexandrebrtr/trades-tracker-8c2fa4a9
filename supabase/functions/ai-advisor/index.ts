@@ -7,7 +7,11 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+// Any OpenAI-compatible chat completions endpoint (default: Google Gemini).
+const AI_API_KEY = Deno.env.get("AI_API_KEY") ?? Deno.env.get("GEMINI_API_KEY") ?? "";
+const AI_API_URL =
+  Deno.env.get("AI_API_URL") ?? "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const AI_MODEL = Deno.env.get("AI_MODEL") ?? "gemini-2.5-flash";
 
 type Msg = { role: "user" | "assistant" | "system"; content: string };
 
@@ -178,14 +182,14 @@ ${JSON.stringify(context, null, 2)}`;
       ...messages.filter((m) => m.role === "user" || m.role === "assistant").slice(-20),
     ];
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResp = await fetch(AI_API_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${AI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: AI_MODEL,
         messages: aiMessages,
         stream: true,
       }),
@@ -195,7 +199,7 @@ ${JSON.stringify(context, null, 2)}`;
       return new Response(JSON.stringify({ error: "Trop de requêtes, réessayez dans un instant." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     if (aiResp.status === 402) {
-      return new Response(JSON.stringify({ error: "Crédits IA épuisés. Veuillez recharger votre espace de travail." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Crédits IA épuisés. Vérifiez le quota de votre clé API." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     if (!aiResp.ok || !aiResp.body) {
       const txt = await aiResp.text();

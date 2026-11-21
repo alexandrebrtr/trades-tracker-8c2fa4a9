@@ -63,7 +63,7 @@ export default function LandingPage() {
       author: "Alexandre D.",
       role: t('testimonials.alexRole'),
       rating: 5,
-      avatar: "/lovable-uploads/6b9faeba-9821-4d33-be9c-6a099aa8c1fe.png"
+      avatar: "/images/6b9faeba-9821-4d33-be9c-6a099aa8c1fe.png"
     },
     {
       id: "2",
@@ -71,7 +71,7 @@ export default function LandingPage() {
       author: "Marie L.",
       role: t('testimonials.marieRole'),
       rating: 5,
-      avatar: "/lovable-uploads/7b5e102a-70c9-4618-a03e-87c1f375227e.png"
+      avatar: "/images/7b5e102a-70c9-4618-a03e-87c1f375227e.png"
     },
     {
       id: "3",
@@ -79,7 +79,7 @@ export default function LandingPage() {
       author: "Thomas B.",
       role: t('testimonials.thomasRole'),
       rating: 5,
-      avatar: "/lovable-uploads/68631625-1d14-4206-b940-611ff6fce57e.png"
+      avatar: "/images/68631625-1d14-4206-b940-611ff6fce57e.png"
     },
     {
       id: "4",
@@ -87,7 +87,7 @@ export default function LandingPage() {
       author: "Sophie M.",
       role: t('testimonials.sophieRole'),
       rating: 5,
-      avatar: "/lovable-uploads/75bc79d3-a83c-4eac-88bb-45983d822da6.png"
+      avatar: "/images/75bc79d3-a83c-4eac-88bb-45983d822da6.png"
     }
   ];
 
@@ -156,7 +156,7 @@ export default function LandingPage() {
             >
               <div className="relative w-full h-full">
                 <img
-                  src="/lovable-uploads/20fd8bfd-5ad7-4e39-846b-320e2e599978.png"
+                  src="/images/20fd8bfd-5ad7-4e39-846b-320e2e599978.png"
                   alt="Dashboard Preview"
                   className="block w-full h-auto object-contain lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 shadow-lg rounded-lg"
                 />

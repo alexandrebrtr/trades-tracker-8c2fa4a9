@@ -24,11 +24,48 @@
 
 ## 📦 Tech Stack
 
-- Frontend: React (Next.js)
-- Backend: Node.js / SQL
+- Frontend: React + Vite + TypeScript, Tailwind CSS, shadcn/ui
+- Backend: Supabase (Postgres, Edge Functions)
 - Database: Supabase
 - Authentication: Supabase Auth
 - Broker APIs: MT5, Binance, OANDA (in progress)
+
+---
+
+## 🛠️ Local development
+
+Requirements: Node.js 18+ and npm.
+
+```bash
+npm install
+npm run dev      # http://localhost:8080
+npm run build    # production build in dist/
+npm run preview  # serve the production build
+```
+
+The `dist/` folder is a static site: deploy it on any host (Vercel, Netlify, Cloudflare Pages, Nginx…).
+Configure the host to rewrite every route to `index.html` (single-page app).
+
+### AI Advisor (Supabase Edge Function)
+
+The `ai-advisor` function calls any OpenAI-compatible chat completions API.
+Set its secrets in Supabase:
+
+```bash
+supabase secrets set AI_API_KEY=your_key
+# optional (defaults: Google Gemini)
+supabase secrets set AI_API_URL=https://generativelanguage.googleapis.com/v1beta/openai/chat/completions
+supabase secrets set AI_MODEL=gemini-2.5-flash
+supabase functions deploy ai-advisor
+```
+
+### Mobile (Capacitor)
+
+```bash
+npm run build
+npx cap sync
+npx cap open ios   # or android
+```
 
 ---
 

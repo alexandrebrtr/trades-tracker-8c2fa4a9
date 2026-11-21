@@ -23,7 +23,7 @@ export default function Premium() {
       author: "Mathieu R.",
       role: "Trader Professionnel",
       rating: 5,
-      avatar: "/lovable-uploads/6b9faeba-9821-4d33-be9c-6a099aa8c1fe.png"
+      avatar: "/images/6b9faeba-9821-4d33-be9c-6a099aa8c1fe.png"
     },
     {
       id: "2",
@@ -31,7 +31,7 @@ export default function Premium() {
       author: "Julie D.",
       role: "Swing Trader",
       rating: 5,
-      avatar: "/lovable-uploads/7b5e102a-70c9-4618-a03e-87c1f375227e.png"
+      avatar: "/images/7b5e102a-70c9-4618-a03e-87c1f375227e.png"
     },
     {
       id: "3",
@@ -39,7 +39,7 @@ export default function Premium() {
       author: "Antoine B.",
       role: "Day Trader",
       rating: 5,
-      avatar: "/lovable-uploads/68631625-1d14-4206-b940-611ff6fce57e.png"
+      avatar: "/images/68631625-1d14-4206-b940-611ff6fce57e.png"
     }
   ];
 
