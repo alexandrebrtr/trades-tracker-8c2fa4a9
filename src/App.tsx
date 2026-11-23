@@ -33,6 +33,12 @@ import { LanguageProvider } from "./context/LanguageContext";
 import { AccountProvider } from "./context/AccountContext";
 import Accounts from "./pages/Accounts";
 import AIAdvisor from "./pages/AIAdvisor";
+import AmfHome from "./pages/amf/AmfHome";
+import AmfCourse from "./pages/amf/AmfCourse";
+import AmfTraining from "./pages/amf/AmfTraining";
+import AmfQuiz from "./pages/amf/AmfQuiz";
+import AmfExam from "./pages/amf/AmfExam";
+import AmfSheets from "./pages/amf/AmfSheets";
 
 function App() {
   return (
@@ -73,6 +79,13 @@ function App() {
                   <Route path="/accounts" element={<Accounts />} />
                   <Route path="/ai-advisor" element={<AIAdvisor />} />
                   <Route path="/ai-advisor/:conversationId" element={<AIAdvisor />} />
+                  <Route path="/amf" element={<AmfHome />} />
+                  <Route path="/amf/cours" element={<AmfCourse />} />
+                  <Route path="/amf/cours/:themeId" element={<AmfCourse />} />
+                  <Route path="/amf/entrainement" element={<AmfTraining />} />
+                  <Route path="/amf/quiz/:scope" element={<AmfQuiz />} />
+                  <Route path="/amf/examen" element={<AmfExam />} />
+                  <Route path="/amf/fiches" element={<AmfSheets />} />
                 </Route>
                 
                 {/* Fallback routes */}

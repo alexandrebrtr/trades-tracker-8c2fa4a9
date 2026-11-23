@@ -20,7 +20,8 @@ import {
   Contact,
   CreditCard,
   Briefcase,
-  Brain
+  Brain,
+  GraduationCap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -127,6 +128,11 @@ export function Sidebar() {
       name: 'AI Advisor',
       path: '/ai-advisor',
       icon: <Brain className="w-5 h-5" aria-hidden="true" />
+    },
+    {
+      name: 'Académie AMF',
+      path: '/amf',
+      icon: <GraduationCap className="w-5 h-5" aria-hidden="true" />
     },
   ];
 
