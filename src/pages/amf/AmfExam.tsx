@@ -209,7 +209,7 @@ function ExamRunner({
 
   return (
     <AmfShell hideNav>
-      <div className="sticky top-12 md:top-0 z-20 -mx-3 md:-mx-0 mb-4 border-b bg-background/95 px-3 py-3 backdrop-blur">
+      <div className="sticky top-[var(--amf-sticky-top,3rem)] md:top-[var(--amf-sticky-top-md,0px)] z-20 -mx-3 md:-mx-0 mb-4 border-b bg-background/95 px-3 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{mode.label}</p>

@@ -15,7 +15,7 @@ const LINKS = [
 export function AmfShell({ children, hideNav = false }: { children: ReactNode; hideNav?: boolean }) {
   return (
     <AppLayout>
-      <div className="pr-3 md:pr-6 max-w-6xl mx-auto w-full text-left">
+      <div className="amf-shell pr-3 md:pr-6 max-w-6xl mx-auto w-full text-left">
         {!hideNav && (
           <nav
             aria-label="Navigation Académie AMF"

@@ -1,0 +1,28 @@
+/* Mise en page de l'artefact autonome. Les couleurs viennent des tokens HSL de src/index.css. */
+:root {
+  --amf-bg: hsl(0 0% 100%);
+  --amf-fg: hsl(222 47% 11%);
+  --amf-sticky-top: env(safe-area-inset-top, 0px);
+  --amf-sticky-top-md: env(safe-area-inset-top, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --amf-bg: hsl(222 47% 11%); --amf-fg: hsl(210 40% 98%); color-scheme: dark; }
+}
+:root[data-theme="dark"] { --amf-bg: hsl(222 47% 11%); --amf-fg: hsl(210 40% 98%); color-scheme: dark; }
+
+body {
+  background: var(--amf-bg);
+  color: var(--amf-fg);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-x: hidden;
+}
+.amf-page { max-width: 72rem; margin-inline: auto; padding-block: 1rem 3rem; }
+.amf-shell { padding-right: 0 !important; }
+.amf-brand { display: flex; align-items: center; gap: 0.6rem; padding-block: 0.25rem 1rem; }
+.amf-brand-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.9rem; height: 1.9rem; border-radius: 0.5rem;
+  background: hsl(var(--primary)); color: hsl(var(--primary-foreground));
+}
